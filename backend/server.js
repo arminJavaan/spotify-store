@@ -16,7 +16,7 @@ connectDB();
 app.use(express.json());
 app.use(cors());
 
-//  ★ اضافه: سرو فولدر uploads به‌صورت استاتیک
+// ★ اضافه: سرو فولدر uploads به‌صورت استاتیک
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // مسیرهای عمومی
@@ -32,12 +32,13 @@ app.get('/', (req, res) => {
   res.send('Spotify Store API is running');
 });
 
-// 404 handler
+// 404 handler — حتماً بعد از همهٔ app.useهای بالا باشد
 app.use((req, res) => {
   res.status(404).json({ msg: 'مسیر پیدا نشد' });
 });
 
-app.use('/api/cart', require('./routes/cart'));
+// **حذف این خط**
+// app.use('/api/cart', require('./routes/cart'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server started on port ${PORT}`));

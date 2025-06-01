@@ -1,3 +1,5 @@
+// frontend/src/pages/admin/UserAdmin.jsx
+
 import React, { useEffect, useState } from 'react'
 import API from '../../api'
 import { FiUserCheck, FiUserX, FiTrash2, FiUser, FiMail } from 'react-icons/fi'

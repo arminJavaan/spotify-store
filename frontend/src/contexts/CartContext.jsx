@@ -12,7 +12,6 @@ export default function CartProvider({ children }) {
   // ۱. دریافت سبد خرید برای کاربر لاگین‌شده
   // -----------------------------
   const fetchCart = useCallback(async () => {
-    // اگر کاربر لاگین نشده باشد، سبد را خالی می‌کنیم و فرمان داده نمی‌شود
     if (!user) {
       setCart([])
       return
@@ -25,27 +24,24 @@ export default function CartProvider({ children }) {
     }
 
     try {
-      const res = await fetch('/api/cart', {
+      const res = await fetch('http://localhost:5000/api/cart', {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       })
       if (!res.ok) {
-        // اگر خطای 401 (توکن نامعتبر یا منقضی) باشد،
-        // سبد را خالی و خاتمه می‌دهیم
         if (res.status === 401) {
           setCart([])
           return
         }
-        // سایر خطاها
         throw new Error(`خطا در دریافت سبد (کد: ${res.status})`)
       }
-      const data = await res.json() // { items: [ { product: {...}, quantity: n }, ... ] }
+      const data = await res.json() // { items: [...] }
       setCart(data.items || [])
     } catch (err) {
       console.error('Error fetching cart:', err.message)
-      setCart([]) // در صورت خطا، سبد را خالی کن
+      setCart([])
     }
   }, [user])
 
@@ -57,18 +53,16 @@ export default function CartProvider({ children }) {
   // ۲. اضافه کردن به سبد خرید
   // -----------------------------
   const addToCart = async (productId) => {
-    // اگر هنوز کاربر لاگین نکرده باشد، به صراحت خطا می‌دهیم
     if (!user) {
       throw new Error('برای افزودن به سبد، ابتدا باید وارد شوید.')
     }
-
     const token = localStorage.getItem('token')
     if (!token) {
       throw new Error('توکن یافت نشد. لطفاً مجدداً وارد شوید.')
     }
 
     try {
-      const res = await fetch('/api/cart', {
+      const res = await fetch('http://localhost:5000/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,14 +70,20 @@ export default function CartProvider({ children }) {
         },
         body: JSON.stringify({ productId }),
       })
+
       if (!res.ok) {
         if (res.status === 401) {
-          setCart([]) // اگر توکن نامعتبر بود، سبد خالی شود
+          setCart([])
           throw new Error('اعتبارسنجی انجام نشد. لطفاً مجدداً وارد شوید.')
         }
-        const errorData = await res.json()
-        throw new Error(errorData.msg || `خطا در افزودن به سبد (کد: ${res.status})`)
+        let errorMsg = `خطا در افزودن به سبد (کد: ${res.status})`
+        try {
+          const errData = await res.json()
+          if (errData.msg) errorMsg = errData.msg
+        } catch {}
+        throw new Error(errorMsg)
       }
+
       const data = await res.json() // { items: [...] }
       setCart(data.items || [])
     } catch (err) {
@@ -97,21 +97,17 @@ export default function CartProvider({ children }) {
   // -----------------------------
   const updateQuantity = async (productId, quantity) => {
     if (!user) return
-
     const token = localStorage.getItem('token')
     if (!token) {
       console.warn('توکن یافت نشد. سبد خالی می‌شود.')
       setCart([])
       return
     }
-
-    // اگر کمیت صفر یا منفی شد، آیتم را حذف کن
     if (quantity <= 0) {
       return removeFromCart(productId)
     }
-
     try {
-      const res = await fetch('/api/cart', {
+      const res = await fetch('http://localhost:5000/api/cart', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +123,7 @@ export default function CartProvider({ children }) {
         console.error(`خطا در به‌روزرسانی کمیت (کد: ${res.status})`)
         return
       }
-      const data = await res.json() // { items: [...] }
+      const data = await res.json()
       setCart(data.items || [])
     } catch (err) {
       console.error('Error updating quantity:', err.message)
@@ -139,16 +135,14 @@ export default function CartProvider({ children }) {
   // -----------------------------
   const removeFromCart = async (productId) => {
     if (!user) return
-
     const token = localStorage.getItem('token')
     if (!token) {
       console.warn('توکن یافت نشد. سبد خالی می‌شود.')
       setCart([])
       return
     }
-
     try {
-      const res = await fetch(`/api/cart/${productId}`, {
+      const res = await fetch(`http://localhost:5000/api/cart/${productId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -162,7 +156,7 @@ export default function CartProvider({ children }) {
         console.error(`خطا در حذف آیتم (کد: ${res.status})`)
         return
       }
-      const data = await res.json() // { items: [...] }
+      const data = await res.json()
       setCart(data.items || [])
     } catch (err) {
       console.error('Error removing from cart:', err.message)
@@ -170,7 +164,7 @@ export default function CartProvider({ children }) {
   }
 
   // -----------------------------
-  // ۵. پاک کردن کل سبد (پس از نهایی کردن سفارش مثلاً)
+  // ۵. پاک کردن کل سبد
   // -----------------------------
   const clearCart = () => {
     setCart([])

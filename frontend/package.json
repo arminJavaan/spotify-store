@@ -2,7 +2,7 @@
   "name": "spotify-store",
   "version": "1.0.0",
   "private": true,
-  "proxy": "mongodb://localhost:27017/spotifystore",
+  "proxy": "http://localhost:5000",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

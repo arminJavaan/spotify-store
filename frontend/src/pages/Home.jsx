@@ -44,7 +44,7 @@ export default function Home() {
             }}
           >
             <motion.a
-              to="/products"
+              href="/products"
               as={Link}
               className="bg-primary hover:bg-opacity-90 text-dark2 font-semibold py-3 px-8 rounded-lg shadow-lg transition-all"
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}

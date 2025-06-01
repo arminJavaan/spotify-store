@@ -1,3 +1,5 @@
+// frontend/src/pages/admin/Dashboard.jsx
+
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import API from '../../api'
