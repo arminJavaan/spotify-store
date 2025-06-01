@@ -1,4 +1,5 @@
 // frontend/src/pages/Checkout.jsx
+
 import React, { useContext, useState, useEffect } from 'react'
 import { CartContext } from '../contexts/CartContext'
 import API from '../api'
@@ -17,7 +18,7 @@ export default function Checkout() {
     if (!cart || cart.length === 0) {
       navigate('/cart')
     }
-  }, [cart])
+  }, [cart, navigate])
 
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
 
@@ -27,12 +28,13 @@ export default function Checkout() {
       if (method === 'crypto') {
         paymentDetails.cryptoType = cryptoType
       } else if (method === 'card-to-card') {
-        paymentDetails.cardNumber = cardNumber
-        paymentDetails.bankName = bankName
+        paymentDetails.cardNumber = cardNumber.trim()
+        paymentDetails.bankName = bankName.trim()
       } else if (method === 'shaparak') {
         paymentDetails.placeholder = 'پرداخت اینترنتی شاپرک'
       }
       const res = await API.post('/orders', { paymentMethod: method, paymentDetails })
+
       if (method === 'whatsapp') {
         window.open(res.data.order.whatsappOrderUrl, '_blank')
       } else {
@@ -42,7 +44,8 @@ export default function Checkout() {
       }
     } catch (err) {
       console.error(err)
-      alert('خطا در ثبت سفارش: ' + (err.response?.data.msg || err.message))
+      const msg = err.response?.data?.msg || err.message
+      alert('خطا در ثبت سفارش: ' + msg)
     }
   }
 

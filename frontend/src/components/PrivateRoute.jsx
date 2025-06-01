@@ -4,7 +4,6 @@ import React, { useContext } from 'react'
 import { AuthContext } from '../contexts/AuthContext'
 import { Navigate } from 'react-router-dom'
 
-// اگر کاربر لاگین نکرده باشد، به صفحهٔ ورود هدایت کند
 export default function PrivateRoute({ children }) {
   const { user, loading } = useContext(AuthContext)
 
@@ -17,7 +16,7 @@ export default function PrivateRoute({ children }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" />
+    return <Navigate to="/login" replace />
   }
 
   return children

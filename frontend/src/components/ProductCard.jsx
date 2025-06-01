@@ -1,17 +1,14 @@
 // frontend/src/components/ProductCard.jsx
+
 import React from 'react'
 import { motion } from 'framer-motion'
 
 export default function ProductCard({ product, onAdd }) {
-  // در این تابع، try/catch می‌کنیم تا اگر کاربر لاگین نبود،
-  // خطا گرفته شود و به کاربر اطلاع دهیم.
   const handleAdd = async () => {
     try {
       await onAdd(product._id)
-      // در صورت موفقیت، می‌توانید یک انیمیشن کوتاه یا پیام موفقیت بدهید
-      // برای مثال: alert('محصول به سبد اضافه شد')
+      // در صورت موفقیت، می‌توان نوتیفیکیشن یا انیمیشن کوتاه نمایش داد
     } catch (err) {
-      // ارور از addToCart برگردانده شده (مثلاً "ابتدا وارد شوید.")
       alert(err.message)
     }
   }
@@ -30,11 +27,14 @@ export default function ProductCard({ product, onAdd }) {
           src={product.bannerUrl}
           alt={product.name}
           className="object-cover w-full h-full"
+          loading="lazy"
         />
       </div>
       <div className="p-6 flex flex-col flex-grow">
         <h3 className="text-xl font-semibold text-gray-light mb-2">{product.name}</h3>
-        <p className="text-gray-light text-sm flex-grow leading-relaxed">{product.description}</p>
+        <p className="text-gray-light text-sm flex-grow leading-relaxed">
+          {product.description}
+        </p>
         <div className="mt-4 flex justify-between items-center">
           <span className="text-primary font-bold">
             {Number(product.price).toLocaleString('fa-IR')} تومان

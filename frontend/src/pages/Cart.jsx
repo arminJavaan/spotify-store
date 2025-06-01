@@ -18,13 +18,13 @@ export default function Cart() {
       return
     }
     fetchCart().then(() => setLoading(false))
-  }, [user])
+  }, [user, fetchCart])
 
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
 
   const listItemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: i => ({ opacity: 1, y: 0, transition: { delay: i * 0.1 } })
+    visible: (i) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1 } })
   }
 
   if (loading) {
@@ -113,12 +113,11 @@ export default function Cart() {
                     src={item.product.bannerUrl}
                     alt={item.product.name}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-white">
-                    {item.product.name}
-                  </h3>
+                  <h3 className="text-lg font-semibold text-white">{item.product.name}</h3>
                   <p className="text-gray-light text-sm mt-1">
                     قیمت واحد: {item.product.price.toLocaleString('fa-IR')} تومان
                   </p>
@@ -128,6 +127,7 @@ export default function Cart() {
                 <button
                   onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
                   className="bg-gray-med hover:bg-gray-light text-dark2 font-bold w-8 h-8 flex items-center justify-center rounded transition"
+                  aria-label="کاهش کمیت"
                 >
                   -
                 </button>
@@ -135,12 +135,14 @@ export default function Cart() {
                 <button
                   onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
                   className="bg-gray-med hover:bg-gray-light text-dark2 font-bold w-8 h-8 flex items-center justify-center rounded transition"
+                  aria-label="افزایش کمیت"
                 >
                   +
                 </button>
                 <button
                   onClick={() => removeFromCart(item.product._id)}
                   className="ml-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-lg transition"
+                  aria-label="حذف از سبد"
                 >
                   حذف
                 </button>
@@ -157,9 +159,7 @@ export default function Cart() {
         >
           <div className="text-white text-xl font-semibold mb-4 md:mb-0">
             مبلغ کل:{' '}
-            <span className="text-primary">
-              {total.toLocaleString('fa-IR')} تومان
-            </span>
+            <span className="text-primary">{total.toLocaleString('fa-IR')} تومان</span>
           </div>
           <button
             onClick={() => navigate('/checkout')}

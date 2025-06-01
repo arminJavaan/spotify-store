@@ -36,18 +36,14 @@ export const AuthProvider = ({ children }) => {
       const res = await API.post('/auth/register', { name, email, password, phone })
       localStorage.setItem('token', res.data.token)
       setLoading(true)
-      try {
-        const me = await API.get('/auth/me')
-        setUser(me.data)
-        navigate('/dashboard')
-      } catch (err) {
-        console.error('Error fetching /auth/me after register:', err.response?.data || err.message)
-      } finally {
-        setLoading(false)
-      }
+      const me = await API.get('/auth/me')
+      setUser(me.data)
+      navigate('/dashboard')
     } catch (err) {
       console.error('Error in register():', err.response?.data || err.message)
       throw err
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -56,18 +52,14 @@ export const AuthProvider = ({ children }) => {
       const res = await API.post('/auth/login', { email, password })
       localStorage.setItem('token', res.data.token)
       setLoading(true)
-      try {
-        const me = await API.get('/auth/me')
-        setUser(me.data)
-        navigate('/dashboard')
-      } catch (err) {
-        console.error('Error fetching /auth/me after login:', err.response?.data || err.message)
-      } finally {
-        setLoading(false)
-      }
+      const me = await API.get('/auth/me')
+      setUser(me.data)
+      navigate('/dashboard')
     } catch (err) {
       console.error('Error in login():', err.response?.data || err.message)
       throw err
+    } finally {
+      setLoading(false)
     }
   }
 

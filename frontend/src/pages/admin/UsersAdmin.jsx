@@ -33,7 +33,7 @@ export default function AdminUsers() {
     setUpdatingUserId(id)
     try {
       await API.put(`/admin/users/${id}/role`, { role })
-      fetchUsers()
+      await fetchUsers()
     } catch (err) {
       console.error(err)
       alert('خطا در تغییر نقش کاربر')
@@ -42,12 +42,12 @@ export default function AdminUsers() {
     }
   }
 
-  const deleteUser = async id => {
+  const deleteUser = async (id) => {
     if (!window.confirm('آیا از حذف این کاربر مطمئن هستید؟')) return
     setUpdatingUserId(id)
     try {
       await API.delete(`/admin/users/${id}`)
-      fetchUsers()
+      await fetchUsers()
     } catch (err) {
       console.error(err)
       alert('خطا در حذف کاربر')
@@ -82,7 +82,7 @@ export default function AdminUsers() {
         <p className="text-center text-gray2">هیچ کاربری ثبت نشده است.</p>
       ) : (
         <div className="space-y-6">
-          {users.map(user => {
+          {users.map((user) => {
             const { _id, name, email, role, date } = user
             const isUpdating = updatingUserId === _id
 
@@ -105,8 +105,7 @@ export default function AdminUsers() {
                     <span className="text-primary font-medium capitalize">{role}</span>
                   </p>
                   <p className="text-gray2 text-xs mt-1">
-                    تاریخ ثبت‌نام:{' '}
-                    {new Date(date).toLocaleDateString('fa-IR')}
+                    تاریخ ثبت‌نام: {new Date(date).toLocaleDateString('fa-IR')}
                   </p>
                 </div>
 

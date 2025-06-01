@@ -1,4 +1,5 @@
 // frontend/src/pages/Orders.jsx
+
 import React, { useEffect, useState } from 'react'
 import API from '../api'
 import { useNavigate } from 'react-router-dom'
@@ -21,12 +22,13 @@ export default function Orders() {
         console.error('Error fetching orders:', err.response?.data || err.message)
         setError('لطفاً ابتدا وارد شوید.')
         navigate('/login')
+        return
       } finally {
         setLoading(false)
       }
     }
     fetchOrders()
-  }, [])
+  }, [navigate])
 
   if (loading) {
     return <p className="text-center text-gray-light py-20">در حال بارگذاری...</p>
@@ -89,7 +91,8 @@ export default function Orders() {
 
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-gray-light text-sm">
-                    <strong>مبلغ کل:</strong> {Number(order.totalAmount).toLocaleString('fa-IR')} تومان
+                    <strong>مبلغ کل:</strong> {Number(order.totalAmount).toLocaleString('fa-IR')}{' '}
+                    تومان
                   </span>
                   <span className="flex items-center space-x-2">
                     {isPending && (

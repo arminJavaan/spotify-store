@@ -32,13 +32,8 @@ export default function CartProvider({ children }) {
     if (!user) {
       throw new Error('برای افزودن به سبد، ابتدا باید وارد شوید.')
     }
-    try {
-      const res = await API.post('/cart', { productId })
-      setCart(res.data.items || [])
-    } catch (err) {
-      console.error('Error adding to cart:', err.response?.data || err.message)
-      throw err
-    }
+    const res = await API.post('/cart', { productId })
+    setCart(res.data.items || [])
   }
 
   const updateQuantity = async (productId, quantity) => {
@@ -46,22 +41,14 @@ export default function CartProvider({ children }) {
     if (quantity <= 0) {
       return removeFromCart(productId)
     }
-    try {
-      const res = await API.put('/cart', { productId, quantity })
-      setCart(res.data.items || [])
-    } catch (err) {
-      console.error('Error updating quantity:', err.response?.data || err.message)
-    }
+    const res = await API.put('/cart', { productId, quantity })
+    setCart(res.data.items || [])
   }
 
   const removeFromCart = async (productId) => {
     if (!user) return
-    try {
-      const res = await API.delete(`/cart/${productId}`)
-      setCart(res.data.items || [])
-    } catch (err) {
-      console.error('Error removing from cart:', err.response?.data || err.message)
-    }
+    const res = await API.delete(`/cart/${productId}`)
+    setCart(res.data.items || [])
   }
 
   const clearCart = () => {

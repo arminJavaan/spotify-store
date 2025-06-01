@@ -1,8 +1,10 @@
 // frontend/src/App.jsx
-import React from 'react'
+
+import React, { useContext } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
+import { AuthProvider, AuthContext } from './contexts/AuthContext'
 import CartProvider from './contexts/CartContext'
+import SpotifyLoading from './components/SpotifyLoading'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -20,84 +22,103 @@ import AdminProducts from './pages/admin/ProductsAdmin'
 import AdminOrders from './pages/admin/OrdersAdmin'
 import AdminUsers from './pages/admin/UsersAdmin'
 
+function AppInner() {
+  const { loading } = useContext(AuthContext)
+
+  if (loading) {
+    return <SpotifyLoading />
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route
+            path="/checkout"
+            element={
+              <PrivateRoute>
+                <Checkout />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <PrivateRoute>
+                <Orders />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <UserDashboard />
+              </PrivateRoute>
+            }
+          />
+
+          {/* مسیرهای ادمین */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              <AdminRoute>
+                <AdminProducts />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <AdminRoute>
+                <AdminOrders />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <AdminUsers />
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="*"
+            element={
+              <h2 className="text-center text-gray-light py-20">
+                صفحهٔ مورد نظر یافت نشد
+              </h2>
+            }
+          />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <Router>
       <AuthProvider>
         <CartProvider>
-          <div className="flex flex-col min-h-screen">
-            <Navbar />
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route
-                  path="/checkout"
-                  element={
-                    <PrivateRoute>
-                      <Checkout />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/orders"
-                  element={
-                    <PrivateRoute>
-                      <Orders />
-                    </PrivateRoute>
-                  }
-                />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <PrivateRoute>
-                      <UserDashboard />
-                    </PrivateRoute>
-                  }
-                />
-
-                {/* مسیرهای ادمین */}
-                <Route
-                  path="/admin"
-                  element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/products"
-                  element={
-                    <AdminRoute>
-                      <AdminProducts />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/orders"
-                  element={
-                    <AdminRoute>
-                      <AdminOrders />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/users"
-                  element={
-                    <AdminRoute>
-                      <AdminUsers />
-                    </AdminRoute>
-                  }
-                />
-                {/* مسیر 404 */}
-                <Route path="*" element={<h2 className="text-center text-gray-light py-20">صفحهٔ مورد نظر یافت نشد</h2>} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
+          <AppInner />
         </CartProvider>
       </AuthProvider>
     </Router>

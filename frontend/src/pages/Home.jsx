@@ -1,4 +1,5 @@
 // frontend/src/pages/Home.jsx
+
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -6,9 +7,7 @@ import { motion } from 'framer-motion'
 export default function Home() {
   return (
     <main className="bg-dark2 text-gray-light">
-      {/* Hero */}
       <section className="relative overflow-hidden h-screen flex items-center bg-dark2">
-        {/* انیمیشن پس‌زمینه */}
         <div className="absolute inset-0 pointer-events-none">
           <motion.div
             className="absolute top-[-25%] left-[-25%] w-[150%] h-[150%] bg-gradient-to-br from-primary to-cyan-600 opacity-10 rounded-full filter blur-3xl"
@@ -43,27 +42,34 @@ export default function Home() {
               visible: { transition: { staggerChildren: 0.2 } }
             }}
           >
-            <motion.a
-              href="/products"
-              as={Link}
-              className="bg-primary hover:bg-opacity-90 text-dark2 font-semibold py-3 px-8 rounded-lg shadow-lg transition-all"
+            <motion.div
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
             >
-              مشاهده محصولات
-            </motion.a>
-            <motion.a
-              href="#features"
-              className="border border-primary hover:bg-primary hover:text-dark2 text-primary font-semibold py-3 px-8 rounded-lg transition-all"
+              <Link
+                to="/products"
+                className="bg-primary hover:bg-opacity-90 text-dark2 font-semibold py-3 px-8 rounded-lg shadow-lg transition-all"
+              >
+                مشاهده محصولات
+              </Link>
+            </motion.div>
+            <motion.div
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
             >
-              ویژگی‌ها
-            </motion.a>
+              <a
+                href="#features"
+                className="border border-primary hover:bg-primary hover:text-dark2 text-primary font-semibold py-3 px-8 rounded-lg transition-all"
+              >
+                ویژگی‌ها
+              </a>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="container mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-3 gap-12">
+      <section
+        id="features"
+        className="container mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-3 gap-12"
+      >
         <motion.div
           className="bg-dark1 rounded-2xl p-8 flex flex-col items-center shadow-lg hover:shadow-xl transition transform hover:-translate-y-2"
           initial={{ opacity: 0, y: 50 }}
@@ -113,7 +119,6 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* How It Works */}
       <section className="bg-dark2 py-20 px-6">
         <div className="container mx-auto text-center mb-12">
           <motion.h2
@@ -187,7 +192,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Final CTA */}
       <section className="py-20 px-6">
         <div className="container mx-auto flex flex-col items-center bg-dark1 rounded-2xl p-12 shadow-xl">
           <motion.h2
@@ -199,16 +203,19 @@ export default function Home() {
           >
             آماده‌ای برای شروع؟
           </motion.h2>
-          <motion.a
-            href="/products"
-            className="bg-primary hover:bg-opacity-90 text-dark2 font-semibold py-4 px-10 rounded-lg shadow-lg transition-all"
+          <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            خرید اکانت اسپاتیفای
-          </motion.a>
+            <Link
+              to="/products"
+              className="bg-primary hover:bg-opacity-90 text-dark2 font-semibold py-4 px-10 rounded-lg shadow-lg transition-all"
+            >
+              خرید اکانت اسپاتیفای
+            </Link>
+          </motion.div>
         </div>
       </section>
     </main>

@@ -1,4 +1,4 @@
-// frontend/src/pages/admin/OrderAdmin.jsx
+// frontend/src/pages/admin/OrdersAdmin.jsx
 
 import React, { useEffect, useState } from 'react'
 import API from '../../api'
@@ -40,7 +40,7 @@ export default function AdminOrders() {
     setUpdatingOrderId(orderId)
     try {
       await API.put(`/admin/orders/${orderId}/status`, { status: newStatus })
-      fetchOrders()
+      await fetchOrders()
     } catch (err) {
       console.error(err)
       alert('خطا در به‌روزرسانی وضعیت سفارش')
@@ -75,7 +75,7 @@ export default function AdminOrders() {
         <p className="text-center text-gray2">هیچ سفارشی ثبت نشده است.</p>
       ) : (
         <div className="space-y-6">
-          {orders.map(order => {
+          {orders.map((order, idx) => {
             const isPending = order.status === 'pending'
             const isCompleted = order.status === 'completed'
             const isCancelled = order.status === 'cancelled'
@@ -85,7 +85,6 @@ export default function AdminOrders() {
                 key={order._id}
                 className="bg-dark1 p-6 rounded-2xl shadow-lg animate-slideIn"
               >
-                {/* هدر با شماره و تاریخ سفارش */}
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl font-semibold text-primary">
                     سفارش #{order._id.slice(-6)}
@@ -95,7 +94,6 @@ export default function AdminOrders() {
                   </span>
                 </div>
 
-                {/* اطلاعات کاربر سفارش‌دهنده */}
                 <div className="mb-4 flex flex-col sm:flex-row sm:justify-between">
                   <div className="flex items-center mb-2 sm:mb-0">
                     <FiUser className="text-gray2 ml-1" />
@@ -113,9 +111,8 @@ export default function AdminOrders() {
                   </div>
                 </div>
 
-                {/* آیتم‌های سفارش */}
                 <div className="mb-4 border-t border-gray1 pt-4 space-y-2">
-                  {order.items.map(item => (
+                  {order.items.map((item) => (
                     <div
                       key={item.product._id}
                       className="flex justify-between items-center"
@@ -130,7 +127,6 @@ export default function AdminOrders() {
                   ))}
                 </div>
 
-                {/* روش پرداخت و لینک واتساپ */}
                 <div className="mb-4">
                   <p className="text-gray2 mb-1">
                     روش پرداخت:{' '}
@@ -150,7 +146,6 @@ export default function AdminOrders() {
                   )}
                 </div>
 
-                {/* وضعیت فعلی و دکمه‌های تغییر */}
                 <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
                   <div className="flex items-center mb-4 sm:mb-0">
                     {isPending && (

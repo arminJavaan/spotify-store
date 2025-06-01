@@ -1,4 +1,5 @@
 // frontend/src/pages/UserDashboard.jsx
+
 import React, { useContext, useEffect, useState } from 'react'
 import API from '../api'
 import { AuthContext } from '../contexts/AuthContext'
@@ -26,7 +27,7 @@ export default function UserDashboard() {
       setFormData({ name: user.name, email: user.email, phone: user.phone })
       fetchOrders()
     }
-  }, [user, userLoading])
+  }, [user, userLoading, navigate])
 
   const fetchOrders = async () => {
     setOrdersLoading(true)
@@ -93,7 +94,6 @@ export default function UserDashboard() {
         </button>
       </div>
 
-      {/* پروفایل */}
       <motion.section
         className="bg-dark1 p-8 rounded-2xl shadow-lg mb-10"
         initial={{ opacity: 0, x: -40 }}
@@ -150,9 +150,7 @@ export default function UserDashboard() {
               />
             </div>
 
-            {profileError && (
-              <p className="text-red-500 text-sm">{profileError}</p>
-            )}
+            {profileError && <p className="text-red-500 text-sm">{profileError}</p>}
 
             <button
               type="submit"
@@ -179,7 +177,6 @@ export default function UserDashboard() {
         )}
       </motion.section>
 
-      {/* سفارش‌ها */}
       <motion.section
         className="bg-dark1 p-8 rounded-2xl shadow-lg"
         initial={{ opacity: 0, x: 40 }}
@@ -236,7 +233,8 @@ export default function UserDashboard() {
 
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-light text-sm">
-                      <strong>مبلغ کل:</strong> {Number(order.totalAmount).toLocaleString('fa-IR')} تومان
+                      <strong>مبلغ کل:</strong>{' '}
+                      {Number(order.totalAmount).toLocaleString('fa-IR')} تومان
                     </span>
                     <span className="flex items-center space-x-2">
                       {isPending && (
