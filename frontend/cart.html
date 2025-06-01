@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fa" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>سبد خرید - SpotifyStore</title>
+
+  <!-- فونت وزیر -->
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1db954',
+            dark1: '#212121',
+            dark2: '#121212',
+            gray1: '#535353',
+            gray2: '#b3b3b3'
+          },
+          fontFamily: {
+            vazir: ['Vazir', 'sans-serif']
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' }
+            },
+            slideIn: {
+              '0%': { transform: 'translateY(30px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' }
+            }
+          },
+          animation: {
+            fadeIn: 'fadeIn 0.6s ease-in-out',
+            slideIn: 'slideIn 0.6s ease-in-out'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Vazir', sans-serif; background-color: #121212; color: #b3b3b3; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- هدر مشترک -->
+  <header class="bg-[#212121]">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="text-2xl font-bold text-primary">SpotifyStore</div>
+      <nav class="space-x-6">
+        <a href="index.html" class="text-gray-2 hover:text-primary transition">خانه</a>
+        <a href="products.html" class="text-gray-2 hover:text-primary transition">محصولات</a>
+        <a href="login.html" class="text-gray-2 hover:text-primary transition">ورود / ثبت‌نام</a>
+        <a href="cart.html" class="relative text-gray-2 hover:text-primary transition">
+          <span id="cartIcon">🛒</span>
+          <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- بخش سبد خرید -->
+  <main class="container mx-auto px-4 py-12">
+    <h2 class="text-3xl font-bold text-primary mb-8 text-center animate-fadeIn">سبد خرید شما</h2>
+
+    <div id="cartItems" class="space-y-4">
+      <!-- اگر سبد خالی باشد پیام خالی بودن را JS نمایش می‌دهد -->
+    </div>
+
+    <!-- بخش مجموع و دکمه اقدام به پرداخت -->
+    <div id="cartTotalSection" class="mt-8 bg-[#212121] p-4 rounded-lg shadow-lg hidden">
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-xl font-semibold text-primary">مبلغ کل:</span>
+        <span id="totalAmount" class="text-xl font-bold text-[#b3b3b3]">0</span>
+      </div>
+      <button onclick="window.location.href='checkout.html'" id="goToCheckoutBtn" class="w-full px-4 py-3 bg-primary text-[#121212] rounded hover:bg-[#148c3c] transition">اقدام به پرداخت</button>
+    </div>
+  </main>
+
+  <!-- فوتر -->
+  <footer class="bg-[#212121] py-4 mt-auto">
+    <div class="container mx-auto px-4 text-center text-gray-2">
+      © ۱۴۰۲ SpotifyStore. تمامی حقوق محفوظ است.
+    </div>
+  </footer>
+
+  <!-- اسکریپت اصلی -->
+  <script src="js/script.js"></script>
+</body>
+</html>
