@@ -37,5 +37,7 @@ app.use((req, res) => {
   res.status(404).json({ msg: 'مسیر پیدا نشد' });
 });
 
+app.use('/api/cart', require('./routes/cart'));
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server started on port ${PORT}`));

@@ -16,31 +16,39 @@ export default function AdminProducts() {
   const [bannerFile, setBannerFile] = useState(null)
   const [editingId, setEditingId] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState(null)
   const fileInputRef = useRef()
 
   useEffect(() => {
     fetchProducts()
   }, [])
 
+  // دریافت لیست محصولات
   const fetchProducts = async () => {
+    setLoading(true)
     try {
       const res = await API.get('/admin/products')
       setProducts(res.data)
+      setErrorMsg(null)
     } catch (err) {
-      console.error(err)
+      console.error('Error fetching products:', err.response?.data || err.message)
+      setErrorMsg('خطا در دریافت محصولات')
+    } finally {
+      setLoading(false)
     }
   }
 
+  // تغییر فیلدهای متنی فرم
   const handleChange = e => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
+  // دریافت فایل بنر
   const handleFileChange = e => {
     const file = e.target.files[0]
     if (file) {
-      // Optional: validate file type
       if (!file.type.startsWith('image/')) {
-        alert('لطفاً یک تصویر معتبر انتخاب کنید.')
+        alert('لطفاً یک فایل تصویری معتبر انتخاب کنید.')
         fileInputRef.current.value = ''
         return
       }
@@ -48,6 +56,7 @@ export default function AdminProducts() {
     }
   }
 
+  // بازنشانی فرم بعد از ذخیره یا لغو ویرایش
   const resetForm = () => {
     setFormData({
       name: '',
@@ -61,15 +70,16 @@ export default function AdminProducts() {
     setEditingId(null)
   }
 
+  // ارسال فرم (ایجاد یا ویرایش)
   const handleSubmit = async e => {
     e.preventDefault()
     const { name, description, price, maxDevices, duration } = formData
 
-    // Basic validation
+    // اعتبارسنجی
     if (!name.trim() || !description.trim() || !price || !maxDevices || !duration) {
       return alert('لطفاً همه فیلدها را تکمیل کنید.')
     }
-    if (!bannerFile && !editingId) {
+    if (!editingId && !bannerFile) {
       return alert('لطفاً یک تصویر بنر انتخاب کنید.')
     }
 
@@ -85,27 +95,39 @@ export default function AdminProducts() {
         payload.append('banner', bannerFile)
       }
 
+      // اگر editingId وجود داشته باشد => ویرایش؛ وگرنه ایجاد
       if (editingId) {
-        // Edit existing
-        await API.put(`/admin/products/${editingId}`, payload, {
+        const res = await API.put(`/admin/products/${editingId}`, payload, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
+        console.log('Product updated:', res.data)
       } else {
-        // Create new
-        await API.post('/admin/products', payload, {
+        const res = await API.post('/admin/products', payload, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
+        console.log('Product created:', res.data)
       }
 
       resetForm()
       fetchProducts()
     } catch (err) {
-      console.error(err)
-      alert('خطا در ذخیره‌سازی محصول')
+      // لاگ خطای برگشتی از سرور برای عیب‌یابی
+      console.error(
+        'Error saving product:',
+        err.response?.status,
+        err.response?.data || err.message
+      )
+
+      // اگر پاسخ سرور حاوی پیام خطا باشد آن را به کاربر نمایش دهیم
+      const serverMsg = err.response?.data?.msg || err.response?.data?.error || err.message
+      setErrorMsg(`خطا در ذخیره‌سازی محصول: ${serverMsg}`)
+      alert(`خطا در ذخیره‌سازی محصول:\n${serverMsg}`)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
+  // پر کردن فرم با دادهٔ محصول برای ویرایش
   const handleEdit = product => {
     setEditingId(product._id)
     setFormData({
@@ -116,17 +138,23 @@ export default function AdminProducts() {
       duration: product.duration
     })
     setBannerFile(null)
-    fileInputRef.current.value = '' // clear file; user can choose new or leave existing
+    fileInputRef.current.value = ''
+    setErrorMsg(null)
   }
 
+  // حذف محصول
   const handleDelete = async id => {
     if (!window.confirm('آیا از حذف این محصول مطمئن هستید؟')) return
+
     try {
-      await API.delete(`/admin/products/${id}`)
+      const res = await API.delete(`/admin/products/${id}`)
+      console.log('Product deleted:', res.data)
       fetchProducts()
     } catch (err) {
-      console.error(err)
-      alert('خطا در حذف محصول')
+      console.error('Error deleting product:', err.response?.data || err.message)
+      const serverMsg = err.response?.data?.msg || err.message
+      setErrorMsg(`خطا در حذف محصول: ${serverMsg}`)
+      alert(`خطا در حذف محصول:\n${serverMsg}`)
     }
   }
 
@@ -136,7 +164,7 @@ export default function AdminProducts() {
         مدیریت محصولات
       </h2>
 
-      {/* Form Create/Edit */}
+      {/* فرم ایجاد/ویرایش */}
       <form
         onSubmit={handleSubmit}
         className="bg-dark1 p-6 rounded-2xl shadow-lg mb-10 animate-slideIn"
@@ -153,7 +181,7 @@ export default function AdminProducts() {
             name="price"
             value={formData.price}
             onChange={handleChange}
-            placeholder="قیمت (عدد)"
+            placeholder="قیمت (تومان)"
             type="number"
             className="w-full px-4 py-3 bg-dark2 text-gray2 border border-gray1 rounded-lg focus:outline-none focus:border-primary transition"
           />
@@ -178,14 +206,14 @@ export default function AdminProducts() {
             onChange={handleChange}
             placeholder="توضیح کامل محصول"
             rows="3"
-            className="w-full px-4 py-3 bg-dark2 text-gray2 border border-gray1 rounded-lg focus:outline-none focus:border-primary transition resize-none"
+            className="w-full col-span-1 md:col-span-2 px-4 py-3 bg-dark2 text-gray2 border border-gray1 rounded-lg focus:outline-none focus:border-primary transition resize-none"
           />
           <input
             type="file"
             accept="image/*"
             ref={fileInputRef}
             onChange={handleFileChange}
-            className="w-full text-gray2"
+            className="w-full col-span-1 md:col-span-2 text-gray2"
           />
         </div>
 
@@ -201,53 +229,69 @@ export default function AdminProducts() {
         </button>
       </form>
 
-      {/* Products List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {products.map(prod => (
-          <div
-            key={prod._id}
-            className="bg-dark1 rounded-2xl shadow-lg overflow-hidden animate-fadeIn"
-          >
-            <div className="w-full h-48 overflow-hidden">
-              {prod.bannerUrl ? (
-                <img
-                  src={prod.bannerUrl}
-                  alt={prod.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-dark2 flex items-center justify-center">
-                  <span className="text-gray1">بدون تصویر</span>
+      {/* نمایش خطای ذخیره‌سازی */}
+      {errorMsg && (
+        <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded mb-6">
+          {errorMsg}
+        </div>
+      )}
+
+      {/* لیست محصولات */}
+      {loading && !products.length ? (
+        <p className="text-center text-gray2 py-10">در حال بارگذاری محصولات...</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {products.map(prod => (
+            <div
+              key={prod._id}
+              className="bg-dark1 rounded-2xl shadow-lg overflow-hidden animate-fadeIn"
+            >
+              <div className="w-full h-48 overflow-hidden">
+                {prod.bannerUrl ? (
+                  <img
+                    src={
+                      prod.bannerUrl.startsWith('http')
+                        ? prod.bannerUrl
+                        : `${window.location.origin}${prod.bannerUrl}`
+                    }
+                    alt={prod.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-dark2 flex items-center justify-center">
+                    <span className="text-gray1">بدون تصویر</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 space-y-2">
+                <h3 className="text-xl font-semibold text-primary">{prod.name}</h3>
+                <p className="text-gray2 text-sm leading-relaxed">{prod.description}</p>
+                <p className="text-gray2 text-sm">
+                  قیمت: {Number(prod.price).toLocaleString('fa-IR')} تومان
+                </p>
+                <p className="text-gray2 text-sm">
+                  مدت: {prod.duration} | دستگاه: {prod.maxDevices}
+                </p>
+                <div className="flex justify-between mt-4">
+                  <button
+                    onClick={() => handleEdit(prod)}
+                    className="flex items-center px-4 py-2 bg-yellow-500 text-dark2 rounded-lg hover:bg-yellow-600 transition"
+                  >
+                    <FiEdit2 className="ml-1" /> ویرایش
+                  </button>
+                  <button
+                    onClick={() => handleDelete(prod._id)}
+                    className="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                  >
+                    <FiTrash2 className="ml-1" /> حذف
+                  </button>
                 </div>
-              )}
-            </div>
-            <div className="p-6 space-y-2">
-              <h3 className="text-xl font-semibold text-primary">{prod.name}</h3>
-              <p className="text-gray2 text-sm leading-relaxed">{prod.description}</p>
-              <p className="text-gray2 text-sm">
-                قیمت: {Number(prod.price).toLocaleString('fa-IR')} تومان
-              </p>
-              <p className="text-gray2 text-sm">
-                مدت: {prod.duration} | دستگاه: {prod.maxDevices}
-              </p>
-              <div className="flex justify-between mt-4">
-                <button
-                  onClick={() => handleEdit(prod)}
-                  className="flex items-center px-4 py-2 bg-yellow-500 text-dark2 rounded-lg hover:bg-yellow-600 transition"
-                >
-                  <FiEdit2 className="ml-1" /> ویرایش
-                </button>
-                <button
-                  onClick={() => handleDelete(prod._id)}
-                  className="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                >
-                  <FiTrash2 className="ml-1" /> حذف
-                </button>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

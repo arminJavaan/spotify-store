@@ -1,36 +1,29 @@
-/** @type {import('tailwindcss').Config} */
+// frontend/tailwind.config.js
 module.exports = {
   content: [
     './index.html',
-    './src/**/*.{js,jsx}'
+    './src/**/*.{js,jsx,ts,tsx}'
   ],
   theme: {
     extend: {
       colors: {
-        primary: '#1db954',
+        primary: '#1DB954',
         dark1: '#212121',
         dark2: '#121212',
-        gray1: '#535353',
-        gray2: '#b3b3b3'
+        'gray-med': '#535353',
+        'gray-light': '#B3B3B3',
       },
       fontFamily: {
-        vazir: ['Vazir', 'sans-serif'],
+        vazir: ['Vazir', 'sans-serif']
       },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' }
-        },
-        slideIn: {
-          '0%': { transform: 'translateY(30px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' }
-        }
-      },
-      animation: {
-        fadeIn: 'fadeIn 0.6s ease-in-out',
-        slideIn: 'slideIn 0.6s ease-in-out'
+      screens: {
+        'xs': '480px',
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px'
       }
-    }
+    },
   },
   plugins: [],
 }

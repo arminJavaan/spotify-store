@@ -1,72 +1,61 @@
-import React, { useState, useEffect, useContext } from 'react'
+// frontend/src/pages/Products.jsx
+import React, { useEffect, useState, useContext } from 'react'
 import API from '../api'
-import ProductCard from '../components/ProductCard'
+import ProductCard from '../components/ProductCard.jsx'
 import { CartContext } from '../contexts/CartContext'
-import { FiSearch } from 'react-icons/fi'
+import { motion } from 'framer-motion'
 
 export default function Products() {
   const [products, setProducts] = useState([])
-  const [filtered, setFiltered] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
   const { addToCart } = useContext(CartContext)
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const res = await API.get('/products')
-        setProducts(res.data)
-        setFiltered(res.data)
+        // بررسی شکل پاسخ و استخراج آرایهٔ محصولات
+        let list = []
+        const payload = res.data
+
+        if (Array.isArray(payload)) {
+          list = payload
+        } else if (Array.isArray(payload.products)) {
+          list = payload.products
+        } else {
+          // اگر هیچکدام نیست، اولین مقدار آرایه‌ای را پیدا کن
+          const arr = Object.values(payload).find((val) => Array.isArray(val))
+          if (Array.isArray(arr)) {
+            list = arr
+          } else {
+            console.warn('Unexpected /products response:', payload)
+          }
+        }
+
+        setProducts(list)
       } catch (err) {
-        console.error(err)
+        console.error('Error fetching products:', err.response?.data || err.message)
+        setProducts([])
       }
     }
     fetchProducts()
   }, [])
 
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFiltered(products)
-    } else {
-      const term = searchTerm.trim().toLowerCase()
-      setFiltered(
-        products.filter(p =>
-          p.name.toLowerCase().includes(term) ||
-          p.description.toLowerCase().includes(term)
-        )
-      )
-    }
-  }, [searchTerm, products])
-
   return (
-    <main className="container mx-auto px-4 py-12">
-      <h2 className="text-3xl font-bold text-primary mb-6 text-center animate-fadeIn">
-        محصولات ما
-      </h2>
-
-      {/* Search Bar */}
-      <div className="relative max-w-md mx-auto mb-10 animate-slideIn">
-        <FiSearch className="absolute top-1/2 right-3 -translate-y-1/2 text-gray2" />
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          placeholder="جست‌وجو در محصولات..."
-          className="w-full px-4 py-3 pr-10 bg-dark2 text-gray2 border border-gray1 rounded-lg focus:outline-none focus:border-primary transition"
-        />
+    <main className="bg-dark2 text-gray-light py-20 px-6 min-h-screen">
+      <motion.h2
+        className="text-3xl font-bold text-center mb-12"
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        لیست محصولات
+      </motion.h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {products.map((prod) => (
+          <ProductCard key={prod._id} product={prod} onAdd={addToCart} />
+        ))}
       </div>
-
-      {/* Products Grid */}
-      {filtered.length === 0 ? (
-        <div className="text-center text-gray2 py-16 animate-fadeIn">
-          <p>هیچ محصولی با این مشخصات یافت نشد.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 animate-fadeIn">
-          {filtered.map(prod => (
-            <ProductCard key={prod._id} product={prod} onAdd={addToCart} />
-          ))}
-        </div>
-      )}
     </main>
   )
 }

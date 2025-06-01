@@ -1,81 +1,84 @@
 // backend/routes/admin.js
 
-const express = require('express');
-const router = express.Router();
-const auth = require('../middleware/auth');
-const requireRole = require('../middleware/roles');
-const User = require('../models/User');
-const Product = require('../models/Product');
-const Order = require('../models/Order');
-const multer = require('multer');
-const path = require('path');
+const express = require('express')
+const router = express.Router()
+const auth = require('../middleware/auth')
+const requireRole = require('../middleware/roles')
+const User = require('../models/User')
+const Product = require('../models/Product')
+const Order = require('../models/Order')
+const multer = require('multer')
+const path = require('path')
 
-// ============================================
-// تنظیمات multer برای ذخیره فایل‌ها در uploads/
-// ============================================
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../uploads'));
-  },
-  filename: function (req, file, cb) {
-    // filename را با timestamp و نام اصلی فایل می‌سازیم تا یکتا شود
-    const ext = path.extname(file.originalname);
-    const basename = path.basename(file.originalname, ext).replace(/\s+/g, '_');
-    const filename = `${basename}_${Date.now()}${ext}`;
-    cb(null, filename);
+// ==================================================
+// 1. احراز هویت و بررسی نقش ادمین برای همه‌ی مسیرهای زیر
+// ==================================================
+router.use(auth, requireRole('admin'))
+
+// ==================================================
+// 2. این مسیر جدید آمار کلی (تعداد کاربران، محصولات و سفارش‌ها) را برمی‌گرداند.
+//    Frontend: GET /api/admin/stats
+// ==================================================
+router.get('/stats', async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments()
+    const totalProducts = await Product.countDocuments()
+    const totalOrders = await Order.countDocuments()
+
+    return res.json({ totalUsers, totalProducts, totalOrders })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ msg: 'خطا در دریافت آمار' })
   }
-});
+})
 
+// ==================================================
+// 3. مدیریت محصولات (CRUD) با پشتیبانی از آپلود بنر
+// ==================================================
+// تنظیمات multer برای ذخیره فایل‌ها در پوشه uploads/
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../uploads'))
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname)
+    const basename = path.basename(file.originalname, ext).replace(/\s+/g, '_')
+    const filename = `${basename}_${Date.now()}${ext}`
+    cb(null, filename)
+  }
+})
 const upload = multer({
   storage,
-  limits: {
-    fileSize: 2 * 1024 * 1024 // حداکثر 2 مگابایت (اختیاری)
-  },
-  fileFilter: function (req, file, cb) {
-    // فقط تصاویر مجاز است
+  limits: { fileSize: 2 * 1024 * 1024 }, // حداکثر 2MB
+  fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith('image/')) {
-      return cb(new Error('لطفاً فقط یک تصویر آپلود کنید.'));
+      return cb(new Error('لطفاً فقط یک تصویر آپلود کنید.'))
     }
-    cb(null, true);
+    cb(null, true)
   }
-});
+})
 
-// همه مسیرهای admin با auth و requireRole('admin')
-router.use(auth, requireRole('admin'));
-
-// -------------------------------
-// مدیریت محصولات (Products)
-// -------------------------------
-
-// GET /api/admin/products
 router.get('/products', async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json(products);
+    const products = await Product.find().sort({ createdAt: -1 })
+    return res.json(products)
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('خطای سرور');
+    console.error(err)
+    return res.status(500).json({ msg: 'خطا در دریافت محصولات' })
   }
-});
+})
 
-// POST /api/admin/products
-// اینجا upload.single('banner') داریم تا فایل فرم‌دیتای key='banner' را دریافت کند
+// POST /api/admin/products  ← دقت کنید upload.single('banner')
 router.post('/products', upload.single('banner'), async (req, res) => {
   try {
-    // در فرم‌دیتا فیلدهای متنی (name, description, price, maxDevices, duration) هستند
-    const { name, description, price, maxDevices, duration } = req.body;
-
-    // بررسی‌های اولیه
+    const { name, description, price, maxDevices, duration } = req.body
     if (!name || !description || !price || !maxDevices || !duration) {
-      return res.status(400).json({ msg: 'لطفاً همه فیلدها را تکمیل کنید.' });
+      return res.status(400).json({ msg: 'لطفاً همه فیلدها را تکمیل کنید.' })
     }
     if (!req.file) {
-      return res.status(400).json({ msg: 'لطفاً یک تصویر بنر آپلود کنید.' });
+      return res.status(400).json({ msg: 'لطفاً یک تصویر بنر آپلود کنید.' })
     }
-
-    // مسیر فایل آپلودشده:
-    const bannerUrl = `/uploads/${req.file.filename}`;
-
+    const bannerUrl = `/uploads/${req.file.filename}`
     const newProduct = new Product({
       name: name.trim(),
       description: description.trim(),
@@ -83,111 +86,165 @@ router.post('/products', upload.single('banner'), async (req, res) => {
       maxDevices: Number(maxDevices),
       duration: duration.trim(),
       bannerUrl
-    });
-
-    const saved = await newProduct.save();
-    res.json(saved);
+    })
+    const saved = await newProduct.save()
+    return res.json(saved)
   } catch (err) {
-    console.error(err);
-    res.status(500).send('خطای سرور');
+    console.error('Error in POST /admin/products:', err)
+    return res.status(500).json({ msg: 'خطا در ایجاد محصول' })
   }
-});
+})
 
-// PUT /api/admin/products/:id
-// برای ویرایش هم از upload.single استفاده می‌کنیم، اما اگر فایل ارسال نشد، bannerUrl تغییر نمی‌کند
+// PUT /api/admin/products/:id ← upload.single('banner') اختیاری
 router.put('/products/:id', upload.single('banner'), async (req, res) => {
   try {
-    const { name, description, price, maxDevices, duration } = req.body;
-    const updatedFields = {};
-
-    if (name) updatedFields.name = name.trim();
-    if (description) updatedFields.description = description.trim();
-    if (price) updatedFields.price = Number(price);
-    if (maxDevices) updatedFields.maxDevices = Number(maxDevices);
-    if (duration) updatedFields.duration = duration.trim();
+    const { name, description, price, maxDevices, duration } = req.body
+    const updatedFields = {}
+    if (name) updatedFields.name = name.trim()
+    if (description) updatedFields.description = description.trim()
+    if (price) updatedFields.price = Number(price)
+    if (maxDevices) updatedFields.maxDevices = Number(maxDevices)
+    if (duration) updatedFields.duration = duration.trim()
     if (req.file) {
-      // اگر فایل جدید آپلود شد، مسیر آن را در bannerUrl ذخیره کن
-      updatedFields.bannerUrl = `/uploads/${req.file.filename}`;
+      updatedFields.bannerUrl = `../../frontend/uploads/${req.file.filename}`
     }
-
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       { $set: updatedFields },
       { new: true }
-    );
-
+    )
     if (!product) {
-      return res.status(404).json({ msg: 'محصول یافت نشد' });
+      return res.status(404).json({ msg: 'محصول یافت نشد' })
     }
-
-    res.json(product);
+    return res.json(product)
   } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'محصول یافت نشد' });
-    }
-    res.status(500).send('خطای سرور');
+    console.error('Error in PUT /admin/products/:id:', err)
+    return res.status(500).json({ msg: 'خطا در به‌روزرسانی محصول' })
   }
-});
+})
 
 // DELETE /api/admin/products/:id
 router.delete('/products/:id', async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id)
     if (!product) {
-      return res.status(404).json({ msg: 'محصول یافت نشد' });
+      return res.status(404).json({ msg: 'محصول یافت نشد' })
     }
-    await product.remove();
-    res.json({ msg: 'محصول حذف شد' });
+    await product.remove()
+    return res.json({ msg: 'محصول حذف شد' })
   } catch (err) {
-    console.error(err.message);
+    console.error('Error in DELETE /admin/products/:id:', err)
     if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'محصول یافت نشد' });
+      return res.status(404).json({ msg: 'محصول یافت نشد' })
     }
-    res.status(500).send('خطای سرور');
+    return res.status(500).json({ msg: 'خطا در حذف محصول' })
   }
-});
+})
+// ==================================================
+// 4. مدیریت کاربران
+// ==================================================
 
+// GET /api/admin/users
+router.get('/users', async (req, res) => {
+  try {
+    const users = await User.find().select('-password').sort({ date: -1 })
+    return res.json(users)
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ msg: 'خطا در دریافت کاربران' })
+  }
+})
 
-// -------------------------------
-// 3. مدیریت سفارش‌ها (Orders)
-// -------------------------------
+// PUT /api/admin/users/:id/role
+router.put('/users/:id/role', async (req, res) => {
+  const { role } = req.body
+  if (!['user', 'admin'].includes(role)) {
+    return res.status(400).json({ msg: 'نقش نامعتبر است' })
+  }
+  try {
+    const user = await User.findById(req.params.id)
+    if (!user) {
+      return res.status(404).json({ msg: 'کاربر یافت نشد' })
+    }
+    user.role = role
+    await user.save()
+    return res.json({ msg: 'نقش کاربر به‌روزرسانی شد', user: { id: user.id, name: user.name, email: user.email, role } })
+  } catch (err) {
+    console.error(err)
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'کاربر یافت نشد' })
+    }
+    return res.status(500).json({ msg: 'خطا در تغییر نقش کاربر' })
+  }
+})
+
+// DELETE /api/admin/users/:id
+router.delete('/users/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+    if (!user) {
+      return res.status(404).json({ msg: 'کاربر یافت نشد' })
+    }
+    await user.remove()
+    return res.json({ msg: 'کاربر حذف شد' })
+  } catch (err) {
+    console.error(err)
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'کاربر یافت نشد' })
+    }
+    return res.status(500).json({ msg: 'خطا در حذف کاربر' })
+  }
+})
+
+// ==================================================
+// 5. مدیریت سفارش‌ها
+// ==================================================
 
 // GET /api/admin/orders
-// دریافت همه سفارش‌ها (ادمین می‌تواند همه را ببیند)
 router.get('/orders', async (req, res) => {
   try {
     const orders = await Order.find()
       .populate('user', 'name email')
       .populate('items.product')
-      .sort({ createdAt: -1 });
-    res.json(orders);
+      .sort({ createdAt: -1 })
+    return res.json(orders)
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('خطای سرور');
+    console.error(err)
+    return res.status(500).json({ msg: 'خطا در دریافت سفارش‌ها' })
   }
-});
+})
 
 // PUT /api/admin/orders/:id/status
-// ویرایش وضعیت سفارش (کد آن قبلاً در routes/orders.js قرار دارد، اینجا صرفاً mirror است)
 router.put('/orders/:id/status', async (req, res) => {
-  const { status } = req.body;
+  const { status } = req.body
   if (!['pending', 'completed', 'cancelled'].includes(status)) {
-    return res.status(400).json({ msg: 'وضعیت نامعتبر است' });
+    return res.status(400).json({ msg: 'وضعیت نامعتبر است' })
   }
   try {
-    const order = await Order.findById(req.params.id);
-    if (!order)
-      return res.status(404).json({ msg: 'سفارش یافت نشد' });
-    order.status = status;
-    await order.save();
-    res.json({ msg: 'وضعیت سفارش به‌روزرسانی شد', order });
+    const order = await Order.findById(req.params.id)
+    if (!order) {
+      return res.status(404).json({ msg: 'سفارش یافت نشد' })
+    }
+    order.status = status
+    await order.save()
+    return res.json({ msg: 'وضعیت سفارش به‌روزرسانی شد', order })
   } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId')
-      return res.status(404).json({ msg: 'سفارش یافت نشد' });
-    res.status(500).send('خطای سرور');
+    console.error(err)
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'سفارش یافت نشد' })
+    }
+    return res.status(500).json({ msg: 'خطا در به‌روزرسانی وضعیت سفارش' })
+  }
+})
+router.get('/users', async (req, res) => {
+  try {
+    // select تمام فیلدها جز password
+    const users = await User.find().select('-password').sort({ date: -1 });
+    return res.json(users);
+  } catch (err) {
+    console.error('Error in GET /api/admin/users:', err);
+    return res.status(500).json({ msg: 'خطا در دریافت کاربران' });
   }
 });
 
-module.exports = router;
+module.exports = router

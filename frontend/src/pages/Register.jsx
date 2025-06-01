@@ -1,75 +1,98 @@
+// frontend/src/pages/Register.jsx
 import React, { useContext, useState } from 'react'
 import { AuthContext } from '../contexts/AuthContext'
-import { FiUser, FiMail, FiLock } from 'react-icons/fi'
-import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 
 export default function Register() {
   const { register } = useContext(AuthContext)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [phone, setPhone] = useState('')
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError(null)
+    if (!name.trim() || !email.trim() || !password || !phone.trim()) {
+      setError('لطفاً همه فیلدها را تکمیل کنید.')
+      return
+    }
+    setLoading(true)
     try {
-      await register({ name, email, password })
+      await register({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        phone: phone.trim()
+      })
     } catch (err) {
-      alert('خطا در ثبت‌نام: ' + (err.response?.data.msg || err.message))
+      const serverMsg = err.response?.data?.msg || err.response?.data?.errors?.[0]?.msg || err.message
+      setError(serverMsg)
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-dark2 px-4">
-      <div className="w-full max-w-sm bg-dark1 rounded-2xl shadow-xl p-8 space-y-6 animate-fadeIn">
-        <h2 className="text-3xl font-bold text-primary text-center">ثبت‌نام در اسپاتیفای</h2>
-        <p className="text-gray2 text-sm text-center">
-          اگر قبلاً حساب دارید،{' '}
-          <Link to="/login" className="text-primary hover:underline">
-            وارد شوید
-          </Link>
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="relative">
-            <FiUser className="absolute top-1/2 right-3 -translate-y-1/2 text-gray2" />
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="نام و نام خانوادگی"
-              className="w-full px-4 py-3 pl-11 bg-dark2 text-gray2 border border-gray1 rounded-lg focus:outline-none focus:border-primary transition"
-            />
+    <main className="bg-dark2 text-gray-light flex items-center justify-center min-h-screen px-4">
+      <motion.div
+        className="w-full max-w-md bg-dark1 rounded-2xl shadow-lg p-8 space-y-6 animate-fadeInUp"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <h2 className="text-2xl font-bold text-primary text-center mb-4">ثبت‌نام</h2>
+        {error && (
+          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded">
+            {error}
           </div>
-          <div className="relative">
-            <FiMail className="absolute top-1/2 right-3 -translate-y-1/2 text-gray2" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="ایمیل"
-              className="w-full px-4 py-3 pl-11 bg-dark2 text-gray2 border border-gray1 rounded-lg focus:outline-none focus:border-primary transition"
-            />
-          </div>
-          <div className="relative">
-            <FiLock className="absolute top-1/2 right-3 -translate-y-1/2 text-gray2" />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="رمز عبور"
-              className="w-full px-4 py-3 pl-11 bg-dark2 text-gray2 border border-gray1 rounded-lg focus:outline-none focus:border-primary transition"
-            />
-          </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="نام و نام خانوادگی"
+            className="w-full px-4 py-2 bg-dark2 text-gray-light border border-gray-med rounded focus:outline-none focus:border-primary"
+            required
+          />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="ایمیل"
+            className="w-full px-4 py-2 bg-dark2 text-gray-light border border-gray-med rounded focus:outline-none focus:border-primary"
+            required
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="رمز عبور"
+            className="w-full px-4 py-2 bg-dark2 text-gray-light border border-gray-med rounded focus:outline-none focus:border-primary"
+            required
+          />
+          <input
+            type="text"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="شماره تلفن"
+            className="w-full px-4 py-2 bg-dark2 text-gray-light border border-gray-med rounded focus:outline-none focus:border-primary"
+            required
+          />
           <button
             type="submit"
-            className="w-full py-3 bg-primary text-dark2 font-semibold rounded-lg hover:bg-[#148c3c] transition animate-slideIn"
+            disabled={loading}
+            className={`w-full bg-primary hover:bg-opacity-90 text-dark2 font-semibold py-2 rounded transition ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
-            ثبت‌نام
+            {loading ? 'در حال ثبت‌نام...' : 'ثبت‌نام'}
           </button>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </main>
   )
 }
