@@ -1,7 +1,7 @@
 // backend/models/Cart.js
 
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
 const CartItemSchema = new mongoose.Schema({
   product: {
@@ -14,7 +14,7 @@ const CartItemSchema = new mongoose.Schema({
     required: true,
     min: 1
   }
-});
+})
 
 const CartSchema = new mongoose.Schema({
   user: {
@@ -24,6 +24,6 @@ const CartSchema = new mongoose.Schema({
     unique: true
   },
   items: [CartItemSchema]
-});
+})
 
-module.exports = mongoose.model('Cart', CartSchema);
+module.exports = mongoose.model('Cart', CartSchema)

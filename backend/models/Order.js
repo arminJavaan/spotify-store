@@ -1,5 +1,7 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+// backend/models/Order.js
+
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
 const OrderItemSchema = new mongoose.Schema({
   product: {
@@ -12,7 +14,7 @@ const OrderItemSchema = new mongoose.Schema({
     required: true,
     min: 1
   }
-});
+})
 
 const OrderSchema = new mongoose.Schema({
   user: {
@@ -27,26 +29,20 @@ const OrderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['shaparak', 'crypto', 'card-to-card', 'whatsapp'],
-    required: true
+    required: true,
+    enum: ['whatsapp', 'other']
   },
   paymentDetails: {
-    // flexible field to store any JSON of payment info
-    type: Object,
-    default: {}
+    type: String
+  },
+  whatsappOrderUrl: {
+    type: String
   },
   status: {
     type: String,
     enum: ['pending', 'completed', 'cancelled'],
     default: 'pending'
-  },
-  whatsappOrderUrl: {
-    type: String
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
-});
+}, { timestamps: true })
 
-module.exports = mongoose.model('Order', OrderSchema);
+module.exports = mongoose.model('Order', OrderSchema)

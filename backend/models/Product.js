@@ -1,6 +1,6 @@
 // backend/models/Product.js
 
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const ProductSchema = new mongoose.Schema({
   name: {
@@ -9,7 +9,7 @@ const ProductSchema = new mongoose.Schema({
     trim: true
   },
   bannerUrl: {
-    type: String,       // مسیر فایل بنر (مثلاً "/uploads/xyz.jpg")
+    type: String,
     default: ''
   },
   description: {
@@ -32,6 +32,6 @@ const ProductSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-});
+})
 
-module.exports = mongoose.model('Product', ProductSchema);
+module.exports = mongoose.model('Product', ProductSchema)

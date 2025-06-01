@@ -1,4 +1,5 @@
 // frontend/src/contexts/AuthContext.jsx
+
 import React, { createContext, useState, useEffect } from 'react'
 import API from '../api'
 import { useNavigate } from 'react-router-dom'
@@ -10,7 +11,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
-  // هنگام mount شدن، بررسی وضعیت لاگین
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem('token')
@@ -19,7 +19,6 @@ export const AuthProvider = ({ children }) => {
         return
       }
       try {
-        // axios (API) باید توکن را از localStorage در header بگذارد
         const res = await API.get('/auth/me')
         setUser(res.data)
       } catch (err) {
@@ -34,12 +33,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async ({ name, email, password, phone }) => {
     try {
-      const res = await API.post('/auth/register', {
-        name,
-        email,
-        password,
-        phone,
-      })
+      const res = await API.post('/auth/register', { name, email, password, phone })
       localStorage.setItem('token', res.data.token)
       setLoading(true)
       try {

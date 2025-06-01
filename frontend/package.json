@@ -5,6 +5,7 @@
   "proxy": "http://localhost:5000",
   "scripts": {
     "dev": "vite",
+    "start": "react-scripts start",
     "build": "vite build",
     "preview": "vite preview"
   },

@@ -33,10 +33,24 @@ const UserSchema = new mongoose.Schema({
   date: {
     type: Date,
     default: Date.now
-  }
+  },
+  cart: [
+    {
+      product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        default: 1,
+        min: 1
+      }
+    }
+  ]
 })
 
-// Hash password before saving
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next()
   try {
@@ -48,7 +62,6 @@ UserSchema.pre('save', async function (next) {
   }
 })
 
-// Compare plaintext to hashed password
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password)
 }

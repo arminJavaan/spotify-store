@@ -6,11 +6,9 @@ const jwt = require('jsonwebtoken')
 const { check, validationResult } = require('express-validator')
 const auth = require('../middleware/auth')
 const User = require('../models/User')
+const dotenv = require('dotenv')
+dotenv.config()
 
-// ------------------------------------------------------
-// POST  /api/auth/register
-//   ثبت‌نام کاربر جدید با name, email, password, phone
-// ------------------------------------------------------
 router.post(
   '/register',
   [
@@ -21,17 +19,12 @@ router.post(
   ],
   async (req, res) => {
     const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() })
-    }
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
 
     const { name, email, password, phone } = req.body
-
     try {
       let user = await User.findOne({ email })
-      if (user) {
-        return res.status(400).json({ msg: 'این ایمیل قبلاً ثبت‌نام شده است' })
-      }
+      if (user) return res.status(400).json({ msg: 'این ایمیل قبلاً ثبت‌نام شده است' })
 
       user = new User({
         name: name.trim(),
@@ -41,23 +34,11 @@ router.post(
       })
 
       await user.save()
-
-      const payload = {
-        user: {
-          id: user.id,
-          role: user.role
-        }
-      }
-
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' },
-        (err, token) => {
-          if (err) throw err
-          return res.json({ token })
-        }
-      )
+      const payload = { user: { id: user.id, role: user.role } }
+      jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+        if (err) throw err
+        return res.json({ token })
+      })
     } catch (err) {
       console.error('Error in POST /auth/register:', err)
       return res.status(500).json({ msg: 'خطا در سرور' })
@@ -65,10 +46,6 @@ router.post(
   }
 )
 
-// ------------------------------------------------------
-// POST  /api/auth/login
-//   ورود کاربر با email + password
-// ------------------------------------------------------
 router.post(
   '/login',
   [
@@ -77,38 +54,21 @@ router.post(
   ],
   async (req, res) => {
     const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() })
-    }
-    const { email, password } = req.body
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
 
+    const { email, password } = req.body
     try {
       const user = await User.findOne({ email: email.toLowerCase() })
-      if (!user) {
-        return res.status(400).json({ msg: 'اطلاعات ورود نادرست است' })
-      }
+      if (!user) return res.status(400).json({ msg: 'اطلاعات ورود نادرست است' })
 
       const isMatch = await user.comparePassword(password)
-      if (!isMatch) {
-        return res.status(400).json({ msg: 'اطلاعات ورود نادرست است' })
-      }
+      if (!isMatch) return res.status(400).json({ msg: 'اطلاعات ورود نادرست است' })
 
-      const payload = {
-        user: {
-          id: user.id,
-          role: user.role
-        }
-      }
-
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' },
-        (err, token) => {
-          if (err) throw err
-          return res.json({ token })
-        }
-      )
+      const payload = { user: { id: user.id, role: user.role } }
+      jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+        if (err) throw err
+        return res.json({ token })
+      })
     } catch (err) {
       console.error('Error in POST /auth/login:', err)
       return res.status(500).json({ msg: 'خطا در سرور' })
@@ -116,16 +76,10 @@ router.post(
   }
 )
 
-// ------------------------------------------------------
-// GET  /api/auth/me
-//   بازگرداندن اطلاعات کاربر فعلی (name, email, role, phone)
-// ------------------------------------------------------
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password')
-    if (!user) {
-      return res.status(404).json({ msg: 'کاربر یافت نشد' })
-    }
+    if (!user) return res.status(404).json({ msg: 'کاربر یافت نشد' })
     return res.json(user)
   } catch (err) {
     console.error('Error in GET /auth/me:', err)
@@ -133,10 +87,6 @@ router.get('/me', auth, async (req, res) => {
   }
 })
 
-// ------------------------------------------------------
-// PUT  /api/auth/profile
-//   به‌روزرسانی پروفایل خودِ کاربر (email, password, phone, name)
-// ------------------------------------------------------
 router.put(
   '/profile',
   auth,
@@ -148,21 +98,17 @@ router.put(
   ],
   async (req, res) => {
     const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() })
-    }
-    const { name, email, password, phone } = req.body
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
 
+    const { name, email, password, phone } = req.body
     try {
       const user = await User.findById(req.user.id)
-      if (!user) {
-        return res.status(404).json({ msg: 'کاربر یافت نشد' })
-      }
+      if (!user) return res.status(404).json({ msg: 'کاربر یافت نشد' })
 
       if (name) user.name = name.trim()
       if (email) user.email = email.toLowerCase().trim()
       if (phone) user.phone = phone.trim()
-      if (password) user.password = password // pre('save') آن را هش خواهد کرد
+      if (password) user.password = password
 
       await user.save()
       const updatedUser = await User.findById(req.user.id).select('-password')

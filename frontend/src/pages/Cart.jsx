@@ -1,4 +1,5 @@
 // frontend/src/pages/Cart.jsx
+
 import React, { useContext, useEffect, useState } from 'react'
 import { CartContext } from '../contexts/CartContext'
 import { AuthContext } from '../contexts/AuthContext'
@@ -11,9 +12,7 @@ export default function Cart() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
 
-  // دریافت سبد در بارگذاری
   useEffect(() => {
-    // اگر کاربر لاگین نیست، فقط loading را خاموش کنیم
     if (!user) {
       setLoading(false)
       return
@@ -25,10 +24,9 @@ export default function Cart() {
 
   const listItemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: (i) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1 } })
+    visible: i => ({ opacity: 1, y: 0, transition: { delay: i * 0.1 } })
   }
 
-  // اگر هنوز در حال لودینگ باشیم، نمایش پیغام لودینگ
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-dark2 text-gray-light">
@@ -37,7 +35,6 @@ export default function Cart() {
     )
   }
 
-  // اگر کاربر لاگین نکرده باشد
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-dark2 px-4">
@@ -59,7 +56,6 @@ export default function Cart() {
     )
   }
 
-  // اگر کاربر لاگین کرده و سبد خالی باشد
   if (cart.length === 0) {
     return (
       <main className="bg-dark2 min-h-screen py-12 px-4">
@@ -89,7 +85,6 @@ export default function Cart() {
     )
   }
 
-  // در غیر اینصورت، سبد پر است و آیتم‌ها را نمایش می‌دهیم
   return (
     <main className="bg-dark2 min-h-screen py-12 px-4">
       <motion.h2
