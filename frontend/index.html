@@ -1,115 +1,17 @@
 <!DOCTYPE html>
-<html lang="fa" class="scroll-smooth">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>فروش اکانت اسپاتیفای</title>
-
-  <!-- فونت وزیر -->
-  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" />
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#1db954',
-            dark1: '#212121',
-            dark2: '#121212',
-            gray1: '#535353',
-            gray2: '#b3b3b3'
-          },
-          fontFamily: {
-            vazir: ['Vazir', 'sans-serif']
-          },
-          keyframes: {
-            fadeIn: {
-              '0%': { opacity: '0' },
-              '100%': { opacity: '1' }
-            },
-            slideIn: {
-              '0%': { transform: 'translateY(30px)', opacity: '0' },
-              '100%': { transform: 'translateY(0)', opacity: '1' }
-            }
-          },
-          animation: {
-            fadeIn: 'fadeIn 0.6s ease-in-out',
-            slideIn: 'slideIn 0.6s ease-in-out'
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    /* Global CSS (برای smooth-scroll و body) */
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Vazir', sans-serif; background-color: #121212; color: #b3b3b3; }
-  </style>
-</head>
-<body class="min-h-screen flex flex-col">
-
-  <!-- هدر و ناوبری مشترک -->
-  <header class="bg-[#212121]">
-    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="text-2xl font-bold text-primary">SpotifyStore</div>
-      <nav class="space-x-6">
-        <a href="index.html" class="text-gray-2 hover:text-primary transition">خانه</a>
-        <a href="products.html" class="text-gray-2 hover:text-primary transition">محصولات</a>
-        <a href="login.html" class="text-gray-2 hover:text-primary transition">ورود / ثبت‌نام</a>
-        <a href="cart.html" class="relative text-gray-2 hover:text-primary transition">
-          <span id="cartIcon">🛒</span>
-          <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
-        </a>
-      </nav>
-    </div>
-  </header>
-
-  <!-- بخش محتوا -->
-  <main class="flex-grow">
-    <!-- Hero Section -->
-    <section class="bg-[url('https://source.unsplash.com/1600x900/?music,spotify')] bg-cover bg-center h-[70vh] relative">
-        <img src="assets/images/bgspotify.jpg" alt="background" class="w-full h-full object-cover absolute inset-0 opacity-50">
-      <div class="absolute inset-0 bg-[#121212]/80"></div>
-      <div class="container mx-auto h-full flex flex-col justify-center items-center relative z-10 text-center px-4">
-        <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4 animate-fadeIn">خرید اکانت پرمیوم اسپاتیفای</h1>
-        <p class="text-gray-2 text-lg md:text-xl mb-6 animate-slideIn">به‌روزترین پلن‌ها با بهترین قیمت و تحویل آنی</p>
-        <a href="products.html" class="px-6 py-3 bg-primary text-[#121212] rounded-full font-semibold hover:bg-[#148c3c] transition animate-fadeIn">مشاهده محصولات</a>
-      </div>
-    </section>
-
-    <!-- بخش معرفی کوتاه (Features) -->
-    <section class="container mx-auto px-4 py-16">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="text-center animate-fadeIn">
-          <div class="text-5xl mb-2 text-primary">🔒</div>
-          <h3 class="text-xl font-bold mb-2">تحویل آنی بعد از خرید</h3>
-          <p class="text-gray-2">پس از پرداخت، اطلاعات اکانت در کمتر از ۵ دقیقه برای شما ارسال می‌شود.</p>
-        </div>
-        <div class="text-center animate-fadeIn delay-200">
-          <div class="text-5xl mb-2 text-primary">💳</div>
-          <h3 class="text-xl font-bold mb-2">۳ روش پرداخت متنوع</h3>
-          <p class="text-gray-2">پرداخت اینترنتی شاپرک، ارز دیجیتال یا کارت به کارت + ثبت سفارش واتساپی</p>
-        </div>
-        <div class="text-center animate-fadeIn delay-400">
-          <div class="text-5xl mb-2 text-primary">📱</div>
-          <h3 class="text-xl font-bold mb-2">پشتیبانی ۲۴ ساعته</h3>
-          <p class="text-gray-2">در هر لحظه که نیاز داشتید از طریق واتساپ یا تیکت با ما در ارتباط باشید.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- بخش فوتر کورتیج -->
-    <section class="bg-[#212121] py-8">
-      <div class="container mx-auto px-4 text-center text-gray-2">
-        این سایت نمونه یک فروشگاه آنلاین اکانت اسپاتیفای است. تمامی حقوق برای این دمو محفوظ است.
-      </div>
-    </section>
-  </main>
-
-  <!-- اسکریپت اصلی -->
-  <script src="js/script.js"></script>
-</body>
+<html lang="fa">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spotify Store</title>
+    <!-- فونت وزیر -->
+    <link
+      href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="h-full bg-dark2 text-gray2 font-vazir">
+    <div id="root" class="h-full"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

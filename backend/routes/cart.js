@@ -1,7 +1,7 @@
-// backend/routes/cart.js
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
+const { check, validationResult } = require('express-validator');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 
@@ -12,9 +12,10 @@ router.get('/', auth, async (req, res) => {
   try {
     let cart = await Cart.findOne({ user: req.user.id }).populate('items.product');
     if (!cart) {
-      // اگر سبد وجود ندارد، یک داکیومنت خالی بسازید
+      // اگر سبد وجود ندارد، یکی بساز
       cart = new Cart({ user: req.user.id, items: [] });
       await cart.save();
+      cart = await cart.populate('items.product');
     }
     res.json(cart);
   } catch (err) {
@@ -24,60 +25,92 @@ router.get('/', auth, async (req, res) => {
 });
 
 // @route   POST /api/cart
-// @desc    اضافه کردن یا افزایش تعداد یک آیتم به سبد
+// @desc    افزودن آیتم به سبد خرید یا افزایش تعداد
 // @access  Private
-router.post('/', auth, async (req, res) => {
-  try {
-    const { productId } = req.body;
-    let cart = await Cart.findOne({ user: req.user.id });
-    if (!cart) {
-      cart = new Cart({ user: req.user.id, items: [] });
+router.post(
+  '/',
+  [
+    auth,
+    check('productId', 'شناسه محصول الزامی‌ست').isMongoId(),
+    check('quantity', 'تعداد باید عدد بزرگ‌تر از ۰ باشد').isInt({ min: 1 })
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
+
+    const { productId, quantity } = req.body;
+    try {
+      const product = await Product.findById(productId);
+      if (!product)
+        return res.status(404).json({ msg: 'محصول یافت نشد' });
+
+      let cart = await Cart.findOne({ user: req.user.id });
+      if (!cart) {
+        cart = new Cart({ user: req.user.id, items: [] });
+      }
+
+      const existingItem = cart.items.find(item => item.product.toString() === productId);
+      if (existingItem) {
+        existingItem.quantity += quantity;
+      } else {
+        cart.items.push({ product: productId, quantity });
+      }
+
+      await cart.save();
+      cart = await cart.populate('items.product');
+      res.json(cart);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('خطای سرور');
     }
-    const existingItem = cart.items.find(item => item.product.toString() === productId);
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      cart.items.push({ product: productId, quantity: 1 });
-    }
-    await cart.save();
-    cart = await cart.populate('items.product');
-    res.json(cart);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('خطای سرور');
   }
-});
+);
 
 // @route   PUT /api/cart
-// @desc    به‌روزرسانی تعداد آیتم (مثلاً با body: { productId, quantity })
+// @desc    به‌روزرسانی تعداد آیتم‌های سبد (با body: { productId, quantity })
 // @access  Private
-router.put('/', auth, async (req, res) => {
-  try {
+router.put(
+  '/',
+  [
+    auth,
+    check('productId', 'شناسه محصول الزامی‌ست').isMongoId(),
+    check('quantity', 'تعداد باید عدد باشد').isInt()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
+
     const { productId, quantity } = req.body;
-    let cart = await Cart.findOne({ user: req.user.id });
-    if (!cart) return res.status(400).json({ msg: 'سبد خرید یافت نشد' });
+    try {
+      let cart = await Cart.findOne({ user: req.user.id });
+      if (!cart)
+        return res.status(400).json({ msg: 'سبد خرید یافت نشد' });
 
-    const item = cart.items.find(item => item.product.toString() === productId);
-    if (!item) return res.status(400).json({ msg: 'آیتم در سبد یافت نشد' });
+      const item = cart.items.find(item => item.product.toString() === productId);
+      if (!item)
+        return res.status(400).json({ msg: 'آیتم در سبد یافت نشد' });
 
-    // اگر کم‌تر یا مساوی ۰ شد، حذف می‌کنیم
-    if (quantity <= 0) {
-      cart.items = cart.items.filter(i => i.product.toString() !== productId);
-    } else {
-      item.quantity = quantity;
+      if (quantity <= 0) {
+        // اگر تعداد ۰ یا کمتر، حذف شود
+        cart.items = cart.items.filter(i => i.product.toString() !== productId);
+      } else {
+        item.quantity = quantity;
+      }
+
+      await cart.save();
+      cart = await cart.populate('items.product');
+      res.json(cart);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('خطای سرور');
     }
-
-    await cart.save();
-    cart = await cart.populate('items.product');
-    res.json(cart);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('خطای سرور');
   }
-});
+);
 
 // @route   DELETE /api/cart/:productId
-// @desc    حذف کامل یک آیتم از سبد
+// @desc    حذف یک آیتم از سبد
 // @access  Private
 router.delete('/:productId', auth, async (req, res) => {
   try {
@@ -85,9 +118,26 @@ router.delete('/:productId', auth, async (req, res) => {
     let cart = await Cart.findOne({ user: req.user.id });
     if (!cart) return res.status(400).json({ msg: 'سبد خرید یافت نشد' });
 
-    cart.items = cart.items.filter(item => item.product.toString() !== productId);
+    cart.items = cart.items.filter(i => i.product.toString() !== productId);
     await cart.save();
     cart = await cart.populate('items.product');
+    res.json(cart);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('خطای سرور');
+  }
+});
+
+// @route   DELETE /api/cart
+// @desc    خالی کردن کل سبد
+// @access  Private
+router.delete('/', auth, async (req, res) => {
+  try {
+    let cart = await Cart.findOne({ user: req.user.id });
+    if (!cart) return res.status(400).json({ msg: 'سبد خرید یافت نشد' });
+
+    cart.items = [];
+    await cart.save();
     res.json(cart);
   } catch (err) {
     console.error(err.message);

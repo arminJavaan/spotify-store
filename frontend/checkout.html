@@ -1,142 +1,0 @@
-<!DOCTYPE html>
-<html lang="fa" class="scroll-smooth">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>پرداخت - SpotifyStore</title>
-
-  <!-- فونت وزیر -->
-  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" />
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#1db954',
-            dark1: '#212121',
-            dark2: '#121212',
-            gray1: '#535353',
-            gray2: '#b3b3b3'
-          },
-          fontFamily: {
-            vazir: ['Vazir', 'sans-serif']
-          },
-          keyframes: {
-            fadeIn: {
-              '0%': { opacity: '0' },
-              '100%': { opacity: '1' }
-            },
-            slideIn: {
-              '0%': { transform: 'translateY(30px)', opacity: '0' },
-              '100%': { transform: 'translateY(0)', opacity: '1' }
-            }
-          },
-          animation: {
-            fadeIn: 'fadeIn 0.6s ease-in-out',
-            slideIn: 'slideIn 0.6s ease-in-out'
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Vazir', sans-serif; background-color: #121212; color: #b3b3b3; }
-  </style>
-</head>
-<body class="min-h-screen flex flex-col">
-
-  <!-- هدر مشترک -->
-  <header class="bg-[#212121]">
-    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="text-2xl font-bold text-primary">SpotifyStore</div>
-      <nav class="space-x-6">
-        <a href="index.html" class="text-gray-2 hover:text-primary transition">خانه</a>
-        <a href="products.html" class="text-gray-2 hover:text-primary transition">محصولات</a>
-        <a href="login.html" class="text-gray-2 hover:text-primary transition">ورود / ثبت‌نام</a>
-        <a href="cart.html" class="relative text-gray-2 hover:text-primary transition">
-          <span id="cartIcon">🛒</span>
-          <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
-        </a>
-      </nav>
-    </div>
-  </header>
-
-  <!-- بخش خلاصه سفارش و انتخاب روش پرداخت -->
-  <main class="container mx-auto px-4 py-12">
-    <h2 class="text-3xl font-bold text-primary mb-8 text-center animate-fadeIn">اطلاعات سفارش و پرداخت</h2>
-
-    <div id="checkoutContent">
-      <!-- اگر سبد خالی باشد پیام نشان داده می‌شود -->
-      <div id="orderSummary" class="mb-4">
-        <!-- خلاصه اقلام توسط JS اینجا درج می‌شود -->
-      </div>
-      <div class="flex justify-between items-center mb-4">
-        <span class="text-xl font-semibold text-gray-2">مبلغ کل:</span>
-        <span id="checkoutTotalAmount" class="text-xl font-bold text-[#b3b3b3]">0</span>
-      </div>
-
-      <!-- انتخاب روش پرداخت -->
-      <div class="mb-6">
-        <label for="paymentMethod" class="block text-gray-2 mb-2">انتخاب روش پرداخت:</label>
-        <select id="paymentMethod" class="w-full px-4 py-2 bg-[#212121] text-gray-2 border border-[#535353] rounded focus:outline-none focus:border-primary">
-          <option value="shaparak">پرداخت اینترنتی (شاپرک)</option>
-          <option value="crypto">پرداخت ارز دیجیتال</option>
-          <option value="card-to-card">کارت به کارت</option>
-          <option value="whatsapp">ثبت سفارش واتساپی</option>
-        </select>
-      </div>
-
-      <!-- بخش شاپرک (placeholder) -->
-      <div id="shaparakSection" class="hidden mb-6 bg-[#212121] p-4 rounded shadow-lg animate-slideIn">
-        <p class="text-gray-2 mb-2">درگاه پرداخت شاپرک (اطلاعات API بعداً قرار می‌گیرد)</p>
-        <button id="shaparakBtn" class="px-4 py-2 bg-primary text-[#121212] rounded hover:bg-[#148c3c] transition">پرداخت با شاپرک</button>
-      </div>
-
-      <!-- بخش ارز دیجیتال -->
-      <div id="cryptoSection" class="hidden mb-6 bg-[#212121] p-4 rounded shadow-lg animate-slideIn">
-        <label for="cryptoSelect" class="block text-gray-2 mb-2">انتخاب ارز:</label>
-        <select id="cryptoSelect" class="w-full px-4 py-2 bg-[#121212] text-gray-2 border border-[#535353] rounded focus:outline-none focus:border-primary">
-          <option value="ETH_BASE">ETH (BASE)</option>
-          <option value="ETH_ARB">ETH (ARB)</option>
-          <option value="TRX">TRX</option>
-          <option value="USDT_TRX">USDT (TRX)</option>
-          <option value="S_SONIC">S (SONIC)</option>
-        </select>
-        <p class="mt-2 text-gray-2 text-sm">بعداً آدرس ولت مربوطه برای شما نمایش داده می‌شود.</p>
-      </div>
-
-      <!-- بخش کارت به کارت -->
-      <div id="cardSection" class="hidden mb-6 bg-[#212121] p-4 rounded shadow-lg animate-slideIn">
-        <label class="block text-gray-2 mb-2">اطلاعات کارت به کارت:</label>
-        <input id="cardNumber" type="text" placeholder="شماره کارت" class="w-full px-4 py-2 bg-[#121212] text-gray-2 border border-[#535353] rounded mb-2 focus:outline-none focus:border-primary" />
-        <input id="bankName" type="text" placeholder="نام بانک" class="w-full px-4 py-2 bg-[#121212] text-gray-2 border border-[#535353] rounded focus:outline-none focus:border-primary" />
-        <p class="mt-2 text-gray-2 text-sm">پس از انتقال وجه، رسید را از طریق واتساپ ارسال کنید.</p>
-      </div>
-
-      <!-- بخش واتساپ -->
-      <div id="whatsappSection" class="hidden mb-6 bg-[#212121] p-4 rounded shadow-lg animate-slideIn">
-        <p class="text-gray-2 mb-2">برای ثبت سفارش، روی دکمه زیر کلیک کنید تا به واتساپ هدایت شوید:</p>
-        <button id="whatsappBtn" class="px-4 py-2 bg-green-600 text-[#121212] rounded hover:bg-green-700 transition">ارسال سفارش در واتساپ</button>
-      </div>
-
-      <!-- دکمه نهایی ثبت سفارش -->
-      <button id="checkoutBtn" class="w-full px-4 py-3 bg-primary text-[#121212] font-semibold rounded hover:bg-[#148c3c] transition">ثبت نهایی سفارش</button>
-    </div>
-  </main>
-
-  <!-- فوتر -->
-  <footer class="bg-[#212121] py-4 mt-auto">
-    <div class="container mx-auto px-4 text-center text-gray-2">
-      © ۱۴۰۲ SpotifyStore. تمامی حقوق محفوظ است.
-    </div>
-  </footer>
-
-  <!-- اسکریپت اصلی -->
-  <script src="js/script.js"></script>
-</body>
-</html>

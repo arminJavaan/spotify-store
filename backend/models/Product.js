@@ -1,33 +1,37 @@
 // backend/models/Product.js
+
 const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
   name: {
     type: String,
+    required: true,
+    trim: true
+  },
+  bannerUrl: {
+    type: String,       // مسیر فایل بنر (مثلاً "/uploads/xyz.jpg")
+    default: ''
+  },
+  description: {
+    type: String,
     required: true
   },
-  price: {         // قیمت به تومان
+  price: {
     type: Number,
     required: true
   },
-  duration: {      // طول اشتراک (مثلاً “1 ماهه”)
-    type: String,
-    required: true
-  },
-  maxDevices: {    // حداکثر دستگاه مجاز
+  maxDevices: {
     type: Number,
     required: true
   },
-  description: {   // توضیح کامل به زبان فارسی
+  duration: {
     type: String,
     required: true
   },
-  logoUrl: {       // نشانی لوگوی کوچک (در فولدر frontend/assets/logos خواهد بود)
-    type: String,
-    required: true
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  timestamps: true
 });
 
 module.exports = mongoose.model('Product', ProductSchema);
