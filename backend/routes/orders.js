@@ -9,19 +9,27 @@ const Order = require('../models/Order')
 const dotenv = require('dotenv')
 dotenv.config()
 
+// @route   POST /api/orders
+// @desc    ثبت سفارش جدید بر اساس سبد خرید کاربر
+// @access  Private
 router.post('/', auth, async (req, res) => {
   try {
     const { paymentMethod, paymentDetails } = req.body
-    const user = await User.findById(req.user.id).populate('cart.product')
-    if (!user || user.cart.length === 0)
-      return res.status(400).json({ msg: 'سبد خرید شما خالی است' })
 
+    // واکشی کاربر به همراه سبد خرید
+    const user = await User.findById(req.user.id).populate('cart.product')
+    if (!user || !user.cart || user.cart.length === 0) {
+      return res.status(400).json({ msg: 'سبد خرید شما خالی است' })
+    }
+
+    // محاسبه مبلغ کل
     const totalAmount = user.cart.reduce(
       (sum, item) => sum + item.product.price * item.quantity,
       0
     )
 
-    let orderData = {
+    // ساخت اطلاعات سفارش
+    const orderData = {
       user: req.user.id,
       items: user.cart.map(i => ({
         product: i.product._id,
@@ -33,6 +41,7 @@ router.post('/', auth, async (req, res) => {
       status: 'pending'
     }
 
+    // اگر روش واتساپ باشد، لینک واتساپ را بساز
     if (paymentMethod === 'whatsapp') {
       const whatsappNumber = process.env.WHATSAPP_NUMBER || '+989000000000'
       let text = `سلام! من می‌خوام این سفارش رو ثبت کنم:\n`
@@ -44,9 +53,11 @@ router.post('/', auth, async (req, res) => {
       orderData.whatsappOrderUrl = url
     }
 
+    // ذخیره سفارش جدید
     const newOrder = new Order(orderData)
     await newOrder.save()
 
+    // خالی کردن سبد پس از ثبت سفارش
     user.cart = []
     await user.save()
 
@@ -57,6 +68,9 @@ router.post('/', auth, async (req, res) => {
   }
 })
 
+// @route   GET /api/orders
+// @desc    دریافت لیست سفارش‌های کاربر لاگین کرده
+// @access  Private
 router.get('/', auth, async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user.id })
@@ -69,13 +83,17 @@ router.get('/', auth, async (req, res) => {
   }
 })
 
+// @route   GET /api/orders/:id
+// @desc    دریافت جزئیات یک سفارش (User only own orders / Admin can access any)
+// @access  Private
 router.get('/:id', auth, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate('items.product')
     if (!order) return res.status(404).json({ msg: 'سفارش یافت نشد' })
 
-    if (req.user.role !== 'admin' && order.user.toString() !== req.user.id)
+    if (req.user.role !== 'admin' && order.user.toString() !== req.user.id) {
       return res.status(403).json({ msg: 'دسترسی کافی نیست' })
+    }
 
     return res.json(order)
   } catch (err) {
@@ -85,11 +103,15 @@ router.get('/:id', auth, async (req, res) => {
   }
 })
 
+// @route   PUT /api/orders/:id/status
+// @desc    به‌روزرسانی وضعیت سفارش (Admin only)
+// @access  Private, Admin
 router.put('/:id/status', auth, requireRole('admin'), async (req, res) => {
   try {
     const { status } = req.body
-    if (!['pending', 'completed', 'cancelled'].includes(status))
+    if (!['pending', 'completed', 'cancelled'].includes(status)) {
       return res.status(400).json({ msg: 'وضعیت نامعتبر است' })
+    }
 
     const order = await Order.findById(req.params.id)
     if (!order) return res.status(404).json({ msg: 'سفارش یافت نشد' })

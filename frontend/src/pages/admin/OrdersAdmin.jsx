@@ -66,7 +66,7 @@ export default function AdminOrders() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-12 mt-12">
       <h2 className="text-3xl font-bold text-primary mb-8 text-center animate-fadeIn">
         مدیریت سفارش‌ها
       </h2>
@@ -80,11 +80,16 @@ export default function AdminOrders() {
             const isCompleted = order.status === 'completed'
             const isCancelled = order.status === 'cancelled'
 
+            // اگر کاربر مربوط به سفارش حذف شده باشد، از optional chaining استفاده می‌کنیم
+            const userName = order.user?.name || 'کاربر حذف‌شده'
+            const userEmail = order.user?.email || '—'
+
             return (
               <div
                 key={order._id}
                 className="bg-dark1 p-6 rounded-2xl shadow-lg animate-slideIn"
               >
+                {/* هدر با شماره و تاریخ سفارش */}
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl font-semibold text-primary">
                     سفارش #{order._id.slice(-6)}
@@ -94,14 +99,15 @@ export default function AdminOrders() {
                   </span>
                 </div>
 
+                {/* اطلاعات کاربر سفارش‌دهنده */}
                 <div className="mb-4 flex flex-col sm:flex-row sm:justify-between">
                   <div className="flex items-center mb-2 sm:mb-0">
                     <FiUser className="text-gray2 ml-1" />
-                    <span className="text-gray2">{order.user.name}</span>
+                    <span className="text-gray2">{userName}</span>
                   </div>
                   <div className="flex items-center mb-2 sm:mb-0">
                     <FiMail className="text-gray2 ml-1" />
-                    <span className="text-gray2">{order.user.email}</span>
+                    <span className="text-gray2">{userEmail}</span>
                   </div>
                   <div className="flex items-center">
                     <FiDollarSign className="text-gray2 ml-1" />
@@ -111,6 +117,7 @@ export default function AdminOrders() {
                   </div>
                 </div>
 
+                {/* آیتم‌های سفارش */}
                 <div className="mb-4 border-t border-gray1 pt-4 space-y-2">
                   {order.items.map((item) => (
                     <div
@@ -127,6 +134,7 @@ export default function AdminOrders() {
                   ))}
                 </div>
 
+                {/* روش پرداخت و لینک واتساپ */}
                 <div className="mb-4">
                   <p className="text-gray2 mb-1">
                     روش پرداخت:{' '}
@@ -146,6 +154,7 @@ export default function AdminOrders() {
                   )}
                 </div>
 
+                {/* وضعیت فعلی و دکمه‌های تغییر */}
                 <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
                   <div className="flex items-center mb-4 sm:mb-0">
                     {isPending && (

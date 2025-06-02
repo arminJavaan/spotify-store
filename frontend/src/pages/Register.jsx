@@ -45,6 +45,7 @@ export default function Register() {
         transition={{ duration: 0.6 }}
       >
         <h2 className="text-2xl font-bold text-primary text-center mb-4">ثبت‌نام</h2>
+        
         {error && (
           <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded">
             {error}
@@ -92,6 +93,15 @@ export default function Register() {
           >
             {loading ? 'در حال ثبت‌نام...' : 'ثبت‌نام'}
           </button>
+          <div className='text-center mb-4 '>
+          <p className="text-gray-light mb-2">
+            {' '}
+            حساب کاربری دارید؟{' '}
+            <a href="/login" className="text-primary hover:underline">
+              وارد شوید
+            </a>
+          </p>
+        </div>
         </form>
       </motion.div>
     </main>

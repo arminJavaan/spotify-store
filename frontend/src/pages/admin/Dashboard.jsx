@@ -47,7 +47,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-12 mt-12">
       <h2 className="text-3xl font-bold text-primary mb-8 text-center animate-fadeIn">
         داشبورد ادمین
       </h2>

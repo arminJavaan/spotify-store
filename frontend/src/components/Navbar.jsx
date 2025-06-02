@@ -14,8 +14,10 @@ const NavLink = ({ to, children, onClick, className = '' }) => {
     <Link
       to={to}
       onClick={onClick}
-      className={`flex items-center text-gray-light hover:text-primary transition-colors duration-200 ${
-        isActive ? 'text-primary font-semibold' : ''
+      className={`flex items-center px-3 py-2 rounded-lg transition-colors duration-200 ${
+        isActive
+          ? 'text-primary bg-white bg-opacity-20'
+          : 'text-gray-light hover:text-primary hover:bg-white hover:bg-opacity-10'
       } ${className}`}
       aria-label={typeof children === 'string' ? children : ''}
     >
@@ -28,38 +30,42 @@ export default function Navbar() {
   const { cart } = useContext(CartContext)
   const { user, loading, logout } = useContext(AuthContext)
   const [menuOpen, setMenuOpen] = useState(false)
-  const location = useLocation()
   const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0)
 
   const toggleMenu = useCallback(() => setMenuOpen((prev) => !prev), [])
 
   if (loading) {
     return (
-      <header className="bg-dark1 shadow-md px-6 py-8 flex items-center justify-between">
-        <div className="text-2xl font-bold text-primary">SpotifyStore</div>
-        <div className="text-gray-light">در حال بارگذاری...</div>
+      <header className="fixed w-full top-0 z-50 bg-white bg-opacity-10 backdrop-blur-md shadow-md">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="text-2xl font-bold text-primary">SpotifyStore</div>
+          <div className="text-gray-light">در حال بارگذاری...</div>
+        </div>
       </header>
     )
   }
 
   return (
-    <header className="bg-dark1 bg-opacity-80 backdrop-blur-md shadow-lg fixed w-full top-0 z-50">
-      <div className="container mx-auto px-6 py-4 flex justify-between items-center relative">
-        <nav className="hidden md:flex space-x-16 items-center absolute left-6">
+    <header className="fixed w-full top-0 z-50 bg-white bg-opacity-10 backdrop-blur-md shadow-lg">
+      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+        {/* Desktop Left Nav */}
+        <nav className="hidden md:flex space-x-6 items-center ">
           <NavLink to="/">
             <FiHome className="ml-2" /> خانه
           </NavLink>
           <NavLink to="/products">محصولات</NavLink>
         </nav>
 
+        {/* Logo */}
         <Link
           to="/"
-          className="text-2xl font-bold text-primary hover:text-primary-dark transition-colors absolute left-1/2 transform -translate-x-1/2"
+          className="text-2xl font-bold text-primary hover:text-primary-dark transition-colors duration-200 "
         >
           SpotifyStore
         </Link>
 
-        <nav className="hidden md:flex space-x-16 items-center absolute right-6">
+        {/* Desktop Right Nav */}
+        <nav className="hidden md:flex space-x-6 items-center">
           {!user ? (
             <NavLink to="/login">ورود / ثبت‌نام</NavLink>
           ) : (
@@ -70,7 +76,7 @@ export default function Navbar() {
               {user.role === 'admin' && <NavLink to="/admin">پنل ادمین</NavLink>}
               <button
                 onClick={logout}
-                className="text-gray-light hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                className="flex items-center px-3 py-2 rounded-lg text-gray-light hover:text-primary hover:bg-white hover:bg-opacity-10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 خروج
               </button>
@@ -78,17 +84,18 @@ export default function Navbar() {
           )}
           <Link
             to="/cart"
-            className="relative text-gray-light hover:text-primary transition-colors"
+            className="relative flex items-center px-3 py-2 rounded-lg text-gray-light hover:text-primary hover:bg-white hover:bg-opacity-10 transition-colors duration-200"
           >
             <FiShoppingCart size={20} />
             {totalItems > 0 && (
-              <span className="absolute -top-2 -right-3 bg-primary text-dark2 text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-primary text-dark2 text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                 {totalItems}
               </span>
             )}
           </Link>
         </nav>
 
+        {/* Mobile Menu Button */}
         <button
           className="md:hidden text-gray-light hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded"
           onClick={toggleMenu}
@@ -98,14 +105,15 @@ export default function Navbar() {
         </button>
       </div>
 
+      {/* Mobile Navigation Panel */}
       <AnimatePresence>
         {menuOpen && (
           <motion.nav
-            className="md:hidden bg-dark1 border-t border-gray-med"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
+            className="md:hidden bg-white bg-opacity-10 backdrop-blur-md border-t border-gray-med overflow-hidden"
           >
             <ul className="flex flex-col px-6 py-4 space-y-4">
               <li>
@@ -144,7 +152,7 @@ export default function Navbar() {
                         logout()
                         toggleMenu()
                       }}
-                      className="text-gray-light hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                      className="w-full text-left px-3 py-2 rounded-lg text-gray-light hover:text-primary hover:bg-white hover:bg-opacity-10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                       خروج
                     </button>
@@ -155,11 +163,11 @@ export default function Navbar() {
                 <Link
                   to="/cart"
                   onClick={toggleMenu}
-                  className="relative text-gray-light hover:text-primary transition-colors flex items-center"
+                  className="relative flex items-center px-3 py-2 rounded-lg text-gray-light hover:text-primary hover:bg-white hover:bg-opacity-10 transition-colors duration-200"
                 >
                   <FiShoppingCart size={20} />
                   {totalItems > 0 && (
-                    <span className="absolute -top-2 -right-3 bg-primary text-dark2 text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute -top-2 -right-2 bg-primary text-dark2 text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                       {totalItems}
                     </span>
                   )}

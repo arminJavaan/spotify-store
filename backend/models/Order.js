@@ -16,33 +16,36 @@ const OrderItemSchema = new mongoose.Schema({
   }
 })
 
-const OrderSchema = new mongoose.Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+const OrderSchema = new mongoose.Schema(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    items: [OrderItemSchema],
+    totalAmount: {
+      type: Number,
+      required: true
+    },
+    paymentMethod: {
+      type: String,
+      required: true,
+      enum: ['whatsapp', 'shaparak', 'crypto', 'card-to-card', 'other']
+    },
+    paymentDetails: {
+      type: Schema.Types.Mixed
+    },
+    whatsappOrderUrl: {
+      type: String
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'completed', 'cancelled'],
+      default: 'pending'
+    }
   },
-  items: [OrderItemSchema],
-  totalAmount: {
-    type: Number,
-    required: true
-  },
-  paymentMethod: {
-    type: String,
-    required: true,
-    enum: ['whatsapp', 'other']
-  },
-  paymentDetails: {
-    type: String
-  },
-  whatsappOrderUrl: {
-    type: String
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'completed', 'cancelled'],
-    default: 'pending'
-  }
-}, { timestamps: true })
+  { timestamps: true }
+)
 
 module.exports = mongoose.model('Order', OrderSchema)

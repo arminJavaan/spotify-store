@@ -37,7 +37,9 @@ export default function Login() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
+        
         <h2 className="text-2xl font-bold text-primary text-center mb-4">ورود</h2>
+        
         {error && (
           <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded">
             {error}
@@ -69,6 +71,16 @@ export default function Login() {
           >
             {loading ? 'در حال ورود...' : 'ورود'}
           </button>
+        
+  
+          <div className='text-center mb-4 '>
+          <p className='text-gray-light mb-2 '>
+           حساب کاربری ندارید؟{' '}
+            <a href="/register" className="text-primary hover:underline">
+              ثبت‌نام کنید
+            </a> 
+          </p>
+        </div>
         </form>
       </motion.div>
     </main>

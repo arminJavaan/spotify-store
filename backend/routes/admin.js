@@ -9,6 +9,13 @@ const Product = require('../models/Product')
 const Order = require('../models/Order')
 const multer = require('multer')
 const path = require('path')
+const fs = require('fs')
+
+// مطمئن می‌شویم که پوشهٔ uploads وجود دارد
+const uploadsDir = path.join(__dirname, '../../frontend/uploads')
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true })
+}
 
 router.use(auth, requireRole('admin'))
 
@@ -26,7 +33,7 @@ router.get('/stats', async (req, res) => {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads'))
+    cb(null, uploadsDir)
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname)
@@ -64,6 +71,7 @@ router.post('/products', upload.single('banner'), async (req, res) => {
       return res.status(400).json({ msg: 'لطفاً همه فیلدها را تکمیل کنید.' })
     if (!req.file) return res.status(400).json({ msg: 'لطفاً یک تصویر بنر آپلود کنید.' })
 
+    // مسیر نسبت به فولدر استاتیک
     const bannerUrl = `/uploads/${req.file.filename}`
     const newProduct = new Product({
       name: name.trim(),
@@ -111,7 +119,8 @@ router.delete('/products/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
     if (!product) return res.status(404).json({ msg: 'محصول یافت نشد' })
-    await product.remove()
+    // حذف سند با متد deleteOne
+    await product.deleteOne()
     return res.json({ msg: 'محصول حذف شد' })
   } catch (err) {
     console.error('Error in DELETE /admin/products/:id:', err)
@@ -155,7 +164,7 @@ router.delete('/users/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
     if (!user) return res.status(404).json({ msg: 'کاربر یافت نشد' })
-    await user.remove()
+    await user.deleteOne()
     return res.json({ msg: 'کاربر حذف شد' })
   } catch (err) {
     console.error(err)

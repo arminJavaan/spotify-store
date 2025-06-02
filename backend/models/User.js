@@ -3,6 +3,20 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 
+const CartItemSchema = new mongoose.Schema({
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: true
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 1,
+    default: 1
+  }
+})
+
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -34,23 +48,11 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  cart: [
-    {
-      product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true
-      },
-      quantity: {
-        type: Number,
-        required: true,
-        default: 1,
-        min: 1
-      }
-    }
-  ]
+  // اضافه: فیلد سبد خرید
+  cart: [CartItemSchema]
 })
 
+// Hash password before saving
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next()
   try {
@@ -62,6 +64,7 @@ UserSchema.pre('save', async function (next) {
   }
 })
 
+// Compare plaintext to hashed password
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password)
 }

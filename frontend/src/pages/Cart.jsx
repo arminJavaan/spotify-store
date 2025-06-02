@@ -37,7 +37,7 @@ export default function Cart() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-dark2 px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-dark2 px-4 ">
         <motion.p
           className="text-center text-gray-light text-lg mb-6 animate-fadeIn"
           initial={{ opacity: 0, y: 10 }}
@@ -60,7 +60,7 @@ export default function Cart() {
     return (
       <main className="bg-dark2 min-h-screen py-12 px-4">
         <motion.h2
-          className="text-3xl font-bold text-white mb-8 text-center"
+          className="text-3xl font-bold text-white mb-8 text-center mt-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -88,7 +88,7 @@ export default function Cart() {
   return (
     <main className="bg-dark2 min-h-screen py-12 px-4">
       <motion.h2
-        className="text-3xl font-bold text-white mb-8 text-center"
+        className="text-3xl font-bold text-white mb-8 text-center mt-12"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
