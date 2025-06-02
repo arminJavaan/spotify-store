@@ -30,7 +30,7 @@ import AdminUsers from "./pages/admin/UsersAdmin";
 import AdminDiscounts from "./pages/AdminDiscounts";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-
+import AdminDiscountsForm from "./pages/admin/AdminDiscountForm";
 
 
 function AppInner() {
@@ -127,6 +127,14 @@ function AppInner() {
             element={
               <AdminRoute>
                 <AdminDiscounts />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/discounts/add"
+            element={
+              <AdminRoute>
+                <AdminDiscountsForm />
               </AdminRoute>
             }
           />

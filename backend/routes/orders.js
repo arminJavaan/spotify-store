@@ -51,7 +51,7 @@ router.post("/", auth, async (req, res) => {
       }
 
       // تعیین نوع کد تخفیف و درصد یا وضعیت freeAccount
-      let percentage = 0;
+      let percentage = dc.percentage || 0;
       let freeAccount = false;
       if (dc.type === "personal") {
         percentage = 15;

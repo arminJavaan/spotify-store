@@ -12,6 +12,7 @@ import {
   FiRefreshCcw
 } from 'react-icons/fi'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 
 export default function AdminDiscounts() {
   const [discounts, setDiscounts] = useState([])
@@ -73,6 +74,8 @@ export default function AdminDiscounts() {
   // اعمال همهٔ فیلترها
   const filteredDiscounts = filterByEmail(filterByType(discounts))
 
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-dark2 text-gray-light">
@@ -131,6 +134,7 @@ export default function AdminDiscounts() {
           </div>
         </div>
         {/* دکمهٔ ریفرش */}
+        
         <div className="text-center">
           <button
             onClick={fetchDiscounts}
@@ -226,6 +230,15 @@ export default function AdminDiscounts() {
           </tbody>
         </table>
       </div>
+      {/* دکمه ساخت کد جدید */}  
+<div className="text-center mt-10">
+  <Link
+    to="/admin/discounts/add"
+    className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition"
+  >
+    + ساخت کد تخفیف جدید
+  </Link>
+</div>
     </main>
   )
 }

@@ -157,18 +157,19 @@ export default function Checkout() {
               <span>- {discountAmount.toLocaleString("fa-IR")} تومان</span>
             </div>
           )}
+          
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-lg font-semibold">مبلغ کل:</span>
+            <span className="text-lg font-bold">
+              {total.toLocaleString("fa-IR")} تومان
+            </span>
+          </div>
           <div className="flex justify-between items-center mt-4 border-t border-gray-med pt-4">
             <span className="text-lg font-semibold">مبلغ نهایی:</span>
             <span className="text-lg font-bold">
               {freeAccount
                 ? "رایگان"
                 : finalTotal.toLocaleString("fa-IR") + " تومان"}
-            </span>
-          </div>
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-lg font-semibold">مبلغ کل:</span>
-            <span className="text-lg font-bold">
-              {total.toLocaleString("fa-IR")} تومان
             </span>
           </div>
         </motion.div>

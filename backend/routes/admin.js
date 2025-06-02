@@ -255,6 +255,37 @@ router.put('/discounts/:code/deactivate', async (req, res) => {
   }
 })
 
+// @route   POST /api/admin/discounts
+// @desc    ساخت دستی کد تخفیف با درصد و توضیح دلخواه توسط ادمین
+// @access  Private, Admin
+router.post('/discounts', async (req, res) => {
+  const { code, percentage, description } = req.body;
+  if (!code || !percentage)
+    return res.status(400).json({ msg: 'لطفاً کد و درصد را وارد کنید' });
+
+  try {
+    const exists = await DiscountCode.findOne({ code });
+    if (exists) return res.status(400).json({ msg: 'کد تکراری است' });
+
+    const newCode = await DiscountCode.create({
+      code: code.trim().toUpperCase(),
+      owner: req.user.id,
+      uses: 0,
+      active: true,
+      generatedBySystem: false,
+      percentage,
+      description,
+      type: 'custom' // ← فقط به تفکیک گزارش‌گیری کمک می‌کنه
+    });
+
+    return res.status(201).json({ msg: 'کد تخفیف ساخته شد', discount: newCode });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ msg: 'خطا در ساخت کد تخفیف' });
+  }
+});
+
+
 // ============ پایان بخش مدیریت کدهای تخفیف ================
 
 

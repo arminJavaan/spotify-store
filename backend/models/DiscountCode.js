@@ -30,8 +30,16 @@ const DiscountCodeSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['personal', 'reward70', 'freeAccount'],
+      enum: ['personal', 'reward70', 'freeAccount', 'custom'],
       required: true
+    },
+    percentage: {
+      type: Number,
+      default: null
+    },
+    description: {
+      type: String,
+      default: ''
     }
   },
   { timestamps: true }
