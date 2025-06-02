@@ -10,6 +10,7 @@ const Order = require('../models/Order')
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
+const DiscountCode = require('../models/DiscountCode')
 
 // مطمئن می‌شویم که پوشهٔ uploads وجود دارد
 const uploadsDir = path.join(__dirname, '../../frontend/uploads')
@@ -203,5 +204,58 @@ router.put('/orders/:id/status', async (req, res) => {
     return res.status(500).json({ msg: 'خطا در به‌روزرسانی وضعیت سفارش' })
   }
 })
+
+
+// ============ بخش مدیریت کدهای تخفیف =================
+
+// @route   GET /api/admin/discounts
+// @desc    لیست همهٔ کدهای تخفیف (شخصی، ۷۰٪، اکانت رایگان)
+// @access  Private, Admin
+router.get('/discounts', async (req, res) => {
+  try {
+    const list = await DiscountCode.find()
+      .populate('owner', 'name email')
+      .sort({ createdAt: -1 })
+    return res.json(list)
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ msg: 'خطا در دریافت لیست کدهای تخفیف' })
+  }
+})
+
+// @route   PUT /api/admin/discounts/:code/activate
+// @desc    فعال‌سازی یک کدِ تخفیف
+// @access  Private, Admin
+router.put('/discounts/:code/activate', async (req, res) => {
+  try {
+    const dc = await DiscountCode.findOne({ code: req.params.code })
+    if (!dc) return res.status(404).json({ msg: 'کد پیدا نشد' })
+    dc.active = true
+    await dc.save()
+    return res.json({ msg: 'کد فعال شد', discount: dc })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ msg: 'خطا در فعال‌سازی کد' })
+  }
+})
+
+// @route   PUT /api/admin/discounts/:code/deactivate
+// @desc    غیرفعال‌سازی یک کدِ تخفیف
+// @access  Private, Admin
+router.put('/discounts/:code/deactivate', async (req, res) => {
+  try {
+    const dc = await DiscountCode.findOne({ code: req.params.code })
+    if (!dc) return res.status(404).json({ msg: 'کد پیدا نشد' })
+    dc.active = false
+    await dc.save()
+    return res.json({ msg: 'کد غیرفعال شد', discount: dc })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ msg: 'خطا در غیرفعال‌سازی کد' })
+  }
+})
+
+// ============ پایان بخش مدیریت کدهای تخفیف ================
+
 
 module.exports = router

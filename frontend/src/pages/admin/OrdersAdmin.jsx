@@ -8,7 +8,8 @@ import {
   FiXCircle,
   FiUser,
   FiMail,
-  FiDollarSign
+  FiDollarSign,
+  FiSearch
 } from 'react-icons/fi'
 
 export default function AdminOrders() {
@@ -16,6 +17,7 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [updatingOrderId, setUpdatingOrderId] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchOrders()
@@ -49,6 +51,11 @@ export default function AdminOrders() {
     }
   }
 
+  // فیلتر بر اساس اوردر آیدی
+  const filteredOrders = orders.filter(order =>
+    order._id.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full py-20">
@@ -67,20 +74,33 @@ export default function AdminOrders() {
 
   return (
     <div className="container mx-auto px-4 py-12 mt-12">
-      <h2 className="text-3xl font-bold text-primary mb-8 text-center animate-fadeIn">
+      <h2 className="text-3xl font-bold text-primary mb-4 text-center animate-fadeIn">
         مدیریت سفارش‌ها
       </h2>
 
-      {orders.length === 0 ? (
-        <p className="text-center text-gray2">هیچ سفارشی ثبت نشده است.</p>
+      {/* سرچ باکس */}
+      <div className="mb-6 flex justify-center">
+        <div className="relative w-full max-w-md">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="جستجو بر اساس اوردر آیدی..."
+            className="w-full px-4 py-2 pr-10 bg-dark2 text-gray2 border border-gray-med rounded-full focus:outline-none focus:border-primary transition"
+          />
+          <FiSearch className="absolute top-2.5 right-3 text-gray-med" />
+        </div>
+      </div>
+
+      {filteredOrders.length === 0 ? (
+        <p className="text-center text-gray2">هیچ سفارشی یافت نشد.</p>
       ) : (
         <div className="space-y-6">
-          {orders.map((order, idx) => {
+          {filteredOrders.map((order, idx) => {
             const isPending = order.status === 'pending'
             const isCompleted = order.status === 'completed'
             const isCancelled = order.status === 'cancelled'
 
-            // اگر کاربر مربوط به سفارش حذف شده باشد، از optional chaining استفاده می‌کنیم
             const userName = order.user?.name || 'کاربر حذف‌شده'
             const userEmail = order.user?.email || '—'
 

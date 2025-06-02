@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 
 export default function Home() {
   return (
-    <main className="bg-dark2 text-gray-light">
+    <main className=" text-gray-light">
       <section className="relative overflow-hidden h-screen flex items-center bg-dark2">
         <div className="absolute inset-0 pointer-events-none">
           <motion.div
@@ -119,7 +119,7 @@ export default function Home() {
         </motion.div>
       </section>
 
-      <section className="bg-dark2 py-20 px-6">
+      <section className=" py-20 px-6">
         <div className="container mx-auto text-center mb-12">
           <motion.h2
             className="text-3xl md:text-4xl font-bold text-gray-light mb-4"

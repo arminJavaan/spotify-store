@@ -30,7 +30,7 @@ export default function Login() {
   }
 
   return (
-    <main className="bg-dark2 text-gray-light flex items-center justify-center min-h-screen px-6">
+    <main className=" text-gray-light flex items-center justify-center min-h-screen px-6">
       <motion.div
         className="w-full max-w-md bg-dark1 rounded-2xl shadow-lg p-8 space-y-6 animate-fadeInUp"
         initial={{ opacity: 0, y: 40 }}

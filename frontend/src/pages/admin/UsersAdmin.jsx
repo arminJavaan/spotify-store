@@ -89,7 +89,7 @@ export default function AdminUsers() {
             return (
               <div
                 key={_id}
-                className="bg-dark1 p-6 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center animate-slideIn"
+                className="p-6 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center animate-slideIn"
               >
                 <div className="mb-4 md:mb-0">
                   <div className="flex items-center mb-1">

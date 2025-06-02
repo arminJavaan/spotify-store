@@ -35,7 +35,7 @@ export default function Orders() {
   }
 
   return (
-    <main className="bg-dark2 text-gray-light py-20 px-4 min-h-screen">
+    <main className=" text-gray-light py-20 px-4 min-h-screen">
       <motion.h2
         className="text-3xl font-bold text-primary mb-8 text-center"
         initial={{ opacity: 0, y: 20 }}

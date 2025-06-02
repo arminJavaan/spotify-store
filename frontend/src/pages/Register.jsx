@@ -37,7 +37,17 @@ export default function Register() {
   }
 
   return (
-    <main className="bg-dark2 text-gray-light flex items-center justify-center min-h-screen px-4">
+        <main className="relative min-h-screen bg-dark2 text-gray-light mt-12 overflow-hidden">
+          {/* Full-screen pulsating gradient background */}
+          <motion.div
+            className="absolute inset-0 pointer-events-none overflow-hidden"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+          >
+            <div className="absolute top-[-30%] left-[-30%] w-[160%] h-[160%] bg-gradient-to-br from-primary to-cyan-600 opacity-10 rounded-full filter blur-3xl" />
+          </motion.div>
+    
+    <main className=" text-gray-light flex items-center justify-center min-h-screen px-4">
       <motion.div
         className="w-full max-w-md bg-dark1 rounded-2xl shadow-lg p-8 space-y-6 animate-fadeInUp"
         initial={{ opacity: 0, y: 20 }}
@@ -104,6 +114,7 @@ export default function Register() {
         </div>
         </form>
       </motion.div>
+      </main>
     </main>
   )
 }

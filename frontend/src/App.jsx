@@ -1,42 +1,53 @@
 // frontend/src/App.jsx
 
-import React, { useContext } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { AuthProvider, AuthContext } from './contexts/AuthContext'
-import CartProvider from './contexts/CartContext'
-import SpotifyLoading from './components/SpotifyLoading'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
-import Home from './pages/Home'
-import Products from './pages/Products'
-import Cart from './pages/Cart'
-import Checkout from './pages/Checkout'
-import Orders from './pages/Orders'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import UserDashboard from './pages/UserDashboard'
-import AdminRoute from './components/AdminRoute'
-import PrivateRoute from './components/PrivateRoute'
-import AdminDashboard from './pages/admin/Dashboard'
-import AdminProducts from './pages/admin/ProductsAdmin'
-import AdminOrders from './pages/admin/OrdersAdmin'
-import AdminUsers from './pages/admin/UsersAdmin'
+import React, { useContext } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, AuthContext } from "./contexts/AuthContext";
+import CartProvider from "./contexts/CartContext";
+import SpotifyLoading from "./components/SpotifyLoading";
+import BackgroundAnimation from "./components/BackgroundAnimation";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import Home from "./pages/Home";
+import Products from "./pages/Products";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Orders from "./pages/Orders";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import UserDashboard from "./pages/UserDashboard";
+import AdminRoute from "./components/AdminRoute";
+import PrivateRoute from "./components/PrivateRoute";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminProducts from "./pages/admin/ProductsAdmin";
+import AdminOrders from "./pages/admin/OrdersAdmin";
+import AdminUsers from "./pages/admin/UsersAdmin";
+import AdminDiscounts from "./pages/AdminDiscounts";
 
 function AppInner() {
-  const { loading } = useContext(AuthContext)
+  const { user, loading } = useContext(AuthContext);
 
   if (loading) {
-    return <SpotifyLoading />
+    return <SpotifyLoading />;
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="relative flex flex-col min-h-screen">
+      <BackgroundAnimation />
+
       <Navbar />
-      <main className="flex-grow">
+
+      <main className="flex-grow relative z-10">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
           <Route path="/cart" element={<Cart />} />
+
           <Route
             path="/checkout"
             element={
@@ -53,8 +64,17 @@ function AppInner() {
               </PrivateRoute>
             }
           />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+
+          {/* اگر کاربر لاگین کرده باشد، دسترسی به /login و /register مسدود می‌شود */}
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/dashboard" /> : <Login />}
+          />
+          <Route
+            path="/register"
+            element={user ? <Navigate to="/dashboard" /> : <Register />}
+          />
+
           <Route
             path="/dashboard"
             element={
@@ -97,7 +117,16 @@ function AppInner() {
               </AdminRoute>
             }
           />
+          <Route
+            path="/admin/discounts"
+            element={
+              <AdminRoute>
+                <AdminDiscounts />
+              </AdminRoute>
+            }
+          />
 
+          {/* مسیر 404 */}
           <Route
             path="*"
             element={
@@ -108,9 +137,10 @@ function AppInner() {
           />
         </Routes>
       </main>
+
       <Footer />
     </div>
-  )
+  );
 }
 
 export default function App() {
@@ -122,5 +152,5 @@ export default function App() {
         </CartProvider>
       </AuthProvider>
     </Router>
-  )
+  );
 }
