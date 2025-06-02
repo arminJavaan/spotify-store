@@ -2,7 +2,15 @@
 
 import React, { useEffect, useState } from 'react'
 import API from '../api'
-import { FiCheckCircle, FiXCircle, FiUser, FiTrash2, FiPercent, FiGift } from 'react-icons/fi'
+import {
+  FiCheckCircle,
+  FiXCircle,
+  FiUser,
+  FiPercent,
+  FiGift,
+  FiSearch,
+  FiRefreshCcw
+} from 'react-icons/fi'
 import { motion } from 'framer-motion'
 
 export default function AdminDiscounts() {
@@ -10,6 +18,10 @@ export default function AdminDiscounts() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [updating, setUpdating] = useState(null)
+
+  // States for filters
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterType, setFilterType] = useState('all')
 
   // واکشی همهٔ کدهای تخفیف
   const fetchDiscounts = async () => {
@@ -45,6 +57,22 @@ export default function AdminDiscounts() {
     }
   }
 
+  // فیلتر بر اساس نوع
+  const filterByType = (list) => {
+    if (filterType === 'all') return list
+    return list.filter(d => d.type === filterType)
+  }
+
+  // فیلتر بر اساس ایمیل
+  const filterByEmail = (list) => {
+    if (!searchTerm.trim()) return list
+    const term = searchTerm.toLowerCase()
+    return list.filter(d => d.owner?.email?.toLowerCase().includes(term))
+  }
+
+  // اعمال همهٔ فیلترها
+  const filteredDiscounts = filterByEmail(filterByType(discounts))
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-dark2 text-gray-light">
@@ -60,52 +88,130 @@ export default function AdminDiscounts() {
     )
   }
 
-  // دسته‌بندی کدها بر اساس نوع
-  const personalCodes = discounts.filter(d => d.type === 'personal')
-  const reward70Codes = discounts.filter(d => d.type === 'reward70')
-  const freeAccountCodes = discounts.filter(d => d.type === 'freeAccount')
+  return (
+    <main className=" text-gray-light py-16 px-4 min-h-screen mt-12">
+      <motion.h1
+        className="text-4xl font-extrabold text-center mb-8 text-primary"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        مدیریت کدهای تخفیف
+      </motion.h1>
 
-  const renderTable = (list, title) => (
-    <div className="mb-12">
-      <h2 className="text-2xl font-bold text-primary mb-4">{title}</h2>
-      {list.length === 0 ? (
-        <p className="text-gray-light">— هیچ کدی یافت نشد —</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full bg-dark1 rounded-lg shadow-lg">
-            <thead>
-              <tr className="text-gray-light border-b border-gray-med">
-                <th className="p-3 text-start">کد</th>
-                <th className="p-3 text-start">کاربر صاحب</th>
-                <th className="p-3 text-start">ایمیل کاربر</th>
-                <th className="p-3 text-start">تعداد استفاده</th>
-                <th className="p-3 text-center">فعّال؟</th>
-                <th className="p-3 text-center">اقدام</th>
+      {/* فیلترها */}
+      <div className="max-w-4xl mx-auto mb-6 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* انتخاب نوع */}
+          <div>
+            <label className="block text-gray-light mb-1">نوع کد:</label>
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="w-full px-5 py-3 bg-dark1 text-gray-light border border-gray-med rounded-lg focus:outline-none focus:border-primary"
+            >
+              <option value="all">همه</option>
+              <option value="personal">۱۵٪ (شخصی)</option>
+              <option value="reward70">۷۰٪ (جایزه)</option>
+              <option value="freeAccount">اکانت رایگان</option>
+            </select>
+          </div>
+
+          {/* جستجوی ایمیل */}
+          <div className="relative md:col-span-2">
+            <label className="block text-gray-light mb-1">جستجوی ایمیل:</label>
+            <FiSearch className="absolute left-4 top-3 text-gray-light" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="جستجوی ایمیل کاربر..."
+              className="w-full pl-12 pr-5 py-3 bg-dark1 border border-gray-med rounded-lg focus:outline-none focus:border-primary text-gray-light"
+            />
+          </div>
+        </div>
+        {/* دکمهٔ ریفرش */}
+        <div className="text-center">
+          <button
+            onClick={fetchDiscounts}
+            disabled={loading}
+            className="inline-flex items-center bg-primary hover:bg-opacity-90 text-dark2 font-semibold px-5 py-3 rounded-lg transition"
+          >
+            <FiRefreshCcw className="ml-2 text-xl" /> بروزرسانی لیست
+          </button>
+        </div>
+      </div>
+
+      {/* جدول کدها */}
+      <div className="overflow-x-auto max-w-6xl mx-auto">
+        <table className="w-full bg-dark1 rounded-lg shadow-lg">
+          <thead>
+            <tr className="text-gray-light border-b border-gray-med">
+              <th className="p-4 text-start">کد</th>
+              <th className="p-4 text-start">نوع</th>
+              <th className="p-4 text-start">کاربر صاحب</th>
+              <th className="p-4 text-start">ایمیل کاربر</th>
+              <th className="p-4 text-start">تعداد استفاده</th>
+              <th className="p-4 text-center">فعّال؟</th>
+              <th className="p-4 text-center">اقدام</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredDiscounts.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={7}
+                  className="p-6 text-center text-gray-light"
+                >
+                  «کدی مطابق فیلترها یافت نشد»
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {list.map((d) => (
+            ) : (
+              filteredDiscounts.map((d) => (
                 <tr key={d.code} className="hover:bg-dark2 transition">
-                  <td className="px-3 py-2 text-gray-light">{d.code}</td>
-                  <td className="px-3 py-2 text-gray-light">
-                    {d.owner ? d.owner.name : '— کاربر حذف‌شده'}
-                  </td>
-                  <td className="px-3 py-2 text-gray-light">
-                    {d.owner ? d.owner.email : '—'}
-                  </td>
-                  <td className="px-3 py-2 text-gray-light">{d.uses}</td>
-                  <td className="px-3 py-2 text-center">
-                    {d.active ? (
-                      <FiCheckCircle className="text-green-500 mx-auto" />
-                    ) : (
-                      <FiXCircle className="text-red-500 mx-auto" />
+                  <td className="px-4 py-3 text-gray-light">{d.code}</td>
+                  <td className="px-4 py-3 text-gray-light flex items-center space-x-3">
+                    {d.type === 'personal' && (
+                      <>
+                        <FiPercent className="text-yellow-400 text-lg" />
+                        <span className="whitespace-nowrap">۱۵٪ (شخصی)</span>
+                      </>
+                    )}
+                    {d.type === 'reward70' && (
+                      <>
+                        <FiGift className="text-green-400 text-lg" />
+                        <span className="whitespace-nowrap">۷۰٪ (جایزه)</span>
+                      </>
+                    )}
+                    {d.type === 'freeAccount' && (
+                      <>
+                        <FiGift className="text-blue-400 text-lg" />
+                        <span className="whitespace-nowrap">اکانت رایگان</span>
+                      </>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-center">
+                  <td className="px-4 py-3 text-gray-light flex items-center space-x-2">
+                    <FiUser className="text-primary text-lg" />
+                    <span className="truncate">
+                      {d.owner ? d.owner.name : '—'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-light truncate max-w-[150px]">
+                    {d.owner ? d.owner.email : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-light">{d.uses}</td>
+                  <td className="px-4 py-3 text-center">
+                    {d.active ? (
+                      <FiCheckCircle className="text-green-500 text-xl mx-auto" />
+                    ) : (
+                      <FiXCircle className="text-red-500 text-xl mx-auto" />
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => toggleActive(d.code, d.active)}
                       disabled={updating === d.code}
-                      className={`px-4 py-1 rounded-lg text-sm transition ${
+                      className={`px-5 py-2 rounded-lg text-base font-medium transition ${
                         d.active
                           ? 'bg-red-500 text-white hover:bg-red-600'
                           : 'bg-green-600 text-white hover:bg-green-700'
@@ -115,28 +221,10 @@ export default function AdminDiscounts() {
                     </button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  )
-
-  return (
-    <main className="bg-dark2 text-gray-light py-20 px-6 min-h-screen">
-      <motion.h1
-        className="text-3xl font-bold text-center mb-12 text-primary"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        مدیریت کدهای تخفیف
-      </motion.h1>
-      <div className="container mx-auto">
-        {renderTable(personalCodes, 'کدهای تخفیف ۱۵٪ (شخصی)')}
-        {renderTable(reward70Codes, 'کدهای تخفیف ۷۰٪ (جایزه)')}
-        {renderTable(freeAccountCodes, 'کدهای اکانت رایگان')}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </main>
   )

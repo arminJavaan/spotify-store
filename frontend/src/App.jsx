@@ -28,6 +28,10 @@ import AdminProducts from "./pages/admin/ProductsAdmin";
 import AdminOrders from "./pages/admin/OrdersAdmin";
 import AdminUsers from "./pages/admin/UsersAdmin";
 import AdminDiscounts from "./pages/AdminDiscounts";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+
+
 
 function AppInner() {
   const { user, loading } = useContext(AuthContext);
@@ -47,7 +51,8 @@ function AppInner() {
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
           <Route path="/cart" element={<Cart />} />
-
+          <Route path="/About" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
           <Route
             path="/checkout"
             element={

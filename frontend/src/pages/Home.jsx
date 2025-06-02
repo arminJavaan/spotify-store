@@ -195,7 +195,7 @@ export default function Home() {
       <section className="py-20 px-6">
         <div className="container mx-auto flex flex-col items-center bg-dark1 rounded-2xl p-12 shadow-xl">
           <motion.h2
-            className="text-3xl md:text-4xl font-bold text-gray-light mb-6"
+            className="text-3xl md:text-4xl font-bold text-gray-light mb-16"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -211,7 +211,7 @@ export default function Home() {
           >
             <Link
               to="/products"
-              className="bg-primary hover:bg-opacity-90 text-dark2 font-semibold py-4 px-10 rounded-lg shadow-lg transition-all"
+              className="bg-primary hover:bg-opacity-90 text-dark2 font-semibold py-4 px-10 rounded-lg shadow-lg transition-all "
             >
               خرید اکانت اسپاتیفای
             </Link>

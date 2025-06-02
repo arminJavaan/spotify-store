@@ -15,7 +15,7 @@ dotenv.config();
 // @access  Private
 router.post("/", auth, async (req, res) => {
   try {
-    const { paymentMethod, paymentDetails } = req.body;
+    const { paymentMethod, paymentDetails, discountCode } = req.body;
 
     // واکشی کاربر به همراه سبد خرید
     const user = await User.findById(req.user.id).populate("cart.product");
@@ -23,8 +23,8 @@ router.post("/", auth, async (req, res) => {
       return res.status(400).json({ msg: "سبد خرید شما خالی است" });
     }
 
-    // محاسبه مبلغ کل
-    const totalAmount = user.cart.reduce(
+    // محاسبه مبلغ کل (به تومان)
+    let totalAmount = user.cart.reduce(
       (sum, item) => sum + item.product.price * item.quantity,
       0
     );
@@ -36,7 +36,7 @@ router.post("/", auth, async (req, res) => {
       // جستجوی کد تخفیف و اعتبارسنجی
       const dc = await DiscountCode.findOne({
         code: discountCode,
-        active: true,
+        active: true
       });
       if (!dc) {
         return res
@@ -49,16 +49,42 @@ router.post("/", auth, async (req, res) => {
           .status(400)
           .json({ msg: "شما مجاز به استفاده از کد تخفیف خودتان نیستید" });
       }
-      // اعمال تخفیف ۱۵٪
-      appliedDiscount = Math.floor(totalAmount * 0.15);
-      totalAmount -= appliedDiscount;
+
+      // تعیین نوع کد تخفیف و درصد یا وضعیت freeAccount
+      let percentage = 0;
+      let freeAccount = false;
+      if (dc.type === "personal") {
+        percentage = 15;
+      } else if (dc.type === "reward70") {
+        percentage = 70;
+      } else if (dc.type === "freeAccount") {
+        freeAccount = true;
+      }
+
+      if (freeAccount) {
+        // اگر freeAccount باشد، کل مبلغ صفر می‌شود
+        appliedDiscount = totalAmount;
+        totalAmount = 0;
+
+        // freeAccount فقط یک بار مجاز است
+        dc.active = false;
+      } else {
+        // اگر درصدی باشد
+        appliedDiscount = Math.floor(totalAmount * (percentage / 100));
+        totalAmount -= appliedDiscount;
+
+        // اگر از نوع reward70 باشد، فقط یک بار مجاز است
+        if (dc.type === "reward70") {
+          dc.active = false;
+        }
+      }
 
       // افزایش شمارش تعداد استفاده
       dc.uses += 1;
       await dc.save();
 
-      // اگر اولین بار ۵ باشد → تولید خودکار کد تخفیف ۷۰٪ جدید برای صاحب آن
-      if (dc.uses === 5) {
+      // اگر از نوع personal بوده و تعداد استفاده به ۵ رسید → تولید خودکار کد reward70
+      if (dc.type === "personal" && dc.uses === 5) {
         const rewardCode = Math.random()
           .toString(36)
           .substr(2, 8)
@@ -69,11 +95,12 @@ router.post("/", auth, async (req, res) => {
           uses: 0,
           active: true,
           generatedBySystem: true,
-          type: "reward70",
+          type: "reward70"
         });
       }
-      // اگر اولین بار ۱۰ باشد → تولید خودکار کد ۲۴ رقمی اکانت رایگان برای صاحب آن
-      if (dc.uses === 10) {
+
+      // اگر از نوع personal بوده و تعداد استفاده به ۱۰ رسید → تولید خودکار کد freeAccount
+      if (dc.type === "personal" && dc.uses === 10) {
         const freeCode = Math.random().toString(36).substr(2, 24).toUpperCase();
         await DiscountCode.create({
           code: freeCode,
@@ -81,27 +108,28 @@ router.post("/", auth, async (req, res) => {
           uses: 0,
           active: true,
           generatedBySystem: true,
-          type: "freeAccount",
+          type: "freeAccount"
         });
-        // (در ادامه، ادمین این کد را در پنل خودش می‌بیند و تبدیل می‌کند به اکانت رایگان)
+        // (در ادامه، ادمین می‌تواند این کد را مشاهده و تبدیل به حساب رایگان کند)
       }
     }
+
     // ساخت اطلاعات سفارش
     const orderData = {
       user: req.user.id,
       items: user.cart.map((i) => ({
         product: i.product._id,
-        quantity: i.quantity,
+        quantity: i.quantity
       })),
       totalAmount,
       discountCode: discountCode || null,
       discountAmount: appliedDiscount,
       paymentMethod,
       paymentDetails,
-      status: "pending",
+      status: "pending"
     };
 
-    // اگر روش واتساپ باشد، لینک واتساپ را بساز
+    // اگر روش واتساپ باشد، لینک واتساپ را می‌سازیم
     if (paymentMethod === "whatsapp") {
       const whatsappNumber = process.env.WHATSAPP_NUMBER || "+989000000000";
       let text = `سلام! من می‌خوام این سفارش رو ثبت کنم:\n`;
@@ -120,7 +148,7 @@ router.post("/", auth, async (req, res) => {
     const newOrder = new Order(orderData);
     await newOrder.save();
 
-    // خالی کردن سبد پس از ثبت سفارش
+    // خالی کردن سبد خرید پس از ثبت سفارش
     user.cart = [];
     await user.save();
 
