@@ -1,14 +1,14 @@
 // backend/middleware/auth.js
 
-const jwt = require('jsonwebtoken')
-const User = require('../models/User')
-const dotenv = require('dotenv')
+import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
 dotenv.config()
 
-module.exports = async function (req, res, next) {
+const auth = async (req, res, next) => {
   const authHeader = req.header('Authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer '))
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ msg: 'توکن ارسالی اشتباه است یا ارسال نشده' })
+  }
 
   const token = authHeader.split(' ')[1]
   try {
@@ -16,7 +16,10 @@ module.exports = async function (req, res, next) {
     req.user = decoded.user
     next()
   } catch (err) {
-    console.error(err)
+    console.error('❌ JWT Verification Error:', err.message)
+    console.log("🧪 Token received:", authHeader);
     res.status(401).json({ msg: 'توکن معتبر نیست' })
   }
 }
+
+export default auth

@@ -1,5 +1,3 @@
-// frontend/src/contexts/AuthContext.jsx
-
 import React, { createContext, useState, useEffect } from 'react';
 import API from '../api';
 import { useNavigate } from 'react-router-dom';
@@ -33,21 +31,16 @@ export const AuthProvider = ({ children }) => {
 
   const register = async ({ name, email, password, phone }) => {
     try {
-      // ارسال درخواست ثبت‌نام
       const res = await API.post('/auth/register', { name, email, password, phone });
-      // دریافت توکن و کد تخفیف شخصی از سرور
       const { token, personalCode } = res.data;
       localStorage.setItem('token', token);
 
-      // حالا که توکن را داریم، اطلاعات /auth/me را بگیریم
       setLoading(true);
       const me = await API.get('/auth/me');
       setUser(me.data);
 
-      // بعد از ثبت‌نام، ریدایرکت می‌کنیم به داشبورد (یا هر صفحه‌ای که در نظر دارید)
       navigate('/dashboard');
 
-      // برگرداندن personalCode به کامپوننت ارسال‌کننده
       return personalCode;
     } catch (err) {
       console.error('Error in register():', err.response?.data || err.message);

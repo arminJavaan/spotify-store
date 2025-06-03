@@ -1,11 +1,11 @@
 // backend/routes/products.js
 
-const express = require('express')
-const router = express.Router()
-const { check, validationResult } = require('express-validator')
-const Product = require('../models/Product')
-const auth = require('../middleware/auth')
-const requireRole = require('../middleware/roles')
+import express from 'express';
+const router = express.Router();
+import { check, validationResult } from 'express-validator';
+import Product from '../models/Product.js';
+import auth from '../middleware/auth.js';
+import requireRole from '../middleware/roles.js';
 
 router.post(
   '/',
@@ -20,11 +20,11 @@ router.post(
     check('duration', 'مدت اشتراک الزامی‌ست').notEmpty()
   ],
   async (req, res) => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
     try {
-      const { name, bannerUrl, description, price, maxDevices, duration } = req.body
+      const { name, bannerUrl, description, price, maxDevices, duration } = req.body;
       const newProduct = new Product({
         name: name.trim(),
         bannerUrl: bannerUrl.trim(),
@@ -32,37 +32,37 @@ router.post(
         price: Number(price),
         maxDevices: Number(maxDevices),
         duration: duration.trim()
-      })
-      const saved = await newProduct.save()
-      return res.json(saved)
+      });
+      const saved = await newProduct.save();
+      return res.json(saved);
     } catch (err) {
-      console.error(err.message)
-      return res.status(500).json({ msg: 'خطای سرور' })
+      console.error(err.message);
+      return res.status(500).json({ msg: 'خطای سرور' });
     }
   }
-)
+);
 
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 })
-    return res.json(products)
+    const products = await Product.find().sort({ createdAt: -1 });
+    return res.json(products);
   } catch (err) {
-    console.error(err.message)
-    return res.status(500).json({ msg: 'خطای سرور' })
+    console.error(err.message);
+    return res.status(500).json({ msg: 'خطای سرور' });
   }
-})
+});
 
 router.get('/:id', async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
-    if (!product) return res.status(404).json({ msg: 'محصول یافت نشد' })
-    return res.json(product)
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ msg: 'محصول یافت نشد' });
+    return res.json(product);
   } catch (err) {
-    console.error(err.message)
-    if (err.kind === 'ObjectId') return res.status(404).json({ msg: 'محصول یافت نشد' })
-    return res.status(500).json({ msg: 'خطای سرور' })
+    console.error(err.message);
+    if (err.kind === 'ObjectId') return res.status(404).json({ msg: 'محصول یافت نشد' });
+    return res.status(500).json({ msg: 'خطای سرور' });
   }
-})
+});
 
 router.put(
   '/:id',
@@ -74,48 +74,48 @@ router.put(
     check('maxDevices', 'حداکثر دستگاه عدد باشد').optional().isInt({ min: 1 })
   ],
   async (req, res) => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
     try {
-      const updatedFields = {}
-      const fields = ['name', 'bannerUrl', 'description', 'price', 'maxDevices', 'duration']
+      const updatedFields = {};
+      const fields = ['name', 'bannerUrl', 'description', 'price', 'maxDevices', 'duration'];
       fields.forEach(f => {
         if (req.body[f] !== undefined) {
           if (f === 'price' || f === 'maxDevices') {
-            updatedFields[f] = Number(req.body[f])
+            updatedFields[f] = Number(req.body[f]);
           } else {
-            updatedFields[f] = req.body[f].trim ? req.body[f].trim() : req.body[f]
+            updatedFields[f] = req.body[f].trim ? req.body[f].trim() : req.body[f];
           }
         }
-      })
+      });
 
       const product = await Product.findByIdAndUpdate(
         req.params.id,
         { $set: updatedFields },
         { new: true }
-      )
-      if (!product) return res.status(404).json({ msg: 'محصول یافت نشد' })
-      return res.json(product)
+      );
+      if (!product) return res.status(404).json({ msg: 'محصول یافت نشد' });
+      return res.json(product);
     } catch (err) {
-      console.error(err.message)
-      if (err.kind === 'ObjectId') return res.status(404).json({ msg: 'محصول یافت نشد' })
-      return res.status(500).json({ msg: 'خطای سرور' })
+      console.error(err.message);
+      if (err.kind === 'ObjectId') return res.status(404).json({ msg: 'محصول یافت نشد' });
+      return res.status(500).json({ msg: 'خطای سرور' });
     }
   }
-)
+);
 
 router.delete('/:id', auth, requireRole('admin'), async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
-    if (!product) return res.status(404).json({ msg: 'محصول یافت نشد' })
-    await product.remove()
-    return res.json({ msg: 'محصول با موفقیت حذف شد' })
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ msg: 'محصول یافت نشد' });
+    await product.deleteOne();
+    return res.json({ msg: 'محصول با موفقیت حذف شد' });
   } catch (err) {
-    console.error(err.message)
-    if (err.kind === 'ObjectId') return res.status(404).json({ msg: 'محصول یافت نشد' })
-    return res.status(500).json({ msg: 'خطای سرور' })
+    console.error(err.message);
+    if (err.kind === 'ObjectId') return res.status(404).json({ msg: 'محصول یافت نشد' });
+    return res.status(500).json({ msg: 'خطای سرور' });
   }
-})
+});
 
-module.exports = router
+export default router;

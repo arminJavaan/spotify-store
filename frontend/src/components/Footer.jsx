@@ -11,7 +11,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 ">
         {/* لوگو و توضیح کوتاه */}
         <div className="space-y-3">
-          <h2 className="text-2xl font-bold text-primary">SpotifyStore</h2>
+          <h2 className="text-2xl font-bold text-primary">سپاتیفای</h2>
           <p className="text-sm text-gray-400">
             تجربه خرید آنلاین موسیقی و محصولات دیجیتال با نمایش ساده و کاربردی.
           </p>
@@ -97,9 +97,15 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mt-8 border-t border-gray-med pt-4 text-center text-xs text-gray-500">
-        &copy; {currentYear} SpotifyStore. تمامی حقوق محفوظ است.
+      <div className='mt-2 pt-4 border-t border-gray-med text-center text-xs text-gray-500'>
+        <p >
+         توسعه دهنده :<a href="https://www.arminjavan.site" className='text-primary'>   Armin Javan</a>
+        </p>
       </div>
+            <div className="mt-8 border-t border-gray-med pt-4 text-center text-xs text-gray-500">
+        &copy; {currentYear} سپاتیفای. تمامی حقوق محفوظ است.
+      </div>
+
     </footer>
   )
 }

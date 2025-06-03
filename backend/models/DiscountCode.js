@@ -1,7 +1,7 @@
 // backend/models/DiscountCode.js
 
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+import mongoose from 'mongoose';
+const Schema = mongoose.Schema;
 
 const DiscountCodeSchema = new mongoose.Schema(
   {
@@ -9,40 +9,45 @@ const DiscountCodeSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      trim: true
+      trim: true,
     },
     owner: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
+      ref: "User",
+      required: true,
     },
     uses: {
       type: Number,
-      default: 0
+      default: 0,
     },
     active: {
       type: Boolean,
-      default: true
+      default: true,
     },
     generatedBySystem: {
       type: Boolean,
-      default: false
+      default: false,
     },
     type: {
       type: String,
-      enum: ['personal', 'reward70', 'freeAccount', 'custom'],
-      required: true
+      enum: ["personal", "reward70", "freeAccount", "custom"],
+      required: true,
     },
     percentage: {
       type: Number,
-      default: null
+      default: null,
     },
     description: {
       type: String,
-      default: ''
+      default: "",
+    },
+    expiresAt: {
+      type: Date,
+      default: null,
     }
   },
   { timestamps: true }
-)
+);
 
-module.exports = mongoose.model('DiscountCode', DiscountCodeSchema)
+const DiscountCode = mongoose.model("DiscountCode", DiscountCodeSchema);
+export default DiscountCode;

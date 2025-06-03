@@ -1,8 +1,12 @@
 // backend/controllers/cryptoController.js
 
-const CoinbaseCommerce = require("coinbase-commerce-node");
-const { Charge } = CoinbaseCommerce;
-CoinbaseCommerce.Client.init(process.env.COINBASE_COMMERCE_API_KEY);
+import CoinbaseCommerce from 'coinbase-commerce-node';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const { Charge, Webhook, Client } = CoinbaseCommerce;
+Client.init(process.env.COINBASE_COMMERCE_API_KEY);
 
 /**
  * ایجاد یک 〈Charge〉 جدید برای پرداخت کاربر
@@ -12,7 +16,7 @@ CoinbaseCommerce.Client.init(process.env.COINBASE_COMMERCE_API_KEY);
  *   currency: "USD", // یا "EUR" و غیره
  * }
  */
-exports.createCharge = async (req, res) => {
+export const createCharge = async (req, res) => {
   try {
     const { orderId, amount, currency } = req.body;
 
@@ -32,7 +36,6 @@ exports.createCharge = async (req, res) => {
     };
 
     const charge = await Charge.create(chargeData);
-    // charge.hosted_url آدرسی است که کاربر را به صفحهٔ پرداخت Coinbase هدایت می‌کند
 
     return res.status(201).json({ hostedUrl: charge.hosted_url, chargeId: charge.id });
   } catch (error) {
@@ -44,13 +47,13 @@ exports.createCharge = async (req, res) => {
 /**
  * وب‌هوک برای دریافت وضعیت تراکنش
  */
-exports.handleWebhook = async (req, res) => {
+export const handleWebhook = async (req, res) => {
   const signature = req.headers['x-cc-webhook-signature'];
   const payload = req.body;
 
   let event;
   try {
-    event = CoinbaseCommerce.Webhook.verifyEventBody(
+    event = Webhook.verifyEventBody(
       JSON.stringify(payload),
       signature,
       process.env.COINBASE_COMMERCE_WEBHOOK_SECRET
@@ -60,7 +63,6 @@ exports.handleWebhook = async (req, res) => {
     return res.status(400).send('Webhook Error');
   }
 
-  // وقتی یک 〈charge:confirmed〉 یا 〈charge:completed〉 دریافت کردید
   if (event.type === 'charge:confirmed' || event.type === 'charge:completed') {
     const charge = event.data;
     const orderId = charge.metadata.orderId;

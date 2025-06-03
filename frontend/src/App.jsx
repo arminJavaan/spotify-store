@@ -31,7 +31,8 @@ import AdminDiscounts from "./pages/AdminDiscounts";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import AdminDiscountsForm from "./pages/admin/AdminDiscountForm";
-
+import VerifyEmail from "./pages/VerifyEmail";
+import Faq from "./pages/Faq";
 
 function AppInner() {
   const { user, loading } = useContext(AuthContext);
@@ -138,7 +139,8 @@ function AppInner() {
               </AdminRoute>
             }
           />
-
+<Route path="/verify-email/:token" element={<VerifyEmail />} />
+<Route path="/faq" element={<Faq />} />
           {/* مسیر 404 */}
           <Route
             path="*"

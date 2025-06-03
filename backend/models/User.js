@@ -1,72 +1,75 @@
 // backend/models/User.js
 
-const mongoose = require('mongoose')
-const bcrypt = require('bcryptjs')
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const CartItemSchema = new mongoose.Schema({
   product: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: true
+    ref: "Product",
+    required: true,
   },
   quantity: {
     type: Number,
     required: true,
     min: 1,
-    default: 1
-  }
-})
+    default: 1,
+  },
+});
 
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
     lowercase: true,
-    trim: true
+    trim: true,
   },
   password: {
     type: String,
-    required: true
+    required: true,
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user'
+    enum: ["user", "admin"],
+    default: "user",
   },
   phone: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   date: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
+  
+
   // اضافه: فیلد سبد خرید
-  cart: [CartItemSchema]
-})
+  cart: [CartItemSchema],
+});
 
 // Hash password before saving
-UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next()
+UserSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
   try {
-    const salt = await bcrypt.genSalt(10)
-    this.password = await bcrypt.hash(this.password, salt)
-    return next()
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    return next();
   } catch (err) {
-    return next(err)
+    return next(err);
   }
-})
+});
 
 // Compare plaintext to hashed password
 UserSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password)
-}
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
-module.exports = mongoose.model('User', UserSchema)
+const User = mongoose.model("User", UserSchema);
+export default User;

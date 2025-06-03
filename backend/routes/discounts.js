@@ -1,19 +1,20 @@
 // backend/routes/discounts.js
 
-const express = require("express");
+import express from 'express';
 const router = express.Router();
-const auth = require("../middleware/auth");
-const DiscountCode = require("../models/DiscountCode");
+
+import auth from '../middleware/auth.js';
+import DiscountCode from '../models/DiscountCode.js';
 
 // @route   GET /api/discounts/me
 // @desc    دریافت یا ایجاد خودکارِ کد تخفیفِ شخصی ۱۵٪ برای کاربر و برگرداندن آمارِ آن
 // @access  Private
-router.get("/me", auth, async (req, res) => {
+router.get('/me', auth, async (req, res) => {
   try {
     // 1) بررسی وجود کدِ شخصی برای کاربر
     let personal = await DiscountCode.findOne({
       owner: req.user.id,
-      type: "personal",
+      type: 'personal'
     });
 
     // 2) اگر وجود نداشت، اولین بار بسازیم:
@@ -25,7 +26,7 @@ router.get("/me", auth, async (req, res) => {
         uses: 0,
         active: true,
         generatedBySystem: true,
-        type: "personal",
+        type: 'personal'
       });
     }
 
@@ -41,13 +42,13 @@ router.get("/me", auth, async (req, res) => {
     // 6) آمار تعداد اکانت‌های رایگانِ استفاده‌شده توسط این کاربر
     const freeCount = await DiscountCode.countDocuments({
       owner: req.user.id,
-      type: "freeAccount",
+      type: 'freeAccount'
     });
 
     // 7) آمار تعداد کدهای reward70 که سیستم برای این کاربر تولید کرده
     const reward70Count = await DiscountCode.countDocuments({
       owner: req.user.id,
-      type: "reward70",
+      type: 'reward70'
     });
 
     // 8) در نهایت اطلاعات زیر را ارسال می‌کنیم:
@@ -57,18 +58,18 @@ router.get("/me", auth, async (req, res) => {
       nextReward70,
       nextFree,
       freeCount,
-      reward70Count,
+      reward70Count
     });
   } catch (err) {
-    console.error("Error in GET /discounts/me:", err);
-    return res.status(500).json({ msg: "خطا در دریافت اطلاعات کد تخفیف" });
+    console.error('Error in GET /discounts/me:', err);
+    return res.status(500).json({ msg: 'خطا در دریافت اطلاعات کد تخفیف' });
   }
 });
 
 // @route   GET /api/discounts/verify/:code
 // @desc    اعتبارسنجی یک کدِ تخفیف قبل از خرید (برای نمایش تخفیف روی UI)
 // @access  Private
-router.get("/verify/:code", auth, async (req, res) => {
+router.get('/verify/:code', auth, async (req, res) => {
   try {
     const { code } = req.params;
     const dc = await DiscountCode.findOne({ code, active: true });
@@ -76,36 +77,34 @@ router.get("/verify/:code", auth, async (req, res) => {
     if (!dc) {
       return res
         .status(404)
-        .json({ valid: false, msg: "کد معتبر نیست یا غیرفعال شده" });
+        .json({ valid: false, msg: 'کد معتبر نیست یا غیرفعال شده' });
     }
 
     if (dc.owner.toString() === req.user.id) {
-      return res
-        .status(400)
-        .json({
-          valid: false,
-          msg: "نمیتوانید از کد تخفیف خودتان استفاده کنید",
-        });
+      return res.status(400).json({
+        valid: false,
+        msg: 'نمیتوانید از کد تخفیف خودتان استفاده کنید'
+      });
     }
 
-    if (dc.type === "personal") {
+    if (dc.type === 'personal') {
       return res.json({ valid: true, percentage: 15 });
     }
-    if (dc.type === "reward70") {
+    if (dc.type === 'reward70') {
       return res.json({ valid: true, percentage: 70 });
     }
-    if (dc.type === "freeAccount") {
+    if (dc.type === 'freeAccount') {
       return res.json({ valid: true, percentage: 100, freeAccount: true });
     }
-    if (dc.type === "custom" && dc.percentage) {
+    if (dc.type === 'custom' && dc.percentage) {
       return res.json({ valid: true, percentage: dc.percentage });
     }
 
-    return res.status(400).json({ valid: false, msg: "کد غیرقابل قبول است" });
+    return res.status(400).json({ valid: false, msg: 'کد غیرقابل قبول است' });
   } catch (err) {
-    console.error("Error in GET /discounts/verify/:code:", err);
-    return res.status(500).json({ msg: "خطا در اعتبارسنجی کد" });
+    console.error('Error in GET /discounts/verify/:code:', err);
+    return res.status(500).json({ msg: 'خطا در اعتبارسنجی کد' });
   }
 });
 
-module.exports = router;
+export default router;

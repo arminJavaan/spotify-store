@@ -1,30 +1,32 @@
-import { useState } from 'react';
-import axios from 'axios';
-import { BadgePercent, Info } from 'lucide-react';
+import { useState } from "react";
+import axios from "axios";
+import { BadgePercent, Info } from "lucide-react";
 
 export default function AdminDiscountForm({ fetchDiscounts }) {
-  const [code, setCode] = useState('');
-  const [percentage, setPercentage] = useState('');
-  const [description, setDescription] = useState('');
+  const [code, setCode] = useState("");
+  const [percentage, setPercentage] = useState("");
+  const [description, setDescription] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleCreateDiscount = async () => {
     try {
-      if (!code || !percentage) return alert('لطفاً کد و درصد را وارد کنید');
+      if (!code || !percentage) return alert("لطفاً کد و درصد را وارد کنید");
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await axios.post(
-        '/api/admin/discounts',
-        { code, percentage, description },
+        "/api/admin/discounts",
+        { code, percentage, description, expiresAt },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert(res.data.msg);
-      setCode('');
-      setPercentage('');
-      setDescription('');
+      setCode("");
+      setPercentage("");
+      setDescription("");
+      setExpiresAt("");
       fetchDiscounts();
     } catch (err) {
-      alert(err?.response?.data?.msg || 'خطا در ساخت کد');
+      alert(err?.response?.data?.msg || "خطا در ساخت کد");
     } finally {
       setLoading(false);
     }
@@ -34,7 +36,9 @@ export default function AdminDiscountForm({ fetchDiscounts }) {
     <div className="bg-[#212121] p-6 rounded-2xl shadow-lg max-w-xl mx-auto mt-28">
       <div className="flex items-center gap-2 mb-4">
         <BadgePercent className="text-[#1db954]" />
-        <h2 className="text-white text-xl font-semibold">ایجاد کد تخفیف سفارشی</h2>
+        <h2 className="text-white text-xl font-semibold">
+          ایجاد کد تخفیف سفارشی
+        </h2>
       </div>
 
       <div className="space-y-4">
@@ -62,13 +66,33 @@ export default function AdminDiscountForm({ fetchDiscounts }) {
           />
         </div>
 
+        <div>
+          <label className="block text-sm text-gray-300 mb-1">توضیحات (اختیاری)</label>
+          <input
+            type="text"
+            className="w-full bg-[#121212] border border-[#333] text-white p-2 rounded focus:outline-none focus:border-[#1db954]"
+            placeholder="مثلاً: برای مشتریان وفادار"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm text-gray-300 mb-1">تاریخ انقضا</label>
+          <input
+            type="date"
+            className="w-full bg-[#121212] border border-[#333] text-white p-2 rounded focus:outline-none focus:border-[#1db954]"
+            value={expiresAt}
+            onChange={(e) => setExpiresAt(e.target.value)}
+          />
+        </div>
 
         <button
           disabled={loading}
           onClick={handleCreateDiscount}
           className="w-full bg-[#1db954] text-black font-bold py-2 rounded hover:bg-opacity-90 transition"
         >
-          {loading ? 'در حال ثبت...' : 'ایجاد کد تخفیف'}
+          {loading ? "در حال ثبت..." : "ایجاد کد تخفیف"}
         </button>
       </div>
     </div>

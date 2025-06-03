@@ -38,7 +38,7 @@ export default function Navbar() {
     return (
       <header className="fixed w-full top-0 z-50 bg-white bg-opacity-10 backdrop-blur-md shadow-md">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold text-primary">SpotifyStore</div>
+          <div className="text-2xl font-bold text-primary">سپاتیفای</div>
           <div className="text-gray-light">در حال بارگذاری...</div>
         </div>
       </header>
@@ -61,7 +61,7 @@ export default function Navbar() {
           to="/"
           className="text-2xl font-bold text-primary hover:text-primary-dark transition-colors duration-200 "
         >
-          SpotifyStore
+          سپاتیفای
         </Link>
 
         {/* Desktop Right Nav */}

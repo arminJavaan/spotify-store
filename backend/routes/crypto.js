@@ -1,9 +1,10 @@
 // backend/routes/crypto.js
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { createCharge, handleWebhook } = require('../controllers/cryptoController');
-const auth = require('../middleware/auth');
+
+import { createCharge, handleWebhook } from '../controllers/cryptoController.js';
+import auth from '../middleware/auth.js';
 
 // ایجاد یک 〈Charge〉 جدید
 router.post('/create-charge', auth, createCharge);
@@ -11,4 +12,4 @@ router.post('/create-charge', auth, createCharge);
 // وب‌هوک (نیازی به احراز هویت نیست)
 router.post('/webhook', express.json(), handleWebhook);
 
-module.exports = router;
+export default router;
