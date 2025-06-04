@@ -219,304 +219,276 @@ export default function UserDashboard() {
             </AnimatePresence>
           </motion.div>
 
-          {/* Wallet Info and Transactions */}
-          <motion.div
-            className="bg-dark1 p-5 rounded-2xl shadow-md"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h3 className="text-lg font-semibold text-gray-light flex items-center mb-3">
-              <FiDollarSign className="ml-2 text-primary" /> کیف پول من
-            </h3>
-            {walletLoading ? (
-              <p className="text-center text-gray-light">
-                در حال دریافت موجودی...
-              </p>
-            ) : wallet ? (
-              <>
-                <div className="text-sm text-gray-light space-y-3 mb-4">
-                  <p>
-                    💰 موجودی فعلی:{" "}
-                    <span className="text-primary font-bold">
-                      {wallet.balance.toLocaleString("fa-IR")} تومان
-                    </span>
-                  </p>
-                  <button
-                    onClick={() => navigate("/checkout?mode=wallet-topup")}
-                    className="bg-primary text-dark1 px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition"
-                  >
-                    شارژ کیف پول
-                  </button>
-                </div>
+          {/* Wallet */}
 
-                <div className="border-t border-gray-700 pt-3">
-                  <h4 className="text-sm font-bold text-gray-light mb-2">
-                    تراکنش‌های اخیر:
-                  </h4>
-                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                    {wallet.transactions && wallet.transactions.length > 0 ? (
-                      wallet.transactions
-                        .slice()
-                        .reverse()
-                        .map((tx, index) => (
-                          <div
-                            key={index}
-                            className={`p-3 rounded border ${
+        <motion.div
+          className="bg-gradient-to-br from-dark1 to-dark2 p-6 rounded-3xl shadow-xl border border-gray-700"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h3 className="text-xl font-extrabold text-gray-light flex items-center gap-2 mb-4">
+            <FiDollarSign className="text-primary" /> کیف پول من
+          </h3>
+          {walletLoading ? (
+            <p className="text-center text-gray-400 animate-pulse">در حال دریافت موجودی...</p>
+          ) : wallet ? (
+            <>
+              <div className="space-y-4 mb-6">
+                <p className="text-sm text-gray-light">
+                  💰 موجودی فعلی:
+                  <span className="text-primary font-bold ml-2">
+                    {wallet.balance.toLocaleString("fa-IR")} تومان
+                  </span>
+                </p>
+                <button
+                  onClick={() => navigate("/checkout?mode=wallet-topup")}
+                  className="w-full py-2 rounded-xl bg-primary text-dark1 font-bold hover:bg-opacity-90 transition duration-300"
+                >
+                  شارژ کیف پول
+                </button>
+              </div>
+
+              <div className="border-t border-gray-700 pt-4">
+                <h4 className="text-sm font-bold text-gray-light mb-3">
+                  تراکنش‌های اخیر:
+                </h4>
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-dark3">
+                  {wallet.transactions && wallet.transactions.length > 0 ? (
+                    wallet.transactions.map((tx, index) => (
+                      <div
+                        key={index}
+                        className={`p-3 rounded-xl text-sm text-gray-light border-l-4 shadow-md transition-all duration-300 ${
+                          tx.type === "increase"
+                            ? "border-green-400 bg-green-800/10"
+                            : tx.type === "decrease"
+                            ? "border-red-400 bg-red-800/10"
+                            : "border-yellow-400 bg-yellow-800/10"
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="font-mono text-xs text-gray-400">
+                            {new Date(tx.createdAt).toLocaleDateString("fa-IR")}
+                          </span>
+                          <span
+                            className={`font-bold ${
                               tx.type === "increase"
-                                ? "border-green-500 bg-green-900/10"
+                                ? "text-green-400"
                                 : tx.type === "decrease"
-                                ? "border-red-500 bg-red-900/10"
-                                : "border-yellow-500 bg-yellow-900/10"
-                            } text-sm text-gray-light`}
+                                ? "text-red-400"
+                                : "text-yellow-300"
+                            }`}
                           >
-                            <div className="flex justify-between">
-                              <span className="font-mono text-xs text-gray-400">
-                                {new Date(tx.createdAt).toLocaleDateString(
-                                  "fa-IR"
-                                )}
-                              </span>
-                              <span
-                                className={`font-bold ${
-                                  tx.type === "increase"
-                                    ? "text-green-400"
-                                    : tx.type === "decrease"
-                                    ? "text-red-400"
-                                    : "text-yellow-300"
-                                }`}
-                              >
-                                {tx.type === "increase"
-                                  ? "+"
-                                  : tx.type === "decrease"
-                                  ? "-"
-                                  : ""}{" "}
-                                {tx.amount.toLocaleString("fa-IR")} تومان
-                              </span>
-                            </div>
-                            <div className="text-xs mt-1 text-gray-300">
-                              {tx.description}
-                            </div>
-                          </div>
-                        ))
-                    ) : (
-                      <p className="text-gray-500 text-xs">
-                        تراکنشی ثبت نشده است.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <p className="text-red-500 text-sm">
-                خطا در دریافت اطلاعات کیف پول
-              </p>
-            )}
-          </motion.div>
-
-          {/* Discount */}
-          <motion.div
-            className="bg-dark1 p-5 rounded-2xl shadow-md"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h3 className="text-lg font-semibold text-gray-light flex items-center mb-3">
-              <FiPercent className="ml-2 text-primary" /> کدهای تخفیف
-            </h3>
-            {discountLoading ? (
-              <p className="text-center text-gray-light">در حال بارگذاری...</p>
-            ) : discountInfo && !discountInfo.error ? (
-              <div className="space-y-2 text-sm text-gray-light">
-                <div className="bg-dark2 p-3 rounded border border-gray-med">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-primary font-bold">کد شخصی:</span>
-                    <span className="font-mono">{discountInfo.code}</span>
-                  </div>
-                  <div className="text-xs flex justify-between">
-                    <span>تعداد استفاده: {discountInfo.uses}</span>
-                    {discountInfo.expiresAt && (
-                      <span className="flex items-center">
-                        <FiCalendar className="ml-1" />
-                        {new Date(discountInfo.expiresAt).toLocaleDateString(
-                          "fa-IR"
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="bg-dark2 p-3 rounded border border-gray-med">
-                  <div className="text-green-400 font-bold">
-                    کدهای ۷۰٪: {discountInfo.reward70Count}
-                  </div>
-                  <div>تا کد بعدی: {discountInfo.nextReward70}</div>
-                </div>
-
-                <div className="bg-dark2 p-3 rounded border border-gray-med">
-                  <div className="text-blue-400 font-bold">
-                    اکانت رایگان: {discountInfo.freeCount}
-                  </div>
-                  <div>تا بعدی: {discountInfo.nextFree}</div>
-                </div>
-
-                {/* نمایش لیست همه کدهای تولید شده */}
-                <div className="mt-4">
-                  <h4 className="font-bold text-primary mb-2 flex items-center">
-                    <FiCode className="ml-1" /> کدهای تولید شده برای شما
-                  </h4>
-                  <div className="max-h-52 overflow-y-auto space-y-2 pr-1">
-                    {discountInfo.codes?.length > 0 ? (
-                      discountInfo.codes.map((dc, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-dark2 p-2 rounded border border-gray-med text-xs flex flex-col"
-                        >
-                          <div className="flex justify-between">
-                            <span className="font-mono">{dc.code}</span>
-                            <span>
-                              {dc.type === "personal"
-                                ? "۱۵٪ شخصی"
-                                : dc.type === "reward70"
-                                ? "۷۰٪ جایزه"
-                                : dc.type === "freeAccount"
-                                ? "اکانت رایگان"
-                                : "کد سفارشی"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between mt-1 text-gray-400">
-                            <span>استفاده: {dc.uses}</span>
-                            {dc.expiresAt && (
-                              <span>
-                                انقضا:{" "}
-                                {new Date(dc.expiresAt).toLocaleDateString(
-                                  "fa-IR"
-                                )}
-                              </span>
-                            )}
-                          </div>
+                            {tx.type === "increase"
+                              ? "+"
+                              : tx.type === "decrease"
+                              ? "-"
+                              : ""} {tx.amount.toLocaleString("fa-IR")} تومان
+                          </span>
                         </div>
-                      ))
-                    ) : (
-                      <p className="text-gray-400 text-sm">کدی ثبت نشده است.</p>
-                    )}
-                  </div>
+                        <div className="text-xs mt-1 text-gray-300">
+                          {tx.description}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-xs text-center">
+                      تراکنشی ثبت نشده است.
+                    </p>
+                  )}
                 </div>
               </div>
-            ) : (
-              <p className="text-red-500">
-                {discountInfo?.error || "خطایی رخ داده است."}
-              </p>
-            )}
-          </motion.div>
-        </div>
+            </>
+          ) : (
+            <p className="text-red-500 text-sm">خطا در دریافت اطلاعات کیف پول</p>
+          )}
+        </motion.div>
+          {/* Discount */}
+        <motion.div
+          className="bg-gradient-to-br from-dark1 to-dark2 p-6 rounded-3xl shadow-xl border border-gray-700"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h3 className="text-xl font-extrabold text-gray-light flex items-center gap-2 mb-4">
+            <FiPercent className="text-primary" /> کدهای تخفیف
+          </h3>
+          {discountLoading ? (
+            <p className="text-center text-gray-400 animate-pulse">در حال بارگذاری...</p>
+          ) : discountInfo && !discountInfo.error ? (
+            <div className="space-y-4 text-sm text-gray-light">
+              <div className="bg-dark2 p-4 rounded-2xl border border-primary/30 shadow">
+                <div className="flex justify-between mb-2">
+                  <span className="text-primary font-bold">کد برای دوستان شما:</span>
+                  <span className="font-mono text-gray-100">{discountInfo.code}</span>
+                </div>
+                <div className="text-xs flex justify-between text-gray-400">
+                  <span>تعداد استفاده: {discountInfo.uses}</span>
+                  {discountInfo.expiresAt && (
+                    <span className="flex items-center">
+                      <FiCalendar className="ml-1" />
+                      {new Date(discountInfo.expiresAt).toLocaleDateString("fa-IR")}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-green-800/10 border border-green-500 p-3 rounded-xl">
+                  <p className="font-bold text-green-400 mb-1">کدهای ۷۰٪</p>
+                  <p className="text-xs text-gray-300">تعداد دریافتی: {discountInfo.reward70Count}</p>
+                  <p className="text-xs text-gray-400">تا کد بعدی: {discountInfo.nextReward70}</p>
+                </div>
+                <div className="bg-blue-800/10 border border-blue-500 p-3 rounded-xl">
+                  <p className="font-bold text-blue-400 mb-1">اکانت رایگان</p>
+                  <p className="text-xs text-gray-300">تعداد دریافتی: {discountInfo.freeCount}</p>
+                  <p className="text-xs text-gray-400">تا کد بعدی: {discountInfo.nextFree}</p>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <h4 className="font-bold text-primary mb-3 flex items-center">
+                  <FiCode className="ml-1" /> کدهای تولید شده برای شما
+                </h4>
+                <div className="max-h-52 overflow-y-auto pr-2 space-y-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-dark3">
+                  {discountInfo.codes?.length > 0 ? (
+                    discountInfo.codes.map((dc, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-dark2 p-3 rounded-xl border border-gray-700 text-xs text-gray-200 flex flex-col shadow"
+                      >
+                        <div className="flex justify-between mb-1">
+                          <span className="font-mono text-primary">{dc.code}</span>
+                          <span className="text-gray-400">
+                            {dc.type === "personal"
+                              ? "۱۵٪ دوستان"
+                              : dc.type === "reward70"
+                              ? "۷۰٪ جایزه"
+                              : dc.type === "freeAccount"
+                              ? "اکانت رایگان"
+                              : "کد سفارشی"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-gray-500">
+                          <span>استفاده: {dc.uses}</span>
+                          {dc.expiresAt && (
+                            <span>
+                              انقضا: {new Date(dc.expiresAt).toLocaleDateString("fa-IR")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-sm text-center">کدی ثبت نشده است.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-red-500 text-center">
+              {discountInfo?.error || "خطایی رخ داده است."}
+            </p>
+          )}
+        </motion.div>        </div>
 
         {/* سفارش‌ها */}
         <div className="lg:col-span-2">
-          <motion.section
-            className="bg-dark1 p-6 rounded-2xl shadow-lg"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h3 className="text-xl font-semibold text-gray-light mb-4 flex items-center">
-              <FiClock className="ml-2 text-primary text-lg" /> سفارش‌های من
-            </h3>
-            {ordersLoading ? (
-              <p className="text-gray-light text-center">در حال بارگذاری...</p>
-            ) : ordersError ? (
-              <p className="text-red-500 text-center">{ordersError}</p>
-            ) : orders.length === 0 ? (
-              <p className="text-center text-gray-light">
-                شما هنوز سفارشی ثبت نکرده‌اید.
-              </p>
-            ) : (
-              <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2">
-                {orders.map((order) => (
-                  <motion.div
-                    key={order._id}
-                    className="bg-dark2 p-5 rounded-lg shadow hover:shadow-xl transition"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-primary font-semibold">
-                        #{order._id.slice(-6)}
-                      </span>
-                      <span className="text-gray-med text-xs">
-                        {new Date(order.createdAt).toLocaleDateString("fa-IR")}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-light space-y-2">
-                      {order.items.map((item) => (
-                        <div
-                          key={item.product._id}
-                          className="flex justify-between"
-                        >
-                          <span>
-                            {item.product.name} × {item.quantity}
-                          </span>
-                          <span>
-                            {(
-                              item.product.price * item.quantity
-                            ).toLocaleString("fa-IR")}{" "}
-                            تومان
-                          </span>
-                        </div>
-                      ))}
-                      <div className="border-t border-gray-med pt-2 flex justify-between">
-                        <span>
-                          مبلغ کل: {order.totalAmount.toLocaleString("fa-IR")}{" "}
-                          تومان
+        <motion.section
+          className="bg-gradient-to-br from-dark1 to-dark2 p-6 rounded-3xl shadow-xl border border-gray-700"
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h3 className="text-xl font-extrabold text-gray-light mb-6 flex items-center gap-2">
+            <FiClock className="text-primary text-lg" /> سفارش‌های من
+          </h3>
+          {ordersLoading ? (
+            <p className="text-center text-gray-400 animate-pulse">در حال بارگذاری...</p>
+          ) : ordersError ? (
+            <p className="text-red-500 text-center">{ordersError}</p>
+          ) : orders.length === 0 ? (
+            <p className="text-center text-gray-400">شما هنوز سفارشی ثبت نکرده‌اید.</p>
+          ) : (
+            <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-dark3">
+              {orders.map((order) => (
+                <motion.div
+                  key={order._id}
+                  className="bg-dark2 p-5 rounded-2xl border border-gray-700 shadow-md hover:shadow-xl transition-all duration-300"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-primary font-bold text-sm font-mono">
+                      #{order._id.slice(-6)}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(order.createdAt).toLocaleDateString("fa-IR")}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-200 space-y-2">
+                    {order.items.map((item) => (
+                      <div key={item.product._id} className="flex justify-between text-sm">
+                        <span className="text-gray-300">
+                          {item.product.name} × {item.quantity}
                         </span>
-                        {order.discountAmount > 0 && (
-                          <span className="text-green-400">
-                            تخفیف:{" "}
-                            {order.discountAmount.toLocaleString("fa-IR")} تومان
-                          </span>
-                        )}
+                        <span className="text-gray-100">
+                          {(item.product.price * item.quantity).toLocaleString("fa-IR")} تومان
+                        </span>
                       </div>
-                      <div>
-                        روش پرداخت:{" "}
-                        {order.paymentMethod === "whatsapp"
-                          ? "واتساپ"
-                          : order.paymentMethod}
-                        {order.whatsappOrderUrl && (
-                          <a
-                            href={order.whatsappOrderUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block text-primary underline text-xs mt-1"
-                          >
-                            مشاهده در واتساپ
-                          </a>
-                        )}
-                        <p className="text-xs mt-1">
-                          وضعیت سفارش:{" "}
-                          <span
-                            className={
-                              order.status === "completed"
-                                ? "text-green-400"
-                                : order.status === "cancelled"
-                                ? "text-red-400"
-                                : "text-yellow-400"
-                            }
-                          >
-                            {order.status === "completed"
-                              ? "تکمیل شده"
-                              : order.status === "cancelled"
-                              ? "لغو شده"
-                              : "در انتظار"}
-                          </span>
-                        </p>
-                      </div>
+                    ))}
+                    <div className="border-t border-gray-700 pt-2 flex justify-between">
+                      <span className="text-sm">
+                        مبلغ کل:
+                        <span className="font-bold text-primary ml-1">
+                          {order.totalAmount.toLocaleString("fa-IR")} تومان
+                        </span>
+                      </span>
+                      {order.discountAmount > 0 && (
+                        <span className="text-green-400 text-sm">
+                          تخفیف: {order.discountAmount.toLocaleString("fa-IR")} تومان
+                        </span>
+                      )}
                     </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </motion.section>
-        </div>
+                    <div className="mt-1 text-xs text-gray-400">
+                      روش پرداخت: {order.paymentMethod === "whatsapp" ? "واتساپ" : order.paymentMethod}
+                      {order.whatsappOrderUrl && (
+                        <a
+                          href={order.whatsappOrderUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block text-primary underline text-xs mt-1"
+                        >
+                          مشاهده در واتساپ
+                        </a>
+                      )}
+                      <p className="text-xs mt-1">
+                        وضعیت سفارش:
+                        <span
+                          className={
+                            order.status === "completed"
+                              ? "text-green-400"
+                              : order.status === "cancelled"
+                              ? "text-red-400"
+                              : "text-yellow-400"
+                          }
+                        >
+                          {order.status === "completed"
+                            ? " تکمیل شده"
+                            : order.status === "cancelled"
+                            ? " لغو شده"
+                            : " در انتظار"}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.section>
+                </div>
       </div>
     </main>
   );

@@ -41,7 +41,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full py-20">
-        <p className="text-gray2 animate-fadeIn">در حال بارگذاری آمار...</p>
+        <p className="text-gray2 animate-pulse">در حال بارگذاری آمار...</p>
       </div>
     );
   }
@@ -55,88 +55,39 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 mt-12">
-      <h2 className="text-3xl font-bold text-primary mb-8 text-center animate-fadeIn">
-        داشبورد ادمین
+    <div className="container mx-auto px-4 py-16 mt-16">
+      <h2 className="text-3xl font-extrabold text-primary text-center mb-12 animate-fadeIn">
+        🛠️ داشبورد مدیریت سپاتیفای
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slideIn">
-        <Link
-          to="/admin/users"
-          className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
-        >
-          <FiUsers className="text-4xl text-primary mb-2" />
-          <span className="text-lg font-semibold text-gray2 mb-1">کاربران</span>
-          <span className="text-2xl font-bold text-gray2">
-            {stats.totalUsers}
-          </span>
-        </Link>
-
-        <Link
-          to="/admin/products"
-          className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
-        >
-          <FiPackage className="text-4xl text-primary mb-2" />
-          <span className="text-lg font-semibold text-gray2 mb-1">محصولات</span>
-          <span className="text-2xl font-bold text-gray2">
-            {stats.totalProducts}
-          </span>
-        </Link>
-
-        <Link
-          to="/admin/discounts"
-          className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
-        >
-          <FiPackage className="text-4xl text-primary mb-2" />
-          <span className="text-lg font-semibold text-gray2 mb-1">
-            مدیریت کد های تخفیف
-          </span>
-          <span className="text-2xl font-bold text-gray2">
-            {stats.totaldiscounts}
-          </span>
-        </Link>
-
-        <Link
-          to="/admin/orders"
-          className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
-        >
-          <FiShoppingCart className="text-4xl text-primary mb-2" />
-          <span className="text-lg font-semibold text-gray2 mb-1">سفارش‌ها</span>
-          <span className="text-2xl font-bold text-gray2">
-            {stats.totalOrders}
-          </span>
-        </Link>
-
-        <Link
-          to="/admin/wallets"
-          className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
-        >
-          <FiGift className="text-4xl text-primary mb-2" />
-          <span className="text-lg font-semibold text-gray2 mb-1">
-            کیف پول کاربران
-          </span>
-        </Link>
-
-        <Link
-          to="/admin/wallet-topups"
-          className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
-        >
-          <FiDollarSign className="text-4xl text-primary mb-2" />
-          <span className="text-lg font-semibold text-gray2 mb-1">
-            درخواست‌های شارژ کیف پول
-          </span>
-        </Link>
-
-        <Link
-          to="/"
-          className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
-        >
-          <FiHome className="text-4xl text-primary mb-2" />
-          <span className="text-lg font-semibold text-gray2">
-            بازگشت به سایت
-          </span>
-        </Link>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slideInUp">
+        <AdminCard to="/admin/users" icon={<FiUsers />} title="کاربران" value={stats.totalUsers} />
+        <AdminCard to="/admin/products" icon={<FiPackage />} title="محصولات" value={stats.totalProducts} />
+        <AdminCard to="/admin/discounts" icon={<FiGift />} title="کدهای تخفیف" value={stats.totaldiscounts} />
+        <AdminCard to="/admin/orders" icon={<FiShoppingCart />} title="سفارش‌ها" value={stats.totalOrders} />
+        <AdminCard to="/admin/wallets" icon={<FiDollarSign />} title="کیف پول کاربران" />
+        <AdminCard to="/admin/wallet-topups" icon={<FiDollarSign />} title="درخواست‌های شارژ کیف پول" />
+        <AdminCard to="/" icon={<FiHome />} title="بازگشت به سایت" />
       </div>
     </div>
   );
 }
+
+const AdminCard = ({ to, icon, title, value }) => {
+  return (
+    <Link
+      to={to}
+      className="bg-gradient-to-tr from-dark1 to-dark2 p-6 rounded-3xl shadow-xl hover:shadow-2xl border border-white/10 transition-all duration-300 group text-center"
+    >
+      <div className="text-4xl text-primary mb-4 group-hover:scale-110 transition-transform">
+        {icon}
+      </div>
+      <div className="text-lg font-bold text-gray-light mb-1">{title}</div>
+      {value !== undefined && (
+        <div className="text-2xl font-extrabold text-gray-light animate-fadeIn">
+          {value.toLocaleString("fa-IR")}
+        </div>
+      )}
+    </Link>
+  );
+};

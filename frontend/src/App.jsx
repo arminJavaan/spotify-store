@@ -35,6 +35,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import Faq from "./pages/Faq";
 import WalletManager from "./pages/admin/WalletManager";
 import WalletTopupRequests from "./pages/admin/WalletTopupRequest";
+import NotFound from "./pages/NotFound";
 
 
 function AppInner() {
@@ -73,6 +74,8 @@ function AppInner() {
               </PrivateRoute>
             }
           />
+
+<Route path="*" element={<NotFound />} />
 
           {/* اگر کاربر لاگین کرده باشد، دسترسی به /login و /register مسدود می‌شود */}
           <Route

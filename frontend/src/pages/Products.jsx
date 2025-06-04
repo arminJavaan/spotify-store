@@ -38,7 +38,6 @@ export default function Products() {
     fetchProducts()
   }, [])
 
-  // Filter products by searchTerm (case-insensitive)
   const filtered = useMemo(() => {
     if (!searchTerm.trim()) return products
     const term = searchTerm.trim().toLowerCase()
@@ -46,8 +45,8 @@ export default function Products() {
   }, [products, searchTerm])
 
   return (
-    <main className="relative min-h-screen bg-dark2 text-gray-light mt-12 overflow-hidden">
-      {/* Full-screen pulsating gradient background */}
+    <main className="relative min-h-screen bg-dark2 text-gray-light mt-12 overflow-hidden font-vazir">
+      {/* گرادینت چرخشی در پس‌زمینه */}
       <motion.div
         className="absolute inset-0 pointer-events-none overflow-hidden"
         animate={{ rotate: 360 }}
@@ -56,31 +55,31 @@ export default function Products() {
         <div className="absolute top-[-30%] left-[-30%] w-[160%] h-[160%] bg-gradient-to-br from-primary to-cyan-600 opacity-10 rounded-full filter blur-3xl" />
       </motion.div>
 
-      <div className="relative z-10 container mx-auto px-6 py-12">
-        {/* Page Title */}
+      <div className="relative z-10 container mx-auto px-6 py-16">
+        {/* عنوان صفحه */}
         <motion.h2
-          className="text-4xl font-extrabold text-center mb-8"
+          className="text-4xl font-extrabold text-center mb-12 text-primary"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          لیست محصولات
+          🎧 لیست پلن های اسپاتیفای
         </motion.h2>
 
-        {/* Search Bar */}
+        {/* سرچ‌بار فانتزی */}
         <motion.div
-          className="max-w-md mx-auto mb-12"
+          className="max-w-md mx-auto mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
-          <div className="flex items-center bg-dark1 rounded-full shadow-lg overflow-hidden">
+          <div className="flex items-center bg-dark1 rounded-full shadow-xl ring-1 ring-white/10 overflow-hidden">
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="جستجو بر اساس نام محصول..."
-              className="w-full px-4 py-2 bg-transparent text-gray-light placeholder-gray-med focus:outline-none"
+              placeholder="جستجوی پلن اسپاتیفای..."
+              className="w-full px-5 py-3 bg-transparent text-sm sm:text-base text-gray-light placeholder-gray-med focus:outline-none"
             />
             <svg
               className="w-6 h-6 text-gray-med mr-4"
@@ -98,12 +97,12 @@ export default function Products() {
           </div>
         </motion.div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* گرید محصولات */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {filtered.map((prod, idx) => (
             <motion.div
               key={prod._id}
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 0, y: 60 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1, duration: 0.6 }}
@@ -113,12 +112,12 @@ export default function Products() {
           ))}
           {filtered.length === 0 && (
             <motion.p
-              className="col-span-full text-center text-gray-med mt-12"
+              className="col-span-full text-center text-gray-med mt-16 text-lg"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.6 }}
             >
-              محصولی با این نام یافت نشد.
+              😕 محصولی با این نام یافت نشد.
             </motion.p>
           )}
         </div>

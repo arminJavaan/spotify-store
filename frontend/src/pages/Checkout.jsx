@@ -163,179 +163,203 @@ export default function Checkout() {
   };
 
   return (
-    <main className="text-gray-light py-20 px-6 min-h-screen mt-12">
-      <motion.h2
-        className="text-3xl font-bold text-primary mb-8 text-center"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
+    <main className="text-gray-light py-20 px-6 min-h-screen mt-12 font-vazir">
+  <motion.h2
+    className="text-3xl font-extrabold text-primary mb-10 text-center"
+    initial={{ opacity: 0, y: 30 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+  >
+    {isTopup ? "شارژ کیف پول" : "اطلاعات سفارش و پرداخت"}
+  </motion.h2>
+
+  {/* Progress bar */}
+  <div className="w-full max-w-3xl mx-auto mb-14">
+    <div className="w-full bg-dark2 h-2.5 rounded-full overflow-hidden">
+      <motion.div
+        className="bg-primary h-full rounded-full"
+        initial={{ width: "0%" }}
+        animate={{ width: "100%" }}
+        transition={{ duration: 1 }}
+      />
+    </div>
+    <p className="text-center text-sm text-gray-med mt-2">مرحله ۲ از ۲: پرداخت</p>
+  </div>
+
+  <div className="max-w-3xl mx-auto space-y-10">
+    {/* سفارش */}
+    {!isTopup && (
+      <motion.div
+        className="bg-dark1/90 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl"
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
       >
-        {isTopup ? "شارژ کیف پول" : "اطلاعات سفارش و پرداخت"}
-      </motion.h2>
+        <h3 className="text-xl font-bold text-white mb-4">🧾 خلاصه سفارش</h3>
+        <div className="space-y-2 text-sm text-gray-light">
+          {cart.map((item) => (
+            <div key={item.product._id} className="flex justify-between">
+              <span>{item.product.name} × {item.quantity}</span>
+              <span>{(item.product.price * item.quantity).toLocaleString("fa-IR")} تومان</span>
+            </div>
+          ))}
+          {discountPercentage > 0 && (
+            <div className="flex justify-between mt-3 text-green-400 font-bold">
+              <span>تخفیف ({discountPercentage}%):</span>
+              <span>- {discountAmount.toLocaleString("fa-IR")} تومان</span>
+            </div>
+          )}
+          <div className="flex justify-between items-center mt-4 border-t border-gray-700 pt-3">
+            <span className="text-base font-semibold">💳 مبلغ نهایی:</span>
+            <span className="text-lg font-bold text-primary">
+              {freeAccount ? "رایگان" : `${finalTotal.toLocaleString("fa-IR")} تومان`}
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    )}
 
-      <ProgressBar />
+    {/* فرم تخفیف + پرداخت */}
+    <motion.div
+      className="bg-dark1/90 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl space-y-6"
+      initial={{ opacity: 0, x: 30 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      {/* کد تخفیف */}
+      {!isTopup && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-light">🎁 کد تخفیف:</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value)}
+              placeholder="مثلاً: VIP2025"
+              className="flex-1 px-4 py-2 bg-dark2 text-white border border-gray-600 rounded focus:outline-none focus:border-primary"
+            />
+            <button
+              onClick={applyDiscount}
+              className="bg-primary text-dark1 px-4 py-2 rounded-lg font-bold hover:bg-opacity-90 transition "
+            >
+              اعمال
+            </button>
+          </div>
+          {discountError && <p className="text-red-500 text-sm">{discountError}</p>}
+        </div>
+      )}
 
-      <div className="max-w-3xl mx-auto space-y-8">
-        {!isTopup && (
+      {/* روش پرداخت */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-light">💼 روش پرداخت:</label>
+        <select
+          value={method}
+          onChange={(e) => setMethod(e.target.value)}
+          className="w-full px-4 py-2 bg-dark2 text-white border border-gray-600 rounded focus:outline-none focus:border-primary text-sm"
+        >
+          <option value="shaparak">درگاه اینترنتی (شاپرک)</option>
+          <option value="card-to-card">کارت به کارت</option>
+          {!isTopup && (
+            <>
+              <option value="crypto">پرداخت ارز دیجیتال</option>
+              <option value="wallet">پرداخت با کیف پول</option>
+              <option value="whatsapp">سفارش از طریق واتساپ</option>
+            </>
+          )}
+        </select>
+      </div>
+
+      {/* حالت کیف پول */}
+      <AnimatePresence>
+        {method === "wallet" && walletBalance !== null && (
           <motion.div
-            className="bg-dark1 p-6 rounded-2xl shadow-xl"
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
+            className="bg-dark2 p-4 rounded text-sm text-gray-light space-y-2 border border-gray-600"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
           >
-            <h3 className="text-xl font-semibold text-gray-light mb-4">خلاصهٔ سفارش</h3>
-            {cart.map((item) => (
-              <div key={item.product._id} className="flex justify-between mb-2 text-gray-light">
-                <span>{item.product.name} × {item.quantity}</span>
-                <span>{(item.product.price * item.quantity).toLocaleString("fa-IR")} تومان</span>
-              </div>
-            ))}
-            {discountPercentage > 0 && (
-              <div className="flex justify-between mt-3 text-green-400">
-                <span>تخفیف ({discountPercentage}%):</span>
-                <span>- {discountAmount.toLocaleString("fa-IR")} تومان</span>
-              </div>
-            )}
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-lg font-semibold">مبلغ نهایی:</span>
-              <span className="text-lg font-bold text-primary">
-                {freeAccount ? "رایگان" : `${finalTotal.toLocaleString("fa-IR")} تومان`}
-              </span>
+            <p>💰 موجودی فعلی: {walletBalance.toLocaleString("fa-IR")} تومان</p>
+            <p>
+              {walletBalance >= finalTotal
+                ? `✅ موجودی بعد از خرید: ${(walletBalance - finalTotal).toLocaleString("fa-IR")} تومان`
+                : "❌ موجودی برای این خرید کافی نیست"}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* حالت کارت به کارت */}
+      <AnimatePresence>
+        {method === "card-to-card" && (
+          <motion.div
+            className="bg-dark2 p-4 rounded space-y-4 text-sm border border-gray-600"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <p>🔢 شماره کارت: <span className="text-primary font-bold">8163-7075-8610-6219</span></p>
+            <p>🏦 بانک: سامان</p>
+            <p>👤 به نام: کیارش آتشی</p>
+            <p>پس از واریز، فیش را ارسال کنید:</p>
+            <div className="flex flex-col gap-2">
+              <a
+                href={`https://wa.me/989158184550?text=${generateMessage(userEmail, amount || finalTotal)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-green-500 text-white text-center py-2 rounded hover:bg-green-600 transition"
+              >
+                ارسال فیش در واتساپ
+              </a>
+              <a
+                href={`https://t.me/sepotifyadmin/url?url=&text=${generateMessage(userEmail, amount || finalTotal)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-blue-500 text-white text-center py-2 rounded hover:bg-blue-600 transition"
+              >
+                ارسال فیش در تلگرام
+              </a>
             </div>
           </motion.div>
         )}
+      </AnimatePresence>
 
-        <motion.div
-          className="bg-dark1 p-6 rounded-2xl shadow-xl space-y-6"
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          {!isTopup && (
-            <div className="space-y-2">
-              <label className="text-sm text-gray-light">کد تخفیف:</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
-                  placeholder="مثال: ABCD1234"
-                  className="flex-1 px-4 py-2 bg-dark2 text-gray-light border border-gray-med rounded focus:outline-none focus:border-primary"
-                />
-                <button
-                  onClick={applyDiscount}
-                  className="bg-primary text-dark2 px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition"
-                >
-                  اعمال
-                </button>
-              </div>
-              {discountError && <p className="text-red-500 text-sm">{discountError}</p>}
-            </div>
-          )}
+      {/* ارور کلی */}
+      {error && <p className="text-red-500 text-center text-sm">{error}</p>}
 
-          <div>
-            <label className="text-sm text-gray-light mb-2 block">روش پرداخت:</label>
-            <select
-              value={method}
-              onChange={(e) => setMethod(e.target.value)}
-              className="w-full px-4 py-2 bg-dark2 text-gray-light border border-gray-med rounded focus:outline-none focus:border-primary"
-            >
-              <option value="shaparak">درگاه اینترنتی (شاپرک)</option>
-              <option value="card-to-card">کارت به کارت</option>
-              {!isTopup && <>
-                <option value="crypto">پرداخت ارز دیجیتال</option>
-                <option value="wallet">پرداخت با کیف پول</option>
-                <option value="whatsapp">سفارش از طریق واتساپ</option>
-              </>}
-            </select>
-          </div>
+      {/* دکمه اصلی */}
+      {isTopup ? (
+        <div className="space-y-4">
+          <label className="text-sm text-gray-light">مبلغ شارژ (تومان):</label>
+          <input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            type="number"
+            placeholder="مثلاً 50000"
+            className="w-full px-4 py-2 bg-dark2 text-gray-light border border-gray-600 rounded"
+          />
+          <button
+            onClick={submitTopup}
+            className="w-full bg-primary text-dark2 font-semibold py-3 rounded-lg hover:bg-opacity-90 transition"
+          >
+            ادامه و پرداخت
+          </button>
+        </div>
+      ) : (
+        <div className="text-center space-y-4">
+          {freeAccount && <p className="text-green-500 font-semibold">این سفارش به صورت رایگان پردازش خواهد شد 🎁</p>}
+          <button
+            onClick={submitOrder}
+            disabled={loading}
+            className="w-full bg-primary text-dark2 font-semibold py-3 rounded-lg hover:bg-opacity-90 transition"
+          >
+            {loading ? "در حال پردازش..." : "ثبت سفارش نهایی"}
+          </button>
+        </div>
+      )}
+    </motion.div>
+  </div>
+</main>
 
-          <AnimatePresence>
-            {method === "wallet" && walletBalance !== null && (
-              <motion.div
-                className="bg-dark2 p-4 rounded text-sm text-gray-light space-y-2 border border-gray-med"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4 }}
-              >
-                <p>💰 موجودی فعلی کیف پول: {walletBalance.toLocaleString("fa-IR")} تومان</p>
-                <p>
-                  {walletBalance >= finalTotal
-                    ? `✅ پس از این خرید، موجودی شما: ${(walletBalance - finalTotal).toLocaleString("fa-IR")} تومان`
-                    : "❌ موجودی شما برای این خرید کافی نیست."}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence>
-            {method === "card-to-card" && (
-              <motion.div
-                className="bg-dark2 p-4 rounded space-y-4 text-sm border border-gray-med"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <p>🔢 شماره کارت: <span className="text-primary font-bold">8163-7075-8610-6219</span></p>
-                <p>🏦 بانک: سامان</p>
-                <p>👤 به نام: کیارش آتشی</p>
-                <p>لطفاً پس از کارت به کارت، فیش واریزی را ارسال کنید:</p>
-                <div className="flex flex-col gap-2">
-                  <a
-                    href={`https://wa.me/989158184550?text=${generateMessage(userEmail, amount || finalTotal)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-green-500 text-white text-center py-2 rounded hover:bg-green-600 transition"
-                  >
-                    ارسال فیش در واتساپ
-                  </a>
-                  <a
-                    href={`https://t.me/sepotifyadmin/url?url=&text=${generateMessage(userEmail, amount || finalTotal)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-blue-500 text-white text-center py-2 rounded hover:bg-blue-600 transition"
-                  >
-                    ارسال فیش در تلگرام
-                  </a>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {error && <p className="text-red-500 text-center text-sm">{error}</p>}
-
-          {isTopup ? (
-            <div className="space-y-4">
-              <label className="text-sm text-gray-light">مبلغ شارژ (تومان):</label>
-              <input
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                type="number"
-                placeholder="مثلاً 50000"
-                className="w-full px-4 py-2 bg-dark2 text-gray-light border border-gray-med rounded"
-              />
-              <button
-                onClick={submitTopup}
-                className="w-full bg-primary text-dark2 font-semibold py-3 rounded-lg hover:bg-opacity-90 transition"
-              >
-                ادامه و پرداخت
-              </button>
-            </div>
-          ) : (
-            <div className="text-center space-y-4">
-              {freeAccount && <p className="text-green-500 font-semibold">این سفارش به صورت رایگان پردازش خواهد شد 🎁</p>}
-              <button
-                onClick={submitOrder}
-                disabled={loading}
-                className="w-full bg-primary text-dark2 font-semibold py-3 rounded-lg hover:bg-opacity-90 transition"
-              >
-                {loading ? "در حال پردازش..." : "ثبت سفارش نهایی"}
-              </button>
-            </div>
-          )}
-        </motion.div>
-      </div>
-    </main>
   );
 }

@@ -1,84 +1,67 @@
-// frontend/src/components/SpotifyLoading.jsx
+// frontend/src/components/Loading.jsx
 
 import React from "react";
 import { motion } from "framer-motion";
+import { FaSpotify } from "react-icons/fa";
 
-export default function SpotifyLoading() {
-  const barVariants = {
-    animate: {
-      scaleY: [1, 2.5, 1],
-      transition: {
-        duration: 1,
-        ease: "easeInOut",
-        repeat: Infinity,
-      },
-    },
-  };
-
-  const textVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        ease: "easeInOut",
-        repeat: Infinity,
-        repeatType: "reverse",
-      },
-    },
-  };
-
+export default function Loading() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#191414]">
-      {/* Animated Bars */}
-      <div className="flex space-x-2 mb-6">
-        <motion.div
-          className="w-2 h-8 bg-[#1DB954] rounded"
-          variants={barVariants}
-          animate="animate"
-          style={{ originY: 1 }}
-          transition={{ delay: 0 }}
-        />
-        <motion.div
-          className="w-2 h-8 bg-[#1DB954] rounded"
-          variants={barVariants}
-          animate="animate"
-          style={{ originY: 1 }}
-          transition={{ delay: 0.15 }}
-        />
-        <motion.div
-          className="w-2 h-8 bg-[#1DB954] rounded"
-          variants={barVariants}
-          animate="animate"
-          style={{ originY: 1 }}
-          transition={{ delay: 0.3 }}
-        />
-        <motion.div
-          className="w-2 h-8 bg-[#1DB954] rounded"
-          variants={barVariants}
-          animate="animate"
-          style={{ originY: 1 }}
-          transition={{ delay: 0.45 }}
-        />
-        <motion.div
-          className="w-2 h-8 bg-[#1DB954] rounded"
-          variants={barVariants}
-          animate="animate"
-          style={{ originY: 1 }}
-          transition={{ delay: 0.6 }}
-        />
-      </div>
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-black via-dark2 to-dark1 text-center text-gray-light font-vazir">
+      
+      {/* لوگو Spotify */}
+      <motion.div
+        className="bg-primary p-6 rounded-full shadow-lg animate-pulse mb-6"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+      >
+        <FaSpotify className="text-dark2 text-5xl" />
+      </motion.div>
 
-      {/* Animated Site Name */}
-      <motion.h1
-        className="text-2xl font-extrabold text-[#1DB954] tracking-wider"
-        initial="hidden"
-        animate="visible"
-        variants={textVariants}
+      {/* نوشته سپاتیفای */}
+      <motion.h2
+        className="text-2xl sm:text-3xl font-extrabold text-primary tracking-wider mb-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.6 }}
       >
         سپاتیفای
-      </motion.h1>
+      </motion.h2>
+
+      {/* انیمیشن موزیک پلیر */}
+      <motion.div
+        className="flex items-end justify-center gap-2 h-20"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          visible: {
+            transition: {
+              staggerChildren: 0.2,
+              repeat: Infinity,
+              repeatType: "loop",
+            },
+          },
+        }}
+      >
+        {[1, 2, 3, 4, 5].map((_, i) => (
+          <motion.div
+            key={i}
+            className="w-2 sm:w-3 rounded bg-primary"
+            variants={{
+              hidden: { height: 5 },
+              visible: {
+                height: [10, 35, 20, 45, 15][i],
+                transition: {
+                  yoyo: Infinity,
+                  duration: 0.6 + i * 0.1,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                },
+              },
+            }}
+          />
+        ))}
+      </motion.div>
     </div>
   );
 }
