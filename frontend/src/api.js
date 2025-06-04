@@ -17,4 +17,10 @@ API.interceptors.request.use((config) => {
   return config
 })
 
+export const fetchWallet = () => API.get('/wallet')
+export const chargeWallet = (amount) => API.post('/wallet/charge', { amount })
+export const adminAdjustWallet = (userId, amount, description) =>
+  API.post('/wallet/admin-adjust', { userId, amount, description })
+
+
 export default API

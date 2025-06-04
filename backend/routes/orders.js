@@ -9,13 +9,11 @@ import auth from '../middleware/auth.js';
 import requireRole from '../middleware/roles.js';
 import User from '../models/User.js';
 import Order from '../models/Order.js';
+import Wallet from '../models/Wallet.js';
 import DiscountCode from '../models/DiscountCode.js';
-import {sendOrderEmail} from '../utils/sendEmail.js';
+import { sendOrderEmail } from '../utils/sendEmail.js';
 import sendTelegramMessage from '../utils/telegram.js';
 
-// @route   POST /api/orders
-// @desc    ثبت سفارش جدید بر اساس سبد خرید کاربر
-// @access  Private
 router.post('/', auth, async (req, res) => {
   try {
     const { paymentMethod, paymentDetails, discountCode } = req.body;
@@ -33,32 +31,21 @@ router.post('/', auth, async (req, res) => {
     let appliedDiscount = 0;
 
     if (discountCode) {
-      const dc = await DiscountCode.findOne({
-        code: discountCode,
-        active: true
-      });
-      if (!dc)
-        return res
-          .status(404)
-          .json({ msg: 'کد تخفیف معتبر نیست یا غیرفعال شده' });
+      const dc = await DiscountCode.findOne({ code: discountCode, active: true });
+      if (!dc) return res.status(404).json({ msg: 'کد تخفیف معتبر نیست یا غیرفعال شده' });
 
       if (dc.owner?.toString() === req.user.id)
-        return res
-          .status(400)
-          .json({ msg: 'شما مجاز به استفاده از کد تخفیف خودتان نیستید' });
+        return res.status(400).json({ msg: 'شما مجاز به استفاده از کد تخفیف خودتان نیستید' });
 
       const usedBefore = await Order.findOne({
         user: req.user.id,
         discountCode: dc.code
       });
       if (usedBefore)
-        return res
-          .status(400)
-          .json({ msg: 'شما قبلاً از این کد استفاده کرده‌اید' });
+        return res.status(400).json({ msg: 'شما قبلاً از این کد استفاده کرده‌اید' });
 
-      if (dc.expiresAt && new Date() > dc.expiresAt) {
+      if (dc.expiresAt && new Date() > dc.expiresAt)
         return res.status(400).json({ msg: 'تاریخ انقضای کد تخفیف گذشته است' });
-      }
 
       let percentage = dc.percentage || 0;
       let freeAccount = false;
@@ -102,6 +89,21 @@ router.post('/', auth, async (req, res) => {
           type: 'freeAccount'
         });
       }
+    }
+
+    if (paymentMethod === 'wallet') {
+      const wallet = await Wallet.findOne({ user: req.user.id });
+      if (!wallet) return res.status(400).json({ msg: 'کیف پول شما یافت نشد' });
+      if (wallet.balance < totalAmount)
+        return res.status(400).json({ msg: 'موجودی کیف پول کافی نیست' });
+
+      wallet.balance -= totalAmount;
+      wallet.transactions.push({
+        type: 'purchase',
+        amount: totalAmount,
+        description: 'خرید از کیف پول'
+      });
+      await wallet.save();
     }
 
     const orderData = {
@@ -152,6 +154,7 @@ ${populatedOrder.items.map(item => `• ${item.product.name} × ${item.quantity}
 🕒 <b>تاریخ ثبت:</b> ${new Date().toLocaleString('fa-IR')}
     `);
 
+    // ✅ در پایان، سبد خرید کاربر خالی شود
     user.cart = [];
     await user.save();
 

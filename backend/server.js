@@ -5,6 +5,7 @@ import connectDB from './config/db.js'
 import cors from 'cors'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import walletRoutes from './routes/wallet.js'
 
 // لازم برای مسیر نسبی در ESM
 const __filename = fileURLToPath(import.meta.url)
@@ -35,6 +36,7 @@ app.use('/api/orders', orderRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/discounts', discountRoutes)
 // app.use('/api/crypto', cryptoRoutes)
+app.use('/api/wallet', walletRoutes)
 
 app.get('/', (req, res) => {
   res.send('Spotify Store API is running')

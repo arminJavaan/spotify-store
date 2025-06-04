@@ -33,6 +33,9 @@ import Contact from "./pages/Contact";
 import AdminDiscountsForm from "./pages/admin/AdminDiscountForm";
 import VerifyEmail from "./pages/VerifyEmail";
 import Faq from "./pages/Faq";
+import WalletManager from "./pages/admin/WalletManager";
+import WalletTopupRequests from "./pages/admin/WalletTopupRequest";
+
 
 function AppInner() {
   const { user, loading } = useContext(AuthContext);
@@ -139,8 +142,18 @@ function AppInner() {
               </AdminRoute>
             }
           />
-<Route path="/verify-email/:token" element={<VerifyEmail />} />
-<Route path="/faq" element={<Faq />} />
+          <Route
+            path="/admin/wallets"
+            element={
+              <AdminRoute>
+                {" "}
+                <WalletManager />{" "}
+              </AdminRoute>
+            }
+          />
+          <Route path="/admin/wallet-topups" element={ <AdminRoute> <WalletTopupRequests/> </AdminRoute>}/>
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/faq" element={<Faq />} />
           {/* مسیر 404 */}
           <Route
             path="*"

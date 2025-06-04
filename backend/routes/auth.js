@@ -9,6 +9,7 @@ dotenv.config();
 import auth from "../middleware/auth.js";
 import User from "../models/User.js";
 import DiscountCode from "../models/DiscountCode.js";
+import Wallet from "../models/Wallet.js";
 
 // @route   POST /api/auth/register
 // @desc    ثبت‌نام کاربر + تولید کد تخفیف + ارسال توکن برای ورود
@@ -41,6 +42,18 @@ router.post(
       });
 
       await user.save();
+        // ایجاد کیف پول
+      const wallet = new Wallet({
+        user: user._id,
+        balance: 0,
+        transactions: [],
+      });
+      await wallet.save();
+
+      // اتصال کیف پول به کاربر
+      user.wallet = wallet._id;
+      await user.save();
+
 
       const personalCode = Math.random().toString(36).substr(2, 8).toUpperCase();
       await DiscountCode.create({
@@ -63,6 +76,7 @@ router.post(
     }
   }
 );
+
 
 // @route   POST /api/auth/login
 // @desc    ورود کاربر

@@ -48,10 +48,15 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  
 
   // اضافه: فیلد سبد خرید
   cart: [CartItemSchema],
+
+  // اضافه: اتصال به کیف پول
+  wallet: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Wallet",
+  },
 });
 
 // Hash password before saving

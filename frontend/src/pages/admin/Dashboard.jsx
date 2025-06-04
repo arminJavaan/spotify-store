@@ -3,7 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../../api";
-import { FiPackage, FiUsers, FiShoppingCart, FiHome } from "react-icons/fi";
+import {
+  FiPackage,
+  FiUsers,
+  FiShoppingCart,
+  FiHome,
+  FiGift,
+  FiDollarSign,
+} from "react-icons/fi";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -11,7 +18,7 @@ export default function AdminDashboard() {
     totalProducts: 0,
     totalOrders: 0,
   });
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -75,12 +82,15 @@ export default function AdminDashboard() {
             {stats.totalProducts}
           </span>
         </Link>
+
         <Link
           to="/admin/discounts"
           className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
         >
           <FiPackage className="text-4xl text-primary mb-2" />
-          <span className="text-lg font-semibold text-gray2 mb-1">مدیریت کد های تخفیف</span>
+          <span className="text-lg font-semibold text-gray2 mb-1">
+            مدیریت کد های تخفیف
+          </span>
           <span className="text-2xl font-bold text-gray2">
             {stats.totaldiscounts}
           </span>
@@ -91,11 +101,29 @@ export default function AdminDashboard() {
           className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
         >
           <FiShoppingCart className="text-4xl text-primary mb-2" />
-          <span className="text-lg font-semibold text-gray2 mb-1">
-            سفارش‌ها
-          </span>
+          <span className="text-lg font-semibold text-gray2 mb-1">سفارش‌ها</span>
           <span className="text-2xl font-bold text-gray2">
             {stats.totalOrders}
+          </span>
+        </Link>
+
+        <Link
+          to="/admin/wallets"
+          className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
+        >
+          <FiGift className="text-4xl text-primary mb-2" />
+          <span className="text-lg font-semibold text-gray2 mb-1">
+            کیف پول کاربران
+          </span>
+        </Link>
+
+        <Link
+          to="/admin/wallet-topups"
+          className="bg-dark1 p-6 rounded-2xl shadow-lg hover:shadow-2xl transition flex flex-col items-center"
+        >
+          <FiDollarSign className="text-4xl text-primary mb-2" />
+          <span className="text-lg font-semibold text-gray2 mb-1">
+            درخواست‌های شارژ کیف پول
           </span>
         </Link>
 

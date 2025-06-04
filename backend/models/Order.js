@@ -42,7 +42,7 @@ const OrderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ["whatsapp", "shaparak", "crypto", "card-to-card", "other"],
+      enum: ["whatsapp", "shaparak", "crypto", "card-to-card", "wallet" , "other"],
     },
     paymentDetails: {
       type: Schema.Types.Mixed,
