@@ -22,7 +22,6 @@ export default function WalletTopupRequests() {
   };
 
   const handleAction = async (id, status) => {
-    
     try {
       await API.post("/wallet/admin-topup-action", { id, status });
       fetchRequests();
@@ -37,7 +36,9 @@ export default function WalletTopupRequests() {
 
   return (
     <main className="px-6 py-10 text-gray-light mt-16">
-      <h2 className="text-2xl font-bold text-primary mb-6">درخواست‌های شارژ کیف پول</h2>
+      <h2 className="text-2xl font-bold text-primary mb-6">
+        درخواست‌های شارژ کیف پول
+      </h2>
       {loading ? (
         <p>در حال بارگذاری...</p>
       ) : error ? (
@@ -56,18 +57,45 @@ export default function WalletTopupRequests() {
             >
               <div className="flex justify-between flex-wrap gap-2">
                 <div>
-                  <p><span className="font-bold">کاربر:</span> {r.user.name} ({r.user.email})</p>
-                  <p><span className="font-bold">مبلغ:</span> {r.amount.toLocaleString("fa-IR")} تومان</p>
-                  <p><span className="font-bold">روش:</span> {r.method}</p>
-                  <p><span className="font-bold">وضعیت:</span> <span className={
-                    r.status === "pending"
-                      ? "text-yellow-400"
-                      : r.status === "approved"
-                      ? "text-green-400"
-                      : "text-red-400"
-                  }>{r.status === "pending" ? "در انتظار" : r.status === "approved" ? "تأیید شده" : "رد شده"}</span></p>
-                  {r.adminNote && <p><span className="font-bold">یادداشت مدیر:</span> {r.adminNote}</p>}
-                  <p className="text-sm text-gray-400">درخواست: {format(r.createdAt)}</p>
+                  <p>
+                    <span className="font-bold">کاربر:</span>{" "}
+                    {r.user ? `${r.user.name} (${r.user.email})` : "نامشخص"}
+                  </p>
+
+                  <p>
+                    <span className="font-bold">مبلغ:</span>{" "}
+                    {r.amount.toLocaleString("fa-IR")} تومان
+                  </p>
+                  <p>
+                    <span className="font-bold">روش:</span> {r.method}
+                  </p>
+                  <p>
+                    <span className="font-bold">وضعیت:</span>{" "}
+                    <span
+                      className={
+                        r.status === "pending"
+                          ? "text-yellow-400"
+                          : r.status === "approved"
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }
+                    >
+                      {r.status === "pending"
+                        ? "در انتظار"
+                        : r.status === "approved"
+                        ? "تأیید شده"
+                        : "رد شده"}
+                    </span>
+                  </p>
+                  {r.adminNote && (
+                    <p>
+                      <span className="font-bold">یادداشت مدیر:</span>{" "}
+                      {r.adminNote}
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-400">
+                    درخواست: {format(r.createdAt)}
+                  </p>
                 </div>
                 {r.status === "pending" && (
                   <div className="flex gap-2">

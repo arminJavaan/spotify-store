@@ -277,8 +277,9 @@ export default function Checkout() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
               >
-                <p>🔢 شماره کارت: <span className="text-primary font-bold">6037-9975-XXXX-XXXX</span></p>
-                <p>🏦 بانک: ملت</p>
+                <p>🔢 شماره کارت: <span className="text-primary font-bold">8163-7075-8610-6219</span></p>
+                <p>🏦 بانک: سامان</p>
+                <p>👤 به نام: کیارش آتشی</p>
                 <p>لطفاً پس از کارت به کارت، فیش واریزی را ارسال کنید:</p>
                 <div className="flex flex-col gap-2">
                   <a

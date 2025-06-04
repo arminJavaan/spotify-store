@@ -1,7 +1,7 @@
 // frontend/src/components/Footer.jsx
 
 import React from 'react'
-import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from 'react-icons/fa'
+import { FaTwitter, FaInstagram, FaLinkedinIn, FaTelegram } from 'react-icons/fa'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -17,25 +17,29 @@ export default function Footer() {
           </p>
           <div className="flex space-x-3 mt-2 gap-12">
             <a
-              href="#"
+              href="https://t.me/SepotifyAdmin"
+              target="_blank"
               className="bg-primary p-2 rounded-md hover:bg-opacity-90 transition"
             >
-              <FaFacebookF className="text-sm" />
+              <FaTelegram className="text-sm" />
             </a>
             <a
-              href="#"
+              href="https://twitter.com/armin_np_"
+              target="_blank"
               className="bg-primary p-2 rounded-md hover:bg-opacity-90 transition "
             >
               <FaTwitter className="text-sm" />
             </a>
             <a
-              href="#"
+              href="https://www.instagram.com/armin_javaan/"
+              target="_blank"
               className="bg-primary p-2 rounded-md hover:bg-opacity-90 transition"
             >
               <FaInstagram className="text-sm" />
             </a>
             <a
-              href="#"
+              href="https://www.linkedin.com/in/armin-javan-b25a18334/"
+              target="_blank"
               className="bg-primary p-2 rounded-md hover:bg-opacity-90 transition"
             >
               <FaLinkedinIn className="text-sm" />

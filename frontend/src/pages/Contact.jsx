@@ -63,7 +63,7 @@ export default function Contact() {
           </div>
           <h3 className="text-xl font-semibold text-center mb-2">آدرس دفتر</h3>
           <p className="text-gray-light text-center">
-            خیابان انقلاب، پلاک ۱۲۳، تهران، ایران
+            مشهد - هاشمیه - برج آبان طبقه منفی 1
           </p>
         </motion.div>
 
@@ -78,7 +78,7 @@ export default function Contact() {
             <FiPhone className="text-xl" />
           </div>
           <h3 className="text-xl font-semibold text-center mb-2">تلفن تماس</h3>
-          <p className="text-gray-light text-center">+۹۸ ۲۱ ۱۲۳۴۵۶۷۸</p>
+          <p className="text-gray-light text-center">00989385000244</p>
         </motion.div>
 
         <motion.div
@@ -92,7 +92,7 @@ export default function Contact() {
             <FiMail className="text-xl" />
           </div>
           <h3 className="text-xl font-semibold text-center mb-2">ایمیل</h3>
-          <p className="text-gray-light text-center">support@spotifystore.ir</p>
+          <p className="text-gray-light text-center">sepotifys@gmail.com</p>
         </motion.div>
       </motion.section>
 
