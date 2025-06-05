@@ -37,7 +37,7 @@ export default function HeroSlider() {
   };
 
   return (
-    <section className="relative overflow-hidden min-h-[90vh] flex items-center bg-dark2">
+    <section className="relative overflow-hidden min-h-[100vh] flex items-center bg-dark2">
       {/* بک‌گراند چرخشی */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div

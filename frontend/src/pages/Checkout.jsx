@@ -103,7 +103,7 @@ export default function Checkout() {
           amount: +amount,
         });
         alert("درخواست شارژ کیف پول ثبت شد و پس از بررسی ادمین حساب شما شارژ می‌شود.");
-        navigate("/wallet");
+        navigate("/dashboard");
       }
     } catch (err) {
       const msg = err.response?.data?.msg || err.message;

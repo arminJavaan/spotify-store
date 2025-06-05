@@ -3,6 +3,7 @@
 import express from 'express';
 const router = express.Router();
 import { check, validationResult } from 'express-validator';
+import { v4 as uuidv4 } from 'uuid'; // ← برای ساخت productId یونیک
 import Product from '../models/Product.js';
 import auth from '../middleware/auth.js';
 import requireRole from '../middleware/roles.js';
@@ -25,7 +26,9 @@ router.post(
 
     try {
       const { name, bannerUrl, description, price, maxDevices, duration } = req.body;
+
       const newProduct = new Product({
+        productId: uuidv4(), // 👈 مقداردهی خودکار productId
         name: name.trim(),
         bannerUrl: bannerUrl.trim(),
         description: description.trim(),
@@ -33,10 +36,11 @@ router.post(
         maxDevices: Number(maxDevices),
         duration: duration.trim()
       });
+
       const saved = await newProduct.save();
       return res.json(saved);
     } catch (err) {
-      console.error(err.message);
+      console.error('Error in POST /admin/products:', err);
       return res.status(500).json({ msg: 'خطای سرور' });
     }
   }

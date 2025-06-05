@@ -10,6 +10,52 @@ import auth from "../middleware/auth.js";
 import User from "../models/User.js";
 import DiscountCode from "../models/DiscountCode.js";
 import Wallet from "../models/Wallet.js";
+import { sendSMSCode, verifySMSCode } from "../utils/sms.js";
+
+router.post("/send-code", async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ msg: "شماره موبایل الزامی است" });
+
+  try {
+    const result = await sendSMSCode(phone);
+    console.log("sendSMSCode result:", result); 
+    res.status(result.Success ? 200 : 400).json({ msg: result.Message });
+  } catch (err) {
+    console.error("❌ Error in /send-code:", err)
+    res.status(500).json({ msg: "خطا در ارسال پیامک" });
+  }
+});
+
+
+router.post("/verify-code", async (req, res) => {
+  const { phone, code } = req.body;
+  if (!phone || !code)
+    return res.status(400).json({ msg: "شماره و کد الزامی هستند" });
+
+  try {
+    const result = await verifySMSCode(phone, code);
+    if (!result.Success) {
+      return res.status(400).json({ msg: result.Message });
+    }
+
+    const user = await User.findOne({ phone });
+    if (!user) {
+      return res.status(404).json({ msg: "کاربر با این شماره پیدا نشد" });
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    const payload = { user: { id: user.id, role: user.role } };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    return res.json({ msg: "احراز هویت موفق", token });
+  } catch (err) {
+    console.error("Error in POST /verify-code:", err);
+    return res.status(500).json({ msg: "خطا در سرور" });
+  }
+});
+
 
 // @route   POST /api/auth/register
 // @desc    ثبت‌نام کاربر + تولید کد تخفیف + ارسال توکن برای ورود
@@ -42,7 +88,7 @@ router.post(
       });
 
       await user.save();
-        // ایجاد کیف پول
+      // ایجاد کیف پول
       const wallet = new Wallet({
         user: user._id,
         balance: 0,
@@ -54,8 +100,10 @@ router.post(
       user.wallet = wallet._id;
       await user.save();
 
-
-      const personalCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+      const personalCode = Math.random()
+        .toString(36)
+        .substr(2, 8)
+        .toUpperCase();
       await DiscountCode.create({
         code: personalCode,
         owner: user._id,
@@ -66,17 +114,21 @@ router.post(
       });
 
       const payload = { user: { id: user.id, role: user.role } };
-      jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" }, (err, token) => {
-        if (err) throw err;
-        return res.json({ token, personalCode });
-      });
+      jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" },
+        (err, token) => {
+          if (err) throw err;
+          return res.json({ token, personalCode });
+        }
+      );
     } catch (err) {
       console.error("Error in POST /auth/register:", err);
       return res.status(500).json({ msg: "خطا در سرور" });
     }
   }
 );
-
 
 // @route   POST /api/auth/login
 // @desc    ورود کاربر
@@ -101,6 +153,12 @@ router.post(
       const isMatch = await user.comparePassword(password);
       if (!isMatch)
         return res.status(400).json({ msg: "اطلاعات ورود نادرست است" });
+
+      if (!user.isVerified) {
+        return res
+          .status(403)
+          .json({ msg: "برای ورود ابتدا شماره خود را تأیید کنید." });
+      }
 
       const payload = { user: { id: user.id, role: user.role } };
       jwt.sign(

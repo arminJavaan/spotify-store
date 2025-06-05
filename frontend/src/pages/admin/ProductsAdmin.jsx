@@ -193,6 +193,7 @@ export default function AdminProducts() {
             rows="3"
             className="w-full col-span-1 md:col-span-2 px-4 py-3 bg-dark2 text-gray2 border border-gray1 rounded-lg focus:outline-none focus:border-primary transition resize-none"
           />
+          <p className='text-primary'>عکس محصول :</p>
           <input
             type="file"
             accept="image/*"

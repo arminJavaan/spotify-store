@@ -36,7 +36,7 @@ import Faq from "./pages/Faq";
 import WalletManager from "./pages/admin/WalletManager";
 import WalletTopupRequests from "./pages/admin/WalletTopupRequest";
 import NotFound from "./pages/NotFound";
-
+import VerifyPhone from "./pages/VerifyPhone";
 
 function AppInner() {
   const { user, loading } = useContext(AuthContext);
@@ -75,8 +75,9 @@ function AppInner() {
             }
           />
 
-<Route path="*" element={<NotFound />} />
+          <Route path="*" element={<NotFound />} />
 
+          <Route path="/verify-phone" element={<VerifyPhone />} />
           {/* اگر کاربر لاگین کرده باشد، دسترسی به /login و /register مسدود می‌شود */}
           <Route
             path="/login"
@@ -154,7 +155,15 @@ function AppInner() {
               </AdminRoute>
             }
           />
-          <Route path="/admin/wallet-topups" element={ <AdminRoute> <WalletTopupRequests/> </AdminRoute>}/>
+          <Route
+            path="/admin/wallet-topups"
+            element={
+              <AdminRoute>
+                {" "}
+                <WalletTopupRequests />{" "}
+              </AdminRoute>
+            }
+          />
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
           <Route path="/faq" element={<Faq />} />
           {/* مسیر 404 */}
