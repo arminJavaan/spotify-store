@@ -1,19 +1,16 @@
-import express from 'express';
+import express from "express";
 const router = express.Router();
 
-import auth from '../middleware/auth.js';
-import DiscountCode from '../models/DiscountCode.js';
+import auth from "../middleware/auth.js";
+import DiscountCode from "../models/DiscountCode.js";
 
-// @route   GET /api/discounts/me
-// @desc    دریافت یا ایجاد خودکارِ کد تخفیفِ شخصی ۱۵٪ برای کاربر و برگرداندن آمارِ آن
-// @access  Private
-router.get('/me', auth, async (req, res) => {
+// GET /api/discounts/me
+router.get("/me", auth, async (req, res) => {
   try {
     let personal = await DiscountCode.findOne({
       owner: req.user.id,
-      type: 'personal'
+      type: "personal",
     });
-
     if (!personal) {
       const newCode = Math.random().toString(36).substr(2, 8).toUpperCase();
       personal = await DiscountCode.create({
@@ -22,33 +19,31 @@ router.get('/me', auth, async (req, res) => {
         uses: 0,
         active: true,
         generatedBySystem: true,
-        type: 'personal'
+        type: "personal",
       });
     }
 
     const usedCount = personal.uses;
-    let nextReward70 = 5 - (usedCount % 5);
-    let nextFree = 10 - (usedCount % 10);
-
-    // اگر دقیقا به 5 یا 10 رسید، کد جدید بساز و ریست کن
+    const nextReward70 = 5 - (usedCount % 5);
+    const nextFree = 10 - (usedCount % 10);
     const now = new Date();
-    const fortyDaysLater = new Date(now.getTime() + 40 * 24 * 60 * 60 * 1000);
+    const expiry = new Date(now.getTime() + 40 * 24 * 60 * 60 * 1000);
 
     if (usedCount > 0 && usedCount % 5 === 0) {
-      const hasReward = await DiscountCode.findOne({
+      const recentReward = await DiscountCode.findOne({
         owner: req.user.id,
-        type: 'reward70',
-        createdAt: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) } // طی 1 روز گذشته
+        type: "reward70",
+        createdAt: { $gt: new Date(Date.now() - 86400000) },
       });
-      if (!hasReward) {
+      if (!recentReward) {
         await DiscountCode.create({
           code: Math.random().toString(36).substr(2, 8).toUpperCase(),
           owner: req.user.id,
           uses: 0,
           active: true,
           generatedBySystem: true,
-          type: 'reward70',
-          expiresAt: fortyDaysLater
+          type: "reward70",
+          expiresAt: expiry,
         });
         personal.uses = 0;
         await personal.save();
@@ -56,83 +51,95 @@ router.get('/me', auth, async (req, res) => {
     }
 
     if (usedCount > 0 && usedCount % 10 === 0) {
-      const hasFree = await DiscountCode.findOne({
+      const recentFree = await DiscountCode.findOne({
         owner: req.user.id,
-        type: 'freeAccount',
-        createdAt: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+        type: "freeAccount",
+        createdAt: { $gt: new Date(Date.now() - 86400000) },
       });
-      if (!hasFree) {
+      if (!recentFree) {
         await DiscountCode.create({
           code: Math.random().toString(36).substr(2, 8).toUpperCase(),
           owner: req.user.id,
           uses: 0,
           active: true,
           generatedBySystem: true,
-          type: 'freeAccount',
-          expiresAt: fortyDaysLater
+          type: "freeAccount",
+          expiresAt: expiry,
         });
         personal.uses = 0;
         await personal.save();
       }
     }
 
-    const codes = await DiscountCode.find({ owner: req.user.id }).sort({ createdAt: -1 });
+    const codes = await DiscountCode.find({ owner: req.user.id }).sort({
+      createdAt: -1,
+    });
+    const reward70Count = codes.filter((c) => c.type === "reward70").length;
+    const freeCount = codes.filter((c) => c.type === "freeAccount").length;
 
-    const reward70Count = codes.filter((c) => c.type === 'reward70').length;
-    const freeCount = codes.filter((c) => c.type === 'freeAccount').length;
-
-    return res.json({
+    res.json({
       code: personal.code,
       uses: personal.uses,
       nextReward70,
       nextFree,
       reward70Count,
       freeCount,
-      codes
+      codes,
     });
   } catch (err) {
-    console.error('Error in GET /discounts/me:', err);
-    return res.status(500).json({ msg: 'خطا در دریافت اطلاعات کد تخفیف' });
+    console.error("Error in /discounts/me:", err);
+    res.status(500).json({ msg: "خطا در دریافت اطلاعات کد تخفیف" });
   }
 });
 
-// @route   GET /api/discounts/verify/:code
-// @desc    اعتبارسنجی یک کدِ تخفیف قبل از خرید (برای نمایش تخفیف روی UI)
-// @access  Private
-router.get('/verify/:code', auth, async (req, res) => {
+// GET /api/discounts/verify/:code
+router.get("/verify/:code", auth, async (req, res) => {
   try {
-    const { code } = req.params;
-    const dc = await DiscountCode.findOne({ code, active: true });
+    const dc = await DiscountCode.findOne({
+      code: req.params.code,
+      active: true,
+    });
+    if (!dc)
+      return res
+        .status(404)
+        .json({ valid: false, msg: "کد معتبر نیست یا غیرفعال شده" });
 
-    if (!dc) {
-      return res.status(404).json({ valid: false, msg: 'کد معتبر نیست یا غیرفعال شده' });
+    if (
+      (dc.type === "reward70" || dc.type === "freeAccount") &&
+      dc.owner.toString() !== req.user.id
+    ) {
+      return res
+        .status(403)
+        .json({ valid: false, msg: "این کد فقط برای شما قابل استفاده است" });
     }
 
-    if (dc.type === 'reward70' || dc.type === 'freeAccount') {
-      if (dc.owner.toString() !== req.user.id) {
-        return res.status(400).json({
+    if (dc.type === "personal" && dc.owner.toString() === req.user.id) {
+      return res
+        .status(403)
+        .json({
           valid: false,
-          msg: 'این کد فقط توسط صاحب آن قابل استفاده است'
+          msg: "نمی‌توانید از کد تخفیف شخصی خودتان استفاده کنید",
         });
-      }
-    } else {
-      if (dc.owner.toString() === req.user.id && dc.type === 'personal') {
-        return res.status(400).json({
-          valid: false,
-          msg: 'نمیتوانید از کد تخفیف خودتان استفاده کنید'
-        });
-      }
     }
 
-    if (dc.type === 'personal') return res.json({ valid: true, percentage: 15 });
-    if (dc.type === 'reward70') return res.json({ valid: true, percentage: 70 });
-    if (dc.type === 'freeAccount') return res.json({ valid: true, percentage: 100, freeAccount: true });
-    if (dc.type === 'custom' && dc.percentage) return res.json({ valid: true, percentage: dc.percentage });
-
-    return res.status(400).json({ valid: false, msg: 'کد غیرقابل قبول است' });
+    res.json({
+      valid: true,
+      code: dc.code,
+      type: dc.type,
+      percentage:
+        dc.percentage ??
+        (dc.type === "personal"
+          ? 15
+          : dc.type === "reward70"
+            ? 70
+            : dc.type === "freeAccount"
+              ? 100
+              : 0),
+      freeAccount: dc.type === "freeAccount",
+    });
   } catch (err) {
-    console.error('Error in GET /discounts/verify/:code:', err);
-    return res.status(500).json({ msg: 'خطا در اعتبارسنجی کد' });
+    console.error("Error in /discounts/verify:", err);
+    res.status(500).json({ msg: "خطا در اعتبارسنجی کد" });
   }
 });
 

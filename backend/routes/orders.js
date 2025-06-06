@@ -13,6 +13,8 @@ import Wallet from "../models/Wallet.js";
 import DiscountCode from "../models/DiscountCode.js";
 import { sendOrderEmail } from "../utils/sendEmail.js";
 import sendTelegramMessage from "../utils/telegram.js";
+import { sendOrderReceiptEmail } from "../utils/sendEmail.js";
+
 
 router.post("/", auth, async (req, res) => {
   try {
@@ -31,65 +33,31 @@ router.post("/", auth, async (req, res) => {
     let appliedDiscount = 0;
 
     if (discountCode) {
-      const dc = await DiscountCode.findOne({
-        code: discountCode,
-        active: true,
-      });
+      const dc = await DiscountCode.findOne({ code: discountCode, active: true });
 
       if (!dc)
-        return res
-          .status(404)
-          .json({ msg: "کد تخفیف معتبر نیست یا غیرفعال شده" });
+        return res.status(404).json({ msg: "کد تخفیف معتبر نیست یا غیرفعال شده" });
 
-      //  فقط صاحب کد اجازه استفاده دارد
-      if (
-        (dc.type === "reward70" || dc.type === "freeAccount") &&
-        dc.owner?.toString() !== req.user.id
-      ) {
-        return res
-          .status(403)
-          .json({ msg: "این کد فقط توسط صاحب آن قابل استفاده است" });
+      if ((dc.type === "reward70" || dc.type === "freeAccount") && dc.owner?.toString() !== req.user.id) {
+        return res.status(403).json({ msg: "این کد فقط توسط صاحب آن قابل استفاده است" });
       }
 
-      //  محدودیت فقط روی دو محصول و فقط وقتی به تنهایی در سبد باشند
-      const validExclusiveIds = [
-        "683bb5d9bd6d9f451a5e1532",
-        "683c3043743bb8c0ca380977",
-      ];
-      const cartProductIds = user.cart.map((item) =>
-        item.product._id.toString()
-      );
+      const validExclusiveIds = ["683bb5d9bd6d9f451a5e1532", "683c3043743bb8c0ca380977"];
+      const cartProductIds = user.cart.map((item) => item.product._id.toString());
       const isSingleValidItem =
         cartProductIds.length === 1 &&
-        validExclusiveIds.includes(cartProductIds[0]);
+        validExclusiveIds.includes(cartProductIds[0]) &&
+        user.cart[0].quantity === 1;
 
-      if (
-        (dc.type === "reward70" || dc.type === "freeAccount") &&
-        !isSingleValidItem
-      ) {
+      if ((dc.type === "reward70" || dc.type === "freeAccount") && !isSingleValidItem) {
         return res.status(400).json({
-          msg: "این کد فقط برای اشتراک individual و family member است و فقط زمانی که به‌تنهایی در سبد خرید باشند قابل استفاده است",
+          msg: "این کد فقط برای اشتراک individual و family member است و فقط زمانی که یک عدد از آن به‌تنهایی در سبد خرید باشد قابل استفاده است",
         });
       }
 
-      if (!dc)
-        return res
-          .status(404)
-          .json({ msg: "کد تخفیف معتبر نیست یا غیرفعال شده" });
-
-      // if (dc.owner?.toString() === req.user.id)
-      //   return res
-      //     .status(400)
-      //     .json({ msg: "شما مجاز به استفاده از کد تخفیف خودتان نیستید" });
-
-      const usedBefore = await Order.findOne({
-        user: req.user.id,
-        discountCode: dc.code,
-      });
+      const usedBefore = await Order.findOne({ user: req.user.id, discountCode: dc.code });
       if (usedBefore)
-        return res
-          .status(400)
-          .json({ msg: "شما قبلاً از این کد استفاده کرده‌اید" });
+        return res.status(400).json({ msg: "شما قبلاً از این کد استفاده کرده‌اید" });
 
       if (dc.expiresAt && new Date() > dc.expiresAt)
         return res.status(400).json({ msg: "تاریخ انقضای کد تخفیف گذشته است" });
@@ -106,18 +74,16 @@ router.post("/", auth, async (req, res) => {
         dc.active = false;
       } else {
         appliedDiscount = Math.floor(totalAmount * (percentage / 100));
+        if (appliedDiscount > 200000) appliedDiscount = 200000;
         totalAmount -= appliedDiscount;
-        if (dc.type === "reward70") dc.active = false;
       }
 
+      if (dc.type === "reward70") dc.active = false;
       dc.uses += 1;
       await dc.save();
 
       if (dc.type === "personal" && dc.uses === 5) {
-        const rewardCode = Math.random()
-          .toString(36)
-          .substr(2, 8)
-          .toUpperCase();
+        const rewardCode = Math.random().toString(36).substr(2, 8).toUpperCase();
         await DiscountCode.create({
           code: rewardCode,
           owner: dc.owner,
@@ -158,10 +124,7 @@ router.post("/", auth, async (req, res) => {
 
     const orderData = {
       user: req.user.id,
-      items: user.cart.map((i) => ({
-        product: i.product._id,
-        quantity: i.quantity,
-      })),
+      items: user.cart.map((i) => ({ product: i.product._id, quantity: i.quantity })),
       totalAmount,
       discountCode: discountCode || null,
       discountAmount: appliedDiscount,
@@ -184,10 +147,10 @@ router.post("/", auth, async (req, res) => {
     const newOrder = new Order(orderData);
     await newOrder.save();
 
-    const populatedOrder = await Order.findById(newOrder._id).populate(
-      "items.product"
-    );
+    const populatedOrder = await Order.findById(newOrder._id).populate("items.product").populate('user');
     await sendOrderEmail(populatedOrder);
+    await sendOrderReceiptEmail(populatedOrder);
+
     await sendTelegramMessage(`
 📦 <b>سفارش جدید دریافت شد!</b>
 
@@ -206,7 +169,6 @@ ${populatedOrder.items.map((item) => `• ${item.product.name} × ${item.quantit
 🕒 <b>تاریخ ثبت:</b> ${new Date().toLocaleString("fa-IR")}
     `);
 
-    // ✅ در پایان، سبد خرید کاربر خالی شود
     user.cart = [];
     await user.save();
 

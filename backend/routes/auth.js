@@ -12,54 +12,69 @@ import DiscountCode from "../models/DiscountCode.js";
 import Wallet from "../models/Wallet.js";
 import { sendSMSCode, verifySMSCode } from "../utils/sms.js";
 
-router.post("/send-code", async (req, res) => {
-  const { phone } = req.body;
-  if (!phone) return res.status(400).json({ msg: "شماره موبایل الزامی است" });
+// @route   POST /api/auth/send-code
+router.post(
+  "/send-code",
+  [check("phone", "شماره موبایل الزامی است").notEmpty()],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
 
-  try {
-    const result = await sendSMSCode(phone);
-    console.log("sendSMSCode result:", result); 
-    res.status(result.Success ? 200 : 400).json({ msg: result.Message });
-  } catch (err) {
-    console.error("❌ Error in /send-code:", err)
-    res.status(500).json({ msg: "خطا در ارسال پیامک" });
-  }
-});
+    const { phone } = req.body;
 
-
-router.post("/verify-code", async (req, res) => {
-  const { phone, code } = req.body;
-  if (!phone || !code)
-    return res.status(400).json({ msg: "شماره و کد الزامی هستند" });
-
-  try {
-    const result = await verifySMSCode(phone, code);
-    if (!result.Success) {
-      return res.status(400).json({ msg: result.Message });
+    try {
+      const result = await sendSMSCode(phone);
+      res.status(result.Success ? 200 : 400).json({ msg: result.Message });
+    } catch (err) {
+      console.error("❌ Error in /send-code:", err);
+      res.status(500).json({ msg: "خطا در ارسال پیامک" });
     }
-
-    const user = await User.findOne({ phone });
-    if (!user) {
-      return res.status(404).json({ msg: "کاربر با این شماره پیدا نشد" });
-    }
-
-    user.isVerified = true;
-    await user.save();
-
-    const payload = { user: { id: user.id, role: user.role } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-    return res.json({ msg: "احراز هویت موفق", token });
-  } catch (err) {
-    console.error("Error in POST /verify-code:", err);
-    return res.status(500).json({ msg: "خطا در سرور" });
   }
-});
+);
 
+// @route   POST /api/auth/verify-code
+router.post(
+  "/verify-code",
+  [
+    check("phone", "شماره موبایل الزامی است").notEmpty(),
+    check("code", "کد تایید الزامی است").notEmpty(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
+
+    const { phone, code } = req.body;
+
+    try {
+      const result = await verifySMSCode(phone, code);
+      if (!result.Success) {
+        return res.status(400).json({ msg: result.Message });
+      }
+
+      const user = await User.findOne({ phone });
+      if (!user) {
+        return res.status(404).json({ msg: "کاربر با این شماره پیدا نشد" });
+      }
+
+      user.isVerified = true;
+      await user.save();
+
+      const payload = { user: { id: user.id, role: user.role } };
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      return res.json({ msg: "احراز هویت موفق", token });
+    } catch (err) {
+      console.error("Error in POST /verify-code:", err);
+      return res.status(500).json({ msg: "خطا در سرور" });
+    }
+  }
+);
 
 // @route   POST /api/auth/register
-// @desc    ثبت‌نام کاربر + تولید کد تخفیف + ارسال توکن برای ورود
-// @access  Public
 router.post(
   "/register",
   [
@@ -74,12 +89,21 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
 
     const { name, email, password, phone } = req.body;
-    try {
-      let user = await User.findOne({ email: email.toLowerCase().trim() });
-      if (user)
-        return res.status(400).json({ msg: "این ایمیل قبلاً ثبت‌نام شده است" });
 
-      user = new User({
+    try {
+      let existingEmail = await User.findOne({
+        email: email.toLowerCase().trim(),
+      });
+      let existingPhone = await User.findOne({ phone: phone.trim() });
+
+      if (existingEmail)
+        return res.status(400).json({ msg: "این ایمیل قبلاً ثبت‌نام شده است" });
+      if (existingPhone)
+        return res
+          .status(400)
+          .json({ msg: "این شماره موبایل قبلاً استفاده شده است" });
+
+      let user = new User({
         name: name.trim(),
         email: email.toLowerCase().trim(),
         password,
@@ -88,7 +112,7 @@ router.post(
       });
 
       await user.save();
-      // ایجاد کیف پول
+
       const wallet = new Wallet({
         user: user._id,
         balance: 0,
@@ -96,14 +120,10 @@ router.post(
       });
       await wallet.save();
 
-      // اتصال کیف پول به کاربر
       user.wallet = wallet._id;
       await user.save();
 
-      const personalCode = Math.random()
-        .toString(36)
-        .substr(2, 8)
-        .toUpperCase();
+      const personalCode = Math.random().toString(36).substr(2, 8).toUpperCase();
       await DiscountCode.create({
         code: personalCode,
         owner: user._id,
@@ -114,15 +134,11 @@ router.post(
       });
 
       const payload = { user: { id: user.id, role: user.role } };
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: "7d" },
-        (err, token) => {
-          if (err) throw err;
-          return res.json({ token, personalCode });
-        }
-      );
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      return res.json({ token, personalCode });
     } catch (err) {
       console.error("Error in POST /auth/register:", err);
       return res.status(500).json({ msg: "خطا در سرور" });
@@ -131,8 +147,6 @@ router.post(
 );
 
 // @route   POST /api/auth/login
-// @desc    ورود کاربر
-// @access  Public
 router.post(
   "/login",
   [
@@ -145,6 +159,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
 
     const { email, password } = req.body;
+
     try {
       const user = await User.findOne({ email: email.toLowerCase().trim() });
       if (!user)
@@ -161,15 +176,11 @@ router.post(
       }
 
       const payload = { user: { id: user.id, role: user.role } };
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: "7d" },
-        (err, token) => {
-          if (err) throw err;
-          return res.json({ token });
-        }
-      );
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      return res.json({ token });
     } catch (err) {
       console.error("Error in POST /auth/login:", err);
       return res.status(500).json({ msg: "خطا در سرور" });
@@ -178,8 +189,6 @@ router.post(
 );
 
 // @route   GET /api/auth/me
-// @desc    اطلاعات کاربر لاگین‌شده
-// @access  Private
 router.get("/me", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -192,8 +201,6 @@ router.get("/me", auth, async (req, res) => {
 });
 
 // @route   PUT /api/auth/profile
-// @desc    ویرایش پروفایل کاربر لاگین‌شده
-// @access  Private
 router.put(
   "/profile",
   auth,
@@ -211,6 +218,7 @@ router.put(
       return res.status(400).json({ errors: errors.array() });
 
     const { name, email, password, phone } = req.body;
+
     try {
       const user = await User.findById(req.user.id);
       if (!user) return res.status(404).json({ msg: "کاربر یافت نشد" });
@@ -226,7 +234,9 @@ router.put(
     } catch (err) {
       console.error("Error in PUT /auth/profile:", err);
       if (err.code === 11000 && err.keyPattern.email) {
-        return res.status(400).json({ msg: "این ایمیل قبلاً استفاده شده است" });
+        return res
+          .status(400)
+          .json({ msg: "این ایمیل قبلاً استفاده شده است" });
       }
       return res.status(500).json({ msg: "خطا در به‌روزرسانی پروفایل" });
     }

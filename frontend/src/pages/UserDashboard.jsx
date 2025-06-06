@@ -241,7 +241,7 @@ export default function UserDashboard() {
                   <p className="text-sm text-gray-light">
                     💰 موجودی فعلی:
                     <span className="text-primary font-bold ml-2">
-            {" "}
+                      {" "}
                       {wallet.balance.toLocaleString("fa-IR")} تومان
                     </span>
                   </p>
@@ -361,7 +361,10 @@ export default function UserDashboard() {
                     </p>
                   </div>
                   <div className="bg-blue-800/10 border border-blue-500 p-3 rounded-xl">
-                    <p className="font-bold text-blue-400 mb-1"> کد اکانت رایگان:</p>
+                    <p className="font-bold text-blue-400 mb-1">
+                      {" "}
+                      کد اکانت رایگان:
+                    </p>
                     <p className="text-xs text-gray-300">
                       تعداد دریافتی: {discountInfo.freeCount}
                     </p>
@@ -479,6 +482,14 @@ export default function UserDashboard() {
                             ).toLocaleString("fa-IR")}{" "}
                             تومان
                           </span>
+                          <p className="text-xs mt-1">
+                            <a
+                              href={`/order/${order._id}`}
+                              className="text-primary underline hover:text-green-400 transition"
+                            >
+                              مشاهده فاکتور
+                            </a>
+                          </p>
                         </div>
                       ))}
                       <div className="border-t border-gray-700 pt-2 flex justify-between">

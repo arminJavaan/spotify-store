@@ -8,6 +8,7 @@ import requireRole from "../middleware/roles.js";
 import User from "../models/User.js";
 import Product from "../models/Product.js";
 import Order from "../models/Order.js";
+import moment from "moment-jalaali";
 import DiscountCode from "../models/DiscountCode.js";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -63,6 +64,36 @@ const upload = multer({
     cb(null, true);
   },
 });
+
+
+router.get("/analytics", async (req, res) => {
+  try {
+    const stats = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const start = moment().subtract(i, "months").startOf("month").toDate();
+      const end = moment().subtract(i, "months").endOf("month").toDate();
+
+      const orders = await Order.find({
+        createdAt: { $gte: start, $lte: end },
+      });
+
+      const totalSales = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+
+      stats.push({
+        month: moment(start).format("jYYYY-jMM"),
+        totalSales,
+        orderCount: orders.length,
+      });
+    }
+
+    return res.json(stats);
+  } catch (err) {
+    console.error("Analytics Error:", err);
+    return res.status(500).json({ msg: "خطا در تحلیل داده‌ها" });
+  }
+});
+
 
 router.get("/products", async (req, res) => {
   try {

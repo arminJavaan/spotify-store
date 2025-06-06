@@ -37,6 +37,10 @@ import WalletManager from "./pages/admin/WalletManager";
 import WalletTopupRequests from "./pages/admin/WalletTopupRequest";
 import NotFound from "./pages/NotFound";
 import VerifyPhone from "./pages/VerifyPhone";
+import OrderDetails from "./pages/OrderDetails";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
+
+
 
 function AppInner() {
   const { user, loading } = useContext(AuthContext);
@@ -74,8 +78,9 @@ function AppInner() {
               </PrivateRoute>
             }
           />
-
+<Route path="/admin/analytics" element={<AdminAnalytics/>}/>
           <Route path="*" element={<NotFound />} />
+<Route path="/order/:id" element={<OrderDetails />} />
 
           <Route path="/verify-phone" element={<VerifyPhone />} />
           {/* اگر کاربر لاگین کرده باشد، دسترسی به /login و /register مسدود می‌شود */}

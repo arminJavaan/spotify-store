@@ -1,5 +1,3 @@
-// backend/routes/wallet.js
-
 import express from "express";
 const router = express.Router();
 
@@ -8,108 +6,97 @@ import Wallet from "../models/Wallet.js";
 import WalletTopupRequest from "../models/WalletTopupRequest.js";
 import requireRole from "../middleware/roles.js";
 
-// @route   GET /api/wallet
-// @desc    دریافت موجودی و تراکنش‌ها (کاربر لاگین‌شده)
-// @access  Private
+// دریافت کیف پول کاربر
 router.get("/", auth, async (req, res) => {
   try {
     const wallet = await Wallet.findOne({ user: req.user.id });
-    if (!wallet)
-      return res.status(404).json({ msg: "کیف پول شما یافت نشد" });
+    if (!wallet) return res.status(404).json({ msg: "کیف پول شما یافت نشد" });
 
-    return res.json({
+    res.json({
       balance: wallet.balance,
-      transactions: wallet.transactions.reverse(),
+      transactions: wallet.transactions.sort(
+        (a, b) => b.createdAt - a.createdAt
+      ),
     });
   } catch (err) {
     console.error("GET /wallet error:", err);
-    return res.status(500).json({ msg: "خطا در سرور" });
+    res.status(500).json({ msg: "خطا در دریافت کیف پول" });
   }
 });
 
-// @route   GET /api/wallet/admin/:userId
-// @desc    دریافت موجودی و تراکنش‌های کیف پول یک کاربر خاص (فقط ادمین)
-// @access  Admin
+// دریافت کیف پول کاربر خاص (ادمین)
 router.get("/admin/:userId", auth, requireRole("admin"), async (req, res) => {
   try {
     const wallet = await Wallet.findOne({ user: req.params.userId });
-    if (!wallet)
-      return res.status(404).json({ msg: "کیف پول یافت نشد" });
+    if (!wallet) return res.status(404).json({ msg: "کیف پول یافت نشد" });
 
-    return res.json({
+    res.json({
       balance: wallet.balance,
-      transactions: wallet.transactions.sort((a, b) => b.createdAt - a.createdAt),
+      transactions: wallet.transactions.sort(
+        (a, b) => b.createdAt - a.createdAt
+      ),
     });
   } catch (err) {
     console.error("GET /wallet/admin/:userId error:", err);
-    return res.status(500).json({ msg: "خطا در سرور" });
+    res.status(500).json({ msg: "خطا در دریافت اطلاعات کیف پول" });
   }
 });
 
-// @route   POST /api/wallet/charge
-// @desc    شارژ کیف پول (فعلاً تستی)
-// @access  Private
+// شارژ دستی تستی توسط کاربر
 router.post("/charge", auth, async (req, res) => {
   const { amount } = req.body;
-  if (!amount || amount <= 0)
+  if (!amount || typeof amount !== "number" || amount <= 0)
     return res.status(400).json({ msg: "مبلغ نامعتبر است" });
 
   try {
     const wallet = await Wallet.findOne({ user: req.user.id });
-    if (!wallet)
-      return res.status(404).json({ msg: "کیف پول شما یافت نشد" });
+    if (!wallet) return res.status(404).json({ msg: "کیف پول یافت نشد" });
 
     wallet.balance += amount;
     wallet.transactions.push({
       type: "increase",
       amount,
-      description: "شارژ دستی کیف پول توسط کاربر",
+      description: "شارژ دستی توسط کاربر",
     });
-
     await wallet.save();
-    return res.json({ msg: "کیف پول شارژ شد", balance: wallet.balance });
+
+    res.json({ msg: "کیف پول شارژ شد", balance: wallet.balance });
   } catch (err) {
     console.error("POST /wallet/charge error:", err);
-    return res.status(500).json({ msg: "خطای سرور" });
+    res.status(500).json({ msg: "خطا در شارژ کیف پول" });
   }
 });
 
-// @route   POST /api/wallet/admin-adjust
-// @desc    افزایش/کاهش دستی موجودی توسط ادمین
-// @access  Admin
+// تنظیم دستی کیف پول توسط ادمین
 router.post("/admin-adjust", auth, requireRole("admin"), async (req, res) => {
   const { userId, amount, description } = req.body;
-
   if (!userId || typeof amount !== "number")
-    return res.status(400).json({ msg: "اطلاعات ناقص است" });
+    return res.status(400).json({ msg: "ورودی ناقص یا نامعتبر است" });
 
   try {
     const wallet = await Wallet.findOne({ user: userId });
-    if (!wallet)
-      return res.status(404).json({ msg: "کیف پول یافت نشد" });
+    if (!wallet) return res.status(404).json({ msg: "کیف پول یافت نشد" });
 
     wallet.balance += amount;
     wallet.transactions.push({
       type: amount >= 0 ? "increase" : "decrease",
       amount: Math.abs(amount),
-      description: description || "تنظیم دستی توسط ادمین",
+      description: description || "تنظیم توسط ادمین",
     });
-
     await wallet.save();
-    return res.json({ msg: "موجودی به‌روزرسانی شد", balance: wallet.balance });
+
+    res.json({ msg: "موجودی به‌روزرسانی شد", balance: wallet.balance });
   } catch (err) {
     console.error("POST /wallet/admin-adjust error:", err);
-    return res.status(500).json({ msg: "خطای سرور" });
+    res.status(500).json({ msg: "خطا در ویرایش موجودی" });
   }
 });
 
-// @route   POST /api/wallet/topup
-// @desc    ثبت درخواست شارژ دستی کیف پول توسط کاربر (کارت به کارت)
-// @access  Private
+// ثبت درخواست کارت‌به‌کارت توسط کاربر
 router.post("/topup", auth, async (req, res) => {
   const { method, amount } = req.body;
-  if (!method || !amount || amount <= 0)
-    return res.status(400).json({ msg: "اطلاعات ناقص است" });
+  if (!method || !amount || typeof amount !== "number" || amount <= 0)
+    return res.status(400).json({ msg: "اطلاعات نامعتبر است" });
 
   try {
     const request = await WalletTopupRequest.create({
@@ -118,64 +105,69 @@ router.post("/topup", auth, async (req, res) => {
       amount,
       status: "pending",
     });
-    return res.json({ msg: "درخواست شارژ ثبت شد و پس از بررسی ادمین حساب شما شارژ می‌شود.", request });
+
+    res.json({
+      msg: "درخواست شما ثبت شد و در انتظار تایید است.",
+      request,
+    });
   } catch (err) {
     console.error("POST /wallet/topup error:", err);
-    return res.status(500).json({ msg: "خطا در ثبت درخواست شارژ" });
+    res.status(500).json({ msg: "خطا در ثبت درخواست" });
   }
 });
 
-// @route   GET /api/wallet/topup-requests
-// @desc    دریافت لیست درخواست‌های شارژ کارت به کارت (فقط ادمین)
-// @access  Admin
+// لیست تمام درخواست‌های شارژ برای ادمین
 router.get("/topup-requests", auth, requireRole("admin"), async (req, res) => {
   try {
     const requests = await WalletTopupRequest.find()
       .populate("user", "name email")
       .sort({ createdAt: -1 });
-    return res.json(requests);
+
+    res.json(requests);
   } catch (err) {
     console.error("GET /wallet/topup-requests error:", err);
-    return res.status(500).json({ msg: "خطا در دریافت درخواست‌ها" });
+    res.status(500).json({ msg: "خطا در دریافت لیست درخواست‌ها" });
   }
 });
 
-// @route   POST /api/wallet/admin-topup-action
-// @desc    تأیید یا رد درخواست شارژ کیف پول
-// @access  Admin
-router.post("/admin-topup-action", auth, requireRole("admin"), async (req, res) => {
-  const { id, status } = req.body;
-  if (!id || !["approved", "rejected"].includes(status)) {
-    return res.status(400).json({ msg: "درخواست نامعتبر است" });
-  }
+// تایید یا رد درخواست کارت به کارت توسط ادمین
+router.post(
+  "/admin-topup-action",
+  auth,
+  requireRole("admin"),
+  async (req, res) => {
+    const { id, status } = req.body;
+    if (!id || !["approved", "rejected"].includes(status))
+      return res.status(400).json({ msg: "درخواست نامعتبر است" });
 
-  try {
-    const request = await WalletTopupRequest.findById(id);
-    if (!request) return res.status(404).json({ msg: "درخواست یافت نشد" });
-    if (request.status !== "pending") return res.status(400).json({ msg: "درخواست قبلاً بررسی شده است" });
+    try {
+      const request = await WalletTopupRequest.findById(id);
+      if (!request) return res.status(404).json({ msg: "درخواست یافت نشد" });
+      if (request.status !== "pending")
+        return res.status(400).json({ msg: "درخواست قبلاً بررسی شده" });
 
-    request.status = status;
-    await request.save();
+      request.status = status;
+      await request.save();
 
-    if (status === "approved") {
-      const wallet = await Wallet.findOne({ user: request.user });
-      if (!wallet) return res.status(404).json({ msg: "کیف پول کاربر یافت نشد" });
+      if (status === "approved") {
+        const wallet = await Wallet.findOne({ user: request.user });
+        if (!wallet) return res.status(404).json({ msg: "کیف پول یافت نشد" });
 
-      wallet.balance += request.amount;
-      wallet.transactions.push({
-        type: "increase",
-        amount: request.amount,
-        description: "شارژ توسط ادمین پس از تایید درخواست",
-      });
-      await wallet.save();
+        wallet.balance += request.amount;
+        wallet.transactions.push({
+          type: "increase",
+          amount: request.amount,
+          description: "شارژ توسط ادمین پس از تایید درخواست",
+        });
+        await wallet.save();
+      }
+
+      res.json({ msg: "وضعیت درخواست بروزرسانی شد" });
+    } catch (err) {
+      console.error("POST /wallet/admin-topup-action error:", err);
+      res.status(500).json({ msg: "خطا در بروزرسانی درخواست" });
     }
-
-    return res.json({ msg: "وضعیت درخواست بروزرسانی شد" });
-  } catch (err) {
-    console.error("POST /wallet/admin-topup-action error:", err);
-    return res.status(500).json({ msg: "خطای سرور در بروزرسانی درخواست" });
   }
-});
-
+);
 
 export default router;

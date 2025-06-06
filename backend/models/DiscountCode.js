@@ -1,5 +1,3 @@
-// backend/models/DiscountCode.js
-
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
@@ -19,6 +17,7 @@ const DiscountCodeSchema = new mongoose.Schema(
     uses: {
       type: Number,
       default: 0,
+      min: 0,
     },
     active: {
       type: Boolean,
@@ -35,11 +34,14 @@ const DiscountCodeSchema = new mongoose.Schema(
     },
     percentage: {
       type: Number,
+      min: 0,
+      max: 100,
       default: null,
     },
     description: {
       type: String,
       default: "",
+      trim: true,
     },
     expiresAt: {
       type: Date,

@@ -10,6 +10,7 @@ import {
   FiHome,
   FiGift,
   FiDollarSign,
+  FiBarChart,
 } from "react-icons/fi";
 
 export default function AdminDashboard() {
@@ -61,12 +62,49 @@ export default function AdminDashboard() {
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slideInUp">
-        <AdminCard to="/admin/users" icon={<FiUsers />} title="کاربران" value={stats.totalUsers} />
-        <AdminCard to="/admin/products" icon={<FiPackage />} title="محصولات" value={stats.totalProducts} />
-        <AdminCard to="/admin/discounts" icon={<FiGift />} title="کدهای تخفیف" value={stats.totaldiscounts} />
-        <AdminCard to="/admin/orders" icon={<FiShoppingCart />} title="سفارش‌ها" value={stats.totalOrders} />
-        <AdminCard to="/admin/wallets" icon={<FiDollarSign />} title="کیف پول کاربران" />
-        <AdminCard to="/admin/wallet-topups" icon={<FiDollarSign />} title="درخواست‌های شارژ کیف پول" />
+        <AdminCard
+          to="/admin/users"
+          icon={<FiUsers />}
+          title="کاربران"
+          value={stats.totalUsers}
+        />
+        <AdminCard
+          to="/admin/products"
+          icon={<FiPackage />}
+          title="محصولات"
+          value={stats.totalProducts}
+        />
+        <AdminCard
+          to="/admin/discounts"
+          icon={<FiGift />}
+          title="کدهای تخفیف"
+          value={stats.totaldiscounts}
+        />
+        <AdminCard
+          to="/admin/orders"
+          icon={<FiShoppingCart />}
+          title="سفارش‌ها"
+          value={stats.totalOrders}
+        />
+        <AdminCard
+          to="/admin/wallets"
+          icon={<FiDollarSign />}
+          title="کیف پول کاربران"
+        />
+        <AdminCard
+          to="/admin/wallet-topups"
+          icon={<FiDollarSign />}
+          title="درخواست‌های شارژ کیف پول"
+        />
+        <AdminCard
+          icon={<FiBarChart />}
+          to="/admin/analytics"
+          title=" آمار و گزارشات فروش"
+          className="text-sm text-gray-light bg-dark3 py-2 px-4 rounded-xl hover:bg-dark2 transition block"
+        >
+          📈 آمار و نمودار فروش
+        </AdminCard>
+
         <AdminCard to="/" icon={<FiHome />} title="بازگشت به سایت" />
       </div>
     </div>
