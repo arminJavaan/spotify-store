@@ -134,6 +134,33 @@ export default function Checkout() {
     }
   };
 
+  const submitTopup = async () => {
+  setError(null);
+  setLoading(true);
+
+  if (!amount || isNaN(amount) || +amount <= 0) {
+    setError("لطفاً مبلغ معتبر وارد کنید.");
+    setLoading(false);
+    return;
+  }
+
+  try {
+    await API.post("/wallet/topup", {
+      amount: +amount,
+      method,
+    });
+
+    alert("درخواست شارژ ثبت شد. لطفاً فیش واریزی را در واتساپ یا تلگرام ارسال کنید.");
+    navigate("/dashboard");
+  } catch (err) {
+    const msg = err.response?.data?.msg || err.message;
+    setError("خطا در ثبت درخواست شارژ: " + msg);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   return (
     <main className="text-gray-light py-20 px-6 min-h-screen mt-12 font-vazir">
       <motion.h2

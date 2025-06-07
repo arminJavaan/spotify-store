@@ -33,7 +33,7 @@ API.interceptors.response.use(
 // 📦 APIهای کیف پول
 // -----------------------------
 
-export const fetchWallet = () => API.get("/wallet");
+export const fetchWallet = () => API.get("/api/wallet");
 export const chargeWallet = (amount) =>
   API.post("/wallet/charge", { amount });
 export const adminAdjustWallet = (userId, amount, description) =>

@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { FiArrowUpRight, FiArrowDownLeft, FiSearch } from "react-icons/fi";
+import {
+  FiArrowUpRight,
+  FiArrowDownLeft,
+  FiSearch,
+  FiRefreshCw,
+} from "react-icons/fi";
 
 export default function WalletManager() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,7 +41,7 @@ export default function WalletManager() {
     };
 
     fetchData();
-  }, []);
+  }, [refresh]);
 
   const adjustWallet = async (userId, amount, description) => {
     try {
@@ -46,7 +52,7 @@ export default function WalletManager() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("موجودی بروزرسانی شد");
-      window.location.reload();
+      setRefresh(!refresh);
     } catch (err) {
       alert("خطا در بروزرسانی موجودی");
     }
@@ -57,15 +63,15 @@ export default function WalletManager() {
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto mt-20">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl text-white font-bold">مدیریت کیف پول کاربران</h2>
-        <div className="flex items-center gap-2 bg-[#121212] border border-[#333] rounded px-3 py-1">
+    <div className="p-6 max-w-7xl mx-auto mt-20 text-white">
+      <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+        <h2 className="text-2xl font-bold">مدیریت کیف پول کاربران</h2>
+        <div className="flex items-center gap-2 bg-dark1 border border-gray-700 rounded px-3 py-1 w-full md:w-80">
           <FiSearch className="text-gray-400" />
           <input
             type="text"
             placeholder="جستجو بر اساس ایمیل..."
-            className="bg-transparent text-white outline-none"
+            className="bg-transparent text-white outline-none flex-1 text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -73,16 +79,16 @@ export default function WalletManager() {
       </div>
 
       {loading ? (
-        <p className="text-gray-400 text-center">در حال بارگذاری...</p>
+        <p className="text-center text-gray-400 animate-pulse">در حال بارگذاری...</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredUsers.map((user) => (
             <div
               key={user._id}
-              className="bg-[#1e1e1e] p-5 rounded-2xl border border-[#333] shadow-lg flex flex-col justify-between"
+              className="bg-dark2 p-5 rounded-2xl border border-gray-700 shadow-lg flex flex-col justify-between"
             >
               <div>
-                <p className="text-lg font-semibold text-white">
+                <p className="text-lg font-semibold">
                   {user.name || "—"} <span className="text-sm text-gray-400">({user.email})</span>
                 </p>
                 <p className="text-green-400 mt-1 text-sm">
@@ -94,21 +100,21 @@ export default function WalletManager() {
                 <input
                   type="number"
                   placeholder="مبلغ (+/-)"
-                  className="bg-[#121212] text-white border border-[#444] p-2 rounded-lg text-sm"
+                  className="bg-dark1 text-white border border-gray-600 p-2 rounded-lg text-sm"
                   id={`amount-${user._id}`}
                 />
                 <input
                   type="text"
                   placeholder="توضیح"
-                  className="bg-[#121212] text-white border border-[#444] p-2 rounded-lg text-sm"
+                  className="bg-dark1 text-white border border-gray-600 p-2 rounded-lg text-sm"
                   id={`desc-${user._id}`}
                 />
                 <button
-                  className="bg-[#1db954] text-black font-semibold py-2 rounded-lg hover:bg-opacity-90 transition text-sm"
+                  className="bg-primary text-black font-semibold py-2 rounded-lg hover:bg-opacity-90 transition text-sm"
                   onClick={() => {
                     const amt = parseInt(document.getElementById(`amount-${user._id}`).value);
                     const desc = document.getElementById(`desc-${user._id}`).value;
-                    if (!amt || desc.trim() === "") return alert("اطلاعات ناقص است");
+                    if (isNaN(amt) || desc.trim() === "") return alert("اطلاعات ناقص است");
                     adjustWallet(user._id, amt, desc);
                   }}
                 >
@@ -117,13 +123,13 @@ export default function WalletManager() {
               </div>
 
               {user.wallet?.transactions?.length > 0 && (
-                <div className="mt-4 bg-[#121212] p-3 rounded-xl text-sm text-gray-300">
+                <div className="mt-4 bg-dark1 p-3 rounded-xl text-sm text-gray-300">
                   <p className="mb-2 font-medium text-white">آخرین تراکنش‌ها:</p>
-                  <ul className="space-y-1 max-h-40 overflow-y-auto pr-1">
+                  <ul className="space-y-1 max-h-40 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-primary scrollbar-track-dark3">
                     {user.wallet.transactions.slice(0, 5).map((tx, idx) => (
                       <li
                         key={idx}
-                        className="flex justify-between items-center border-b border-[#333] pb-1"
+                        className="flex justify-between items-center border-b border-gray-700 pb-1"
                       >
                         <span className="flex items-center gap-2">
                           {tx.type === "increase" ? (
@@ -135,9 +141,7 @@ export default function WalletManager() {
                           )}
                           {tx.description || "—"}
                         </span>
-                        <span>
-                          {tx.amount.toLocaleString("fa-IR")}
-                        </span>
+                        <span>{tx.amount.toLocaleString("fa-IR")}</span>
                       </li>
                     ))}
                   </ul>

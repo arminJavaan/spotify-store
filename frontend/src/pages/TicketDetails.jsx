@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import API from "../api";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MessageCircle, Paperclip, Send, Clock } from "lucide-react";
+import { MessageCircle, Paperclip, Send, Clock, Loader, ShieldCheck } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 export default function TicketDetails() {
@@ -30,7 +30,9 @@ export default function TicketDetails() {
   }, [id]);
 
   const handleReply = async () => {
-    if (!reply.trim()) return toast.error("لطفاً متن پیام را وارد کنید.");
+    if (!reply.trim() || reply.trim().length < 5) {
+      return toast.error("متن پیام باید حداقل ۵ کاراکتر باشد.");
+    }
 
     const formData = new FormData();
     formData.append("message", reply.trim());
@@ -53,7 +55,7 @@ export default function TicketDetails() {
   if (loading) {
     return (
       <div className="text-center text-gray-400 mt-20 font-vazir animate-pulse">
-        در حال دریافت جزئیات تیکت...
+        <Loader className="inline animate-spin ml-1" /> در حال دریافت جزئیات تیکت...
       </div>
     );
   }
@@ -72,6 +74,7 @@ export default function TicketDetails() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+        {/* اطلاعات اولیه تیکت */}
         <div className="space-y-2">
           <h2 className="text-xl font-bold text-primary flex items-center gap-2">
             <MessageCircle /> {ticket.subject}
@@ -95,7 +98,8 @@ export default function TicketDetails() {
           )}
         </div>
 
-        <div className="border-t border-gray-700 pt-6 space-y-6">
+        {/* پاسخ‌ها */}
+        <div className="border-t border-gray-700 pt-6 space-y-6 max-h-[50vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-dark3">
           <h3 className="text-sm text-gray-400 font-bold">پاسخ‌ها</h3>
           {ticket.replies?.length > 0 ? (
             ticket.replies.map((r, idx) => (
@@ -108,7 +112,15 @@ export default function TicketDetails() {
                 }`}
               >
                 <div className="flex justify-between text-xs mb-2">
-                  <span>{r.from === "admin" ? "پشتیبانی" : "شما"}</span>
+                  <span className="flex items-center gap-1">
+                    {r.from === "admin" ? (
+                      <>
+                        <ShieldCheck size={14} /> پشتیبانی
+                      </>
+                    ) : (
+                      "شما"
+                    )}
+                  </span>
                   <span>{new Date(r.createdAt).toLocaleString("fa-IR")}</span>
                 </div>
                 <p className="whitespace-pre-line mb-2">{r.message}</p>
@@ -130,7 +142,6 @@ export default function TicketDetails() {
         </div>
 
         {/* فرم پاسخ‌دهی */}
-
         {ticket.status === "closed" ? (
           <p className="text-red-400 text-sm">
             این تیکت توسط پشتیبانی بسته شده است.
@@ -142,11 +153,13 @@ export default function TicketDetails() {
             </h3>
             <textarea
               rows={4}
+              maxLength={1000}
               className="w-full bg-dark3 border border-gray-600 p-3 rounded-lg text-sm text-black focus:outline-none focus:border-primary resize-none"
               placeholder="متن پاسخ شما..."
               value={reply}
               onChange={(e) => setReply(e.target.value)}
             />
+            <p className="text-xs text-gray-500">{reply.length}/1000</p>
 
             <input
               type="file"
@@ -160,8 +173,16 @@ export default function TicketDetails() {
               disabled={sending}
               className="bg-primary text-dark1 font-bold py-2 px-6 rounded-xl flex items-center gap-2 hover:bg-opacity-90 transition disabled:opacity-60"
             >
-              <Send size={16} />
-              {sending ? "در حال ارسال..." : "ارسال پاسخ"}
+              {sending ? (
+                <>
+                  <Loader className="animate-spin" size={16} /> در حال ارسال...
+                </>
+              ) : (
+                <>
+                  <Send size={16} />
+                  ارسال پاسخ
+                </>
+              )}
             </button>
           </div>
         )}

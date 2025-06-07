@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import API from "../api";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
-import { Plus, Paperclip, MessageSquare } from "lucide-react";
+import { Plus, Paperclip, MessageSquare, Loader } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function CreateTicket() {
@@ -13,8 +13,8 @@ export default function CreateTicket() {
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
-    if (!subject.trim() || !message.trim()) {
-      toast.error("موضوع و پیام الزامی هستند.");
+    if (!subject.trim() || message.trim().length < 10) {
+      toast.error("موضوع و پیام باید حداقل ۱۰ کاراکتر باشند.");
       return;
     }
 
@@ -72,7 +72,11 @@ export default function CreateTicket() {
               onChange={(e) => setMessage(e.target.value)}
               className="w-full bg-dark3 border border-gray-600 p-3 rounded-lg text-black focus:outline-none focus:border-primary resize-none"
               placeholder="شرح مشکل یا سوال شما..."
+              maxLength={1000}
             />
+            <p className="text-xs text-gray-500 mt-1 text-left">
+              {message.length}/1000
+            </p>
           </div>
 
           <div>
@@ -85,7 +89,7 @@ export default function CreateTicket() {
             />
             {attachment && (
               <p className="text-xs mt-2 flex items-center gap-1 text-blue-400">
-                <Paperclip size={14} /> {attachment.name}
+                <Paperclip size={14} /> {attachment.name} ({(attachment.size / 1024).toFixed(1)} KB)
               </p>
             )}
           </div>
@@ -95,8 +99,17 @@ export default function CreateTicket() {
             disabled={submitting}
             className="w-full bg-primary text-dark1 font-bold py-2 rounded-xl hover:bg-opacity-90 transition disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            <MessageSquare size={16} />
-            {submitting ? "در حال ارسال..." : "ارسال تیکت"}
+            {submitting ? (
+              <>
+                <Loader className="animate-spin" size={16} />
+                در حال ارسال...
+              </>
+            ) : (
+              <>
+                <MessageSquare size={16} />
+                ارسال تیکت
+              </>
+            )}
           </button>
         </div>
       </motion.div>

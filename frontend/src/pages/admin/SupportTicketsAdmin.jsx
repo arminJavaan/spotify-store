@@ -9,6 +9,7 @@ import {
   Loader,
   XCircle,
   ShieldCheck,
+  Trash2,
 } from "lucide-react";
 
 export default function SupportTicketsAdmin() {
@@ -37,6 +38,7 @@ export default function SupportTicketsAdmin() {
   const handleReply = async (ticketId) => {
     const replyText = replyInputs[ticketId];
     if (!replyText?.trim()) return;
+
     setReplyingId(ticketId);
     try {
       const formData = new FormData();
@@ -51,10 +53,22 @@ export default function SupportTicketsAdmin() {
     }
   };
 
+  const handleCloseTicket = async (ticketId) => {
+    const confirmed = window.confirm("آیا از بستن این تیکت مطمئن هستید؟");
+    if (!confirmed) return;
+
+    try {
+      await API.patch(`/support/tickets/${ticketId}/close`);
+      fetchTickets();
+    } catch {
+      alert("خطا در بستن تیکت");
+    }
+  };
+
   const categorized = {
-    new: tickets.filter(t => t.replies.length === 1),
-    open: tickets.filter(t => t.status === "open" && t.replies.length > 1),
-    closed: tickets.filter(t => t.status === "closed"),
+    new: tickets.filter((t) => t.replies.length === 1),
+    open: tickets.filter((t) => t.status === "open" && t.replies.length > 1),
+    closed: tickets.filter((t) => t.status === "closed"),
   };
 
   const getStatusColor = (status) => {
@@ -76,7 +90,7 @@ export default function SupportTicketsAdmin() {
           <MessageSquare /> مدیریت تیکت‌های پشتیبانی
         </h2>
 
-        <div className="flex gap-4 mb-8">
+        <div className="flex gap-4 mb-8 flex-wrap">
           {[
             { key: "new", label: "تیکت‌های جدید" },
             { key: "open", label: "در حال مکالمه" },
@@ -97,7 +111,9 @@ export default function SupportTicketsAdmin() {
         </div>
 
         {loading ? (
-          <p className="text-center text-gray-400 animate-pulse">در حال دریافت اطلاعات...</p>
+          <p className="text-center text-gray-400 animate-pulse">
+            در حال دریافت اطلاعات...
+          </p>
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : categorized[activeTab].length === 0 ? (
@@ -138,7 +154,7 @@ export default function SupportTicketsAdmin() {
                 )}
 
                 {ticket.replies?.length > 0 && (
-                  <div className="space-y-3 border-t border-gray-700 mt-4 pt-4">
+                  <div className="space-y-3 border-t border-dashed border-gray-700 mt-4 pt-4">
                     {ticket.replies.map((reply, index) => (
                       <div
                         key={index}
@@ -158,7 +174,9 @@ export default function SupportTicketsAdmin() {
                               "کاربر"
                             )}
                           </span>
-                          <span>{new Date(reply.createdAt).toLocaleString("fa-IR")}</span>
+                          <span>
+                            {new Date(reply.createdAt).toLocaleString("fa-IR")}
+                          </span>
                         </div>
                         <p className="whitespace-pre-line mb-2">{reply.message}</p>
                         {reply.attachmentUrl && (
@@ -177,29 +195,45 @@ export default function SupportTicketsAdmin() {
                 )}
 
                 {ticket.status !== "closed" && (
-                  <div className="mt-4">
+                  <div className="mt-6 space-y-3">
                     <textarea
                       rows={3}
                       className="w-full bg-dark1 text-white border border-gray-600 rounded-xl p-3 focus:outline-none focus:border-primary"
                       placeholder="پاسخ خود را بنویسید..."
                       value={replyInputs[ticket._id] || ""}
                       onChange={(e) =>
-                        setReplyInputs({ ...replyInputs, [ticket._id]: e.target.value })
+                        setReplyInputs({
+                          ...replyInputs,
+                          [ticket._id]: e.target.value,
+                        })
                       }
                     />
-                    <button
-                      onClick={() => handleReply(ticket._id)}
-                      disabled={replyingId === ticket._id && !replyInputs[ticket._id]?.trim()}
-                      className="mt-2 bg-primary text-dark1 font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition"
-                    >
-                      {replyingId === ticket._id ? (
-                        <span className="flex items-center gap-2">
-                          <Loader className="animate-spin" size={16} /> در حال ارسال...
-                        </span>
-                      ) : (
-                        "ارسال پاسخ"
-                      )}
-                    </button>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleReply(ticket._id)}
+                        disabled={
+                          replyingId === ticket._id &&
+                          !replyInputs[ticket._id]?.trim()
+                        }
+                        className="bg-primary text-dark1 font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition disabled:opacity-60"
+                      >
+                        {replyingId === ticket._id ? (
+                          <span className="flex items-center gap-2">
+                            <Loader className="animate-spin" size={16} /> ارسال...
+                          </span>
+                        ) : (
+                          "ارسال پاسخ"
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => handleCloseTicket(ticket._id)}
+                        className="flex items-center gap-2 bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition"
+                      >
+                        <Trash2 size={16} /> بستن تیکت
+                      </button>
+                    </div>
                   </div>
                 )}
               </motion.div>
