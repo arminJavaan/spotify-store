@@ -4,10 +4,10 @@ import axios from 'axios';
 const API_KEY = process.env.LIMOSMS_API_KEY;
 
 
-export async function sendSMSCode(mobile) {
+export async function sendSMSCode(Mobile) {
   try {
     const res = await axios.post('https://api.limosms.com/api/sendcode', {
-      Mobile: mobile,
+      Mobile: Mobile,
       Footer: 'سپاتیفای',
     }, {
       headers: {
@@ -22,10 +22,10 @@ export async function sendSMSCode(mobile) {
   }
 }
 
-export async function verifySMSCode(mobile, code) {
+export async function verifySMSCode(Mobile, code) {
   try {
     const res = await axios.post('https://api.limosms.com/api/checkcode', {
-      Mobile: mobile,
+      Mobile: Mobile,
       Code: code
     }, {
       headers: {

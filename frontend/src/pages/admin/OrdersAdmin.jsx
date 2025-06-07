@@ -1,4 +1,6 @@
-// frontend/src/pages/admin/OrdersAdmin.jsx
+
+// ✅ نسخه بهینه‌شده AdminOrders.jsx با طراحی بهتر، کلاس‌های خواناتر، باکس مرتب، سوییچ وضعیت سفارش‌ها و قابلیت جستجو
+// مسیر: frontend/src/pages/admin/OrdersAdmin.jsx
 
 import React, { useEffect, useState } from 'react'
 import API from '../../api'
@@ -51,174 +53,94 @@ export default function AdminOrders() {
     }
   }
 
-  // فیلتر بر اساس اوردر آیدی
   const filteredOrders = orders.filter(order =>
     order._id.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full py-20">
-        <p className="text-gray2 animate-fadeIn">در حال بارگذاری سفارش‌ها...</p>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <p className="text-red-500">{error}</p>
-      </div>
-    )
-  }
-
   return (
-    <div className="container mx-auto px-4 py-12 mt-12">
-      <h2 className="text-3xl font-bold text-primary mb-4 text-center animate-fadeIn">
+    <main className="px-6 py-10 text-gray-light mt-16">
+      <h2 className="text-2xl font-bold text-primary mb-6 text-center">
         مدیریت سفارش‌ها
       </h2>
 
-      {/* سرچ باکس */}
-      <div className="mb-6 flex justify-center">
-        <div className="relative w-full max-w-md">
+      <div className="max-w-md mx-auto mb-6">
+        <div className="relative">
           <input
             type="text"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder="جستجو بر اساس اوردر آیدی..."
-            className="w-full px-4 py-2 pr-10 bg-dark2 text-gray2 border border-gray-med rounded-full focus:outline-none focus:border-primary transition"
+            placeholder="جستجو بر اساس Order ID..."
+            className="w-full px-4 py-2 pr-10 bg-dark2 border border-gray-700 rounded-full text-sm placeholder-gray-400"
           />
-          <FiSearch className="absolute top-2.5 right-3 text-gray-med" />
+          <FiSearch className="absolute top-2.5 right-3 text-gray-400" />
         </div>
       </div>
 
-      {filteredOrders.length === 0 ? (
-        <p className="text-center text-gray2">هیچ سفارشی یافت نشد.</p>
+      {loading ? (
+        <p className="text-center text-gray-400 animate-pulse">در حال بارگذاری...</p>
+      ) : error ? (
+        <p className="text-center text-red-500">{error}</p>
+      ) : filteredOrders.length === 0 ? (
+        <p className="text-center text-gray-400">سفارشی یافت نشد.</p>
       ) : (
-        <div className="space-y-6">
-          {filteredOrders.map((order, idx) => {
+        <div className="space-y-6 max-w-5xl mx-auto">
+          {filteredOrders.map(order => {
+            const user = order.user || {}
             const isPending = order.status === 'pending'
             const isCompleted = order.status === 'completed'
             const isCancelled = order.status === 'cancelled'
 
-            const userName = order.user?.name || 'کاربر حذف‌شده'
-            const userEmail = order.user?.email || '—'
-
             return (
-              <div
-                key={order._id}
-                className="bg-dark1 p-6 rounded-2xl shadow-lg animate-slideIn"
-              >
-                {/* هدر با شماره و تاریخ سفارش */}
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-semibold text-primary">
-                    سفارش #{order._id.slice(-6)}
-                  </h3>
-                  <span className="text-gray2 text-sm">
-                    {new Date(order.createdAt).toLocaleDateString('fa-IR')}
-                  </span>
+              <div key={order._id} className="bg-dark1 border border-gray-700 p-5 rounded-2xl shadow-md">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-primary font-bold text-sm font-mono">#{order._id.slice(-6)}</h3>
+                  <span className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString("fa-IR")}</span>
                 </div>
 
-                {/* اطلاعات کاربر سفارش‌دهنده */}
-                <div className="mb-4 flex flex-col sm:flex-row sm:justify-between">
-                  <div className="flex items-center mb-2 sm:mb-0">
-                    <FiUser className="text-gray2 ml-1" />
-                    <span className="text-gray2">{userName}</span>
+                <div className="text-sm text-gray-300 space-y-1">
+                  <div className="flex flex-wrap gap-4 mb-2">
+                    <span className="flex items-center gap-1"><FiUser /> {user.name || "کاربر حذف‌شده"}</span>
+                    <span className="flex items-center gap-1"><FiMail /> {user.email || "—"}</span>
+                    <span className="flex items-center gap-1"><FiDollarSign /> {order.totalAmount.toLocaleString("fa-IR")} تومان</span>
                   </div>
-                  <div className="flex items-center mb-2 sm:mb-0">
-                    <FiMail className="text-gray2 ml-1" />
-                    <span className="text-gray2">{userEmail}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <FiDollarSign className="text-gray2 ml-1" />
-                    <span className="text-gray2">
-                      {Number(order.totalAmount).toLocaleString('fa-IR')} تومان
-                    </span>
-                  </div>
-                </div>
 
-                {/* آیتم‌های سفارش */}
-                <div className="mb-4 border-t border-gray1 pt-4 space-y-2">
-                  {order.items.map((item) => (
-                    <div
-                      key={item.product._id}
-                      className="flex justify-between items-center"
-                    >
-                      <span className="text-gray2">
-                        {item.product.name} × {item.quantity}
-                      </span>
-                      <span className="text-gray2">
-                        {Number(item.product.price * item.quantity).toLocaleString('fa-IR')} تومان
-                      </span>
+                  {order.items.map((item, i) => (
+                    <div key={i} className="flex justify-between border-t border-gray-700 pt-2">
+                      <span>{item.product.name} × {item.quantity}</span>
+                      <span>{(item.product.price * item.quantity).toLocaleString("fa-IR")} تومان</span>
                     </div>
                   ))}
-                </div>
 
-                {/* روش پرداخت و لینک واتساپ */}
-                <div className="mb-4">
-                  <p className="text-gray2 mb-1">
-                    روش پرداخت:{' '}
-                    <span className="text-primary font-medium">
-                      {order.paymentMethod === 'whatsapp' ? 'واتساپ' : order.paymentMethod}
-                    </span>
-                  </p>
-                  {order.paymentMethod === 'whatsapp' && order.whatsappOrderUrl && (
-                    <a
-                      href={order.whatsappOrderUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block px-4 py-2 bg-green-600 text-dark2 rounded-lg hover:bg-green-700 transition"
-                    >
-                      مشاهده واتساپ
-                    </a>
-                  )}
-                </div>
-
-                {/* وضعیت فعلی و دکمه‌های تغییر */}
-                <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
-                  <div className="flex items-center mb-4 sm:mb-0">
-                    {isPending && (
-                      <span className="text-yellow-500 flex items-center">
-                        <FiClock className="ml-1" /> در انتظار
-                      </span>
-                    )}
-                    {isCompleted && (
-                      <span className="text-green-500 flex items-center">
-                        <FiCheckCircle className="ml-1" /> تکمیل شده
-                      </span>
-                    )}
-                    {isCancelled && (
-                      <span className="text-red-500 flex items-center">
-                        <FiXCircle className="ml-1" /> لغو شده
-                      </span>
+                  <div className="mt-3">
+                    روش پرداخت: <span className="text-primary font-semibold">{order.paymentMethod}</span>
+                    {order.paymentMethod === 'whatsapp' && order.whatsappOrderUrl && (
+                      <a href={order.whatsappOrderUrl} target="_blank" rel="noreferrer" className="ml-4 text-green-400 underline text-xs">
+                        مشاهده در واتساپ
+                      </a>
                     )}
                   </div>
+                </div>
 
-                  <div className="flex space-x-2 flex-wrap">
+                <div className="mt-4 flex flex-wrap items-center gap-4 justify-between">
+                  <div className="text-sm flex items-center gap-1">
+                    {isPending && <span className="text-yellow-400 flex items-center"><FiClock /> در انتظار</span>}
+                    {isCompleted && <span className="text-green-400 flex items-center"><FiCheckCircle /> تکمیل شده</span>}
+                    {isCancelled && <span className="text-red-400 flex items-center"><FiXCircle /> لغو شده</span>}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
                     {!isCompleted && (
-                      <button
-                        onClick={() => updateStatus(order._id, 'completed')}
-                        disabled={updatingOrderId === order._id}
-                        className="px-4 py-2 bg-green-600 text-dark2 rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
+                      <button onClick={() => updateStatus(order._id, 'completed')} disabled={updatingOrderId === order._id} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm">
                         علامت‌گذاری به عنوان «تکمیل شده»
                       </button>
                     )}
                     {!isPending && (
-                      <button
-                        onClick={() => updateStatus(order._id, 'pending')}
-                        disabled={updatingOrderId === order._id}
-                        className="px-4 py-2 bg-yellow-500 text-dark2 rounded-lg hover:bg-yellow-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        علامت‌گذاری به عنوان «در انتظار»
+                      <button onClick={() => updateStatus(order._id, 'pending')} disabled={updatingOrderId === order._id} className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-dark1 rounded text-sm">
+                        بازگشت به «در انتظار»
                       </button>
                     )}
                     {!isCancelled && (
-                      <button
-                        onClick={() => updateStatus(order._id, 'cancelled')}
-                        disabled={updatingOrderId === order._id}
-                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
+                      <button onClick={() => updateStatus(order._id, 'cancelled')} disabled={updatingOrderId === order._id} className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded text-sm">
                         لغو سفارش
                       </button>
                     )}
@@ -229,6 +151,6 @@ export default function AdminOrders() {
           })}
         </div>
       )}
-    </div>
+    </main>
   )
 }

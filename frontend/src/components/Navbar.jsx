@@ -64,7 +64,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 font-bold text-primary">
             <FaSpotify className="text-3xl" />
             <span className="hidden sm:inline text-lg text-gray-light font-vazir">
-              سپاتیفای
+              Sepotify
             </span>
           </div>
         </Link>

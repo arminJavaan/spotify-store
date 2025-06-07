@@ -11,6 +11,7 @@ import {
   FiGift,
   FiDollarSign,
   FiBarChart,
+  FiMessageCircle,
 } from "react-icons/fi";
 
 export default function AdminDashboard() {
@@ -104,6 +105,16 @@ export default function AdminDashboard() {
         >
           📈 آمار و نمودار فروش
         </AdminCard>
+        <Link
+          to="/admin/support"
+          className="bg-dark2 border border-gray-700 p-6 rounded-2xl shadow hover:shadow-xl transition flex items-center gap-3"
+        >
+          <FiMessageCircle className="text-primary text-2xl" />
+          <div>
+            <p className="font-bold text-lg">تیکت‌های پشتیبانی</p>
+            <p className="text-sm text-gray-400">بررسی و پاسخ‌گویی به تیکت‌ها</p>
+          </div>
+        </Link>
 
         <AdminCard to="/" icon={<FiHome />} title="بازگشت به سایت" />
       </div>

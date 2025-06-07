@@ -39,8 +39,10 @@ import NotFound from "./pages/NotFound";
 import VerifyPhone from "./pages/VerifyPhone";
 import OrderDetails from "./pages/OrderDetails";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
-
-
+import CreateTicket from "./pages/CreateTicket"; // یا SubmitTicket یا Support
+import UserTickets from "./pages/UserTickets";
+import TicketDetails from "./pages/TicketDetails";
+import SupportTicketsAdmin from "./pages/admin/SupportTicketsAdmin";
 
 function AppInner() {
   const { user, loading } = useContext(AuthContext);
@@ -78,9 +80,9 @@ function AppInner() {
               </PrivateRoute>
             }
           />
-<Route path="/admin/analytics" element={<AdminAnalytics/>}/>
+          <Route path="/admin/analytics" element={<AdminAnalytics />} />
           <Route path="*" element={<NotFound />} />
-<Route path="/order/:id" element={<OrderDetails />} />
+          <Route path="/order/:id" element={<OrderDetails />} />
 
           <Route path="/verify-phone" element={<VerifyPhone />} />
           {/* اگر کاربر لاگین کرده باشد، دسترسی به /login و /register مسدود می‌شود */}
@@ -101,6 +103,21 @@ function AppInner() {
               </PrivateRoute>
             }
           />
+
+            {/* پنل کاربر */}
+            <Route path="/create-ticket" element={<CreateTicket />} />
+            <Route path="/my-tickets" element={<UserTickets />} />
+            <Route path="/tickets/:id" element={<TicketDetails />} />
+
+            {/* پنل ادمین */}
+            <Route
+              path="/admin/support"
+              element={
+                <AdminRoute>
+              <SupportTicketsAdmin/>
+              </AdminRoute>}
+            />
+
 
           {/* مسیرهای ادمین */}
           <Route

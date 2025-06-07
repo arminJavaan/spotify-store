@@ -1,4 +1,3 @@
-
 // frontend/src/pages/OrderDetails.jsx
 
 import React, { useEffect, useState, useRef } from "react";
@@ -23,9 +22,7 @@ export default function OrderDetails() {
       );
   }, [id]);
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => window.print();
 
   const handleDownloadPDF = () => {
     const element = invoiceRef.current;

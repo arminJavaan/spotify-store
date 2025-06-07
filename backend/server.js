@@ -6,6 +6,7 @@ import cors from 'cors'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import walletRoutes from './routes/wallet.js'
+import supportRoutes from './routes/support.js';
 
 // لازم برای مسیر نسبی در ESM
 const __filename = fileURLToPath(import.meta.url)
@@ -18,8 +19,8 @@ connectDB()
 
 app.use(express.json())
 app.use(cors())
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
-
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+app.use('/uploads', express.static(path.join(__dirname, '../frontend/uploads')));
 // Mount کردن روت‌های اصلی قبل از فراخوانی 404
 import authRoutes from './routes/auth.js'
 import productRoutes from './routes/products.js'
@@ -37,6 +38,7 @@ app.use('/api/admin', adminRoutes)
 app.use('/api/discounts', discountRoutes)
 // app.use('/api/crypto', cryptoRoutes)
 app.use('/api/wallet', walletRoutes)
+app.use('/api/support', supportRoutes);
 
 app.get('/', (req, res) => {
   res.send('Spotify Store API is running')

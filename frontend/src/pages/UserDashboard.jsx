@@ -21,6 +21,7 @@ import {
   FiCode,
   FiDollarSign,
 } from "react-icons/fi";
+import { MessageSquare } from "lucide-react";
 
 export default function UserDashboard() {
   const { user, loading: userLoading, logout } = useContext(AuthContext);
@@ -312,6 +313,35 @@ export default function UserDashboard() {
               </p>
             )}
           </motion.div>
+
+          {/* تیکت‌های پشتیبانی */}
+<motion.div
+  className="bg-gradient-to-br from-dark1 to-dark2 p-6 rounded-3xl shadow-xl border border-gray-700"
+  initial={{ opacity: 0, x: -20 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ duration: 0.5 }}
+>
+  <h3 className="text-xl font-extrabold text-gray-light flex items-center gap-2 mb-4">
+    <MessageSquare className="text-primary" /> پشتیبانی
+  </h3>
+
+  <div className="space-y-4">
+    <button
+      onClick={() => navigate("/create-ticket")}
+      className="w-full bg-primary text-dark1 py-2 rounded-xl font-bold hover:bg-opacity-90 transition"
+    >
+      ارسال تیکت جدید
+    </button>
+
+    <button
+      onClick={() => navigate("/my-tickets")}
+      className="w-full bg-dark3 border border-gray-600 py-2 rounded-xl text-sm text-gray-200 hover:border-primary transition"
+    >
+      مشاهده تیکت‌های من
+    </button>
+  </div>
+</motion.div>
+
           {/* Discount */}
           <motion.div
             className="bg-gradient-to-br from-dark1 to-dark2 p-6 rounded-3xl shadow-xl border border-gray-700"
