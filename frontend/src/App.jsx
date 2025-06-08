@@ -7,6 +7,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import CustomCursor from "./components/CustomCursor";
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
 import CartProvider from "./contexts/CartContext";
 import SpotifyLoading from "./components/SpotifyLoading";
@@ -53,6 +54,7 @@ function AppInner() {
 
   return (
     <div className="relative flex flex-col min-h-screen">
+      <CustomCursor />
       <BackgroundAnimation />
 
       <Navbar />
