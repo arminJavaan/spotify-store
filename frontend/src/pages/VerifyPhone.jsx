@@ -1,6 +1,4 @@
-// frontend/src/pages/VerifyPhone.jsx
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -14,37 +12,47 @@ export default function VerifyPhone() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const hasSentRef = useRef(false); // ✅ به‌جای useState
 
   useEffect(() => {
     const phoneFromQuery = params.get("phone");
     if (phoneFromQuery) {
       setPhone(phoneFromQuery);
-       handleSendCode(phoneFromQuery);
+      if (!hasSentRef.current && resendTimer === 0) {
+        handleSendCodeOnce(phoneFromQuery);
+      }
     }
   }, [params]);
 
-const handleSendCode = async (phoneParam = phone) => {
-  setError(null);
-  setMessage(null);
-  if (!phoneParam) {
-    setError("شماره موبایل معتبر نیست");
-    return;
-  }
-  setLoading(true);
-  try {
-    const res = await axios.post("/api/auth/send-code", { phone: phoneParam });
-    setMessage(res.data.msg);
-    startTimer();
-  } catch (err) {
-    setError(
-      err.response?.data?.msg ||
-      err.response?.data?.errors?.[0]?.msg ||
-      "خطا در ارسال کد"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleSendCodeOnce = async (phoneParam = phone) => {
+    if (hasSentRef.current) return;
+    hasSentRef.current = true; // ✅ مستقیم آپدیت می‌دیم
+    await handleSendCode(phoneParam);
+  };
+
+  const handleSendCode = async (phoneParam = phone) => {
+    setError(null);
+    setMessage(null);
+    if (!phoneParam) {
+      setError("شماره موبایل معتبر نیست");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await axios.post("/api/auth/send-code", { phone: phoneParam });
+      setMessage(res.data.msg);
+      startTimer();
+    } catch (err) {
+      setError(
+        err.response?.data?.msg ||
+        err.response?.data?.errors?.[0]?.msg ||
+        "خطا در ارسال کد"
+      );
+      hasSentRef.current = false; // اگر خطا بود اجازه بده دوباره تلاش کنه
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleVerify = async () => {
     setError(null);
@@ -108,8 +116,7 @@ const handleSendCode = async (phoneParam = phone) => {
         )}
 
         <p className="text-sm text-gray-light mb-2">
-          کد ارسال‌شده به شماره <span className="text-primary">{phone}</span> را
-          وارد کنید
+          کد ارسال‌شده به شماره <span className="text-primary">{phone}</span> را وارد کنید
         </p>
         <input
           type="text"

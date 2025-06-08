@@ -12,6 +12,8 @@ import DiscountCode from "../models/DiscountCode.js";
 import Wallet from "../models/Wallet.js";
 import { sendSMSCode, verifySMSCode } from "../utils/sms.js";
 
+const smsCooldownMap = new Map();
+
 // @route   POST /api/auth/register
 router.post(
   "/register",
@@ -61,10 +63,7 @@ router.post(
       user.wallet = wallet._id;
       await user.save();
 
-      const personalCode = Math.random()
-        .toString(36)
-        .substr(2, 8)
-        .toUpperCase();
+      const personalCode = Math.random().toString(36).substr(2, 8).toUpperCase();
       await DiscountCode.create({
         code: personalCode,
         owner: user._id,
@@ -97,22 +96,30 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log("❌ Validation Errors:", errors.array()); // برای دیباگ
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { phone } = req.body;
-    console.log("📞 Phone received for SMS:", phone); // دیباگ
+    const now = Date.now();
+    const lastSentAt = smsCooldownMap.get(phone);
+    const cooldownMs = 60000;
 
-    console.log("BODY RECEIVED:", req.body);
-    console.log("VALIDATION ERRORS:", validationResult(req).array());
+    if (lastSentAt && now - lastSentAt < cooldownMs) {
+      const remainingSec = Math.ceil((cooldownMs - (now - lastSentAt)) / 1000);
+      return res
+        .status(429)
+        .json({ msg: `لطفاً ${remainingSec} ثانیه صبر کنید سپس دوباره تلاش کنید.` });
+    }
 
     try {
       const result = await sendSMSCode(phone);
-      res.status(result.success ? 200 : 400).json({ msg: result.Message });
+      if (result.success) {
+        smsCooldownMap.set(phone, now);
+      }
+      return res.status(result.success ? 200 : 400).json({ msg: result.message });
     } catch (err) {
       console.error("❌ Error in /send-code:", err);
-      res.status(500).json({ msg: "خطا در ارسال پیامک" });
+      return res.status(500).json({ msg: "خطا در ارسال پیامک" });
     }
   }
 );
@@ -133,10 +140,50 @@ router.post(
 
     try {
       const result = await verifySMSCode(phone, code);
-      if (!result.Success) {
-        return res.status(400).json({ msg: result.Message });
+      if (!result.success) {
+        return res.status(400).json({ msg: result.message });
       }
 
+      const user = await User.findOne({ phone });
+      if (!user) {
+        return res.status(404).json({ msg: "کاربر با این شماره پیدا نشد" });
+      }
+
+      user.isVerified = true;
+      await user.save();
+
+      const payload = { user: { id: user.id, role: user.role } };
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      return res.json({ msg: "احراز هویت موفق", token });
+    } catch (err) {
+      console.error("Error in POST /verify-code:", err);
+      return res.status(500).json({ msg: "خطا در سرور" });
+    }
+  }
+);
+
+// @route   POST /api/auth/verify-code
+router.post(
+  "/verify-code",
+  [
+    check("phone", "شماره موبایل الزامی است").notEmpty(),
+    check("code", "کد تایید الزامی است").notEmpty(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
+
+    const { phone, code } = req.body;
+
+    try {
+      const result = await verifySMSCode(phone, code);
+      if (!result.success) {
+        return res.status(400).json({ msg: result.Message });
+      }
       const user = await User.findOne({ phone });
       if (!user) {
         return res.status(404).json({ msg: "کاربر با این شماره پیدا نشد" });
