@@ -25,7 +25,7 @@ export default function WalletTopupRequests() {
       await API.post("/wallet/admin-topup-action", { id, status });
       fetchRequests();
     } catch {
-      alert("خطا در انجام عملیات");
+      toast.success("خطا در انجام عملیات");
     }
   };
 

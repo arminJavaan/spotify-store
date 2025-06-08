@@ -1,6 +1,6 @@
-import React, { createContext, useState, useEffect } from 'react';
-import API from '../api';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useState, useEffect } from "react";
+import API from "../api";
+import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
 
@@ -11,17 +11,24 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem('token');
+      
+      const token = localStorage.getItem("token");
       if (!token) {
         setLoading(false);
         return;
       }
       try {
-        const res = await API.get('/auth/me');
+        const res = await API.get("/auth/me");
         setUser(res.data);
+        if (res.data && !res.data.isVerified) {
+        navigate(`/verify-phone?phone=${res.data.phone}`);
+      }
       } catch (err) {
-        console.error('Error fetching /auth/me:', err.response?.data || err.message);
-        localStorage.removeItem('token');
+        console.error(
+          "Error fetching /auth/me:",
+          err.response?.data || err.message
+        );
+        localStorage.removeItem("token");
       } finally {
         setLoading(false);
       }
@@ -31,19 +38,29 @@ export const AuthProvider = ({ children }) => {
 
   const register = async ({ name, email, password, phone }) => {
     try {
-      const res = await API.post('/auth/register', { name, email, password, phone });
+      const res = await API.post("/auth/register", {
+        name,
+        email,
+        password,
+        phone,
+      });
       const { token, personalCode } = res.data;
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
 
       setLoading(true);
-      const me = await API.get('/auth/me');
+      const me = await API.get("/auth/me");
       setUser(me.data);
 
-      navigate('/dashboard');
+      if (!me.data.isVerified) {
+        navigate(`/verify-phone?phone=${me.data.phone}`);
+      } else {
+        navigate("/dashboard");
+      }
+      navigate("/dashboard");
 
       return personalCode;
     } catch (err) {
-      console.error('Error in register():', err.response?.data || err.message);
+      console.error("Error in register():", err.response?.data || err.message);
       throw err;
     } finally {
       setLoading(false);
@@ -52,17 +69,17 @@ export const AuthProvider = ({ children }) => {
 
   const login = async ({ email, password }) => {
     try {
-      const res = await API.post('/auth/login', { email, password });
+      const res = await API.post("/auth/login", { email, password });
       const { token } = res.data;
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
 
       setLoading(true);
-      const me = await API.get('/auth/me');
+      const me = await API.get("/auth/me");
       setUser(me.data);
 
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      console.error('Error in login():', err.response?.data || err.message);
+      console.error("Error in login():", err.response?.data || err.message);
       throw err;
     } finally {
       setLoading(false);
@@ -70,9 +87,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setUser(null);
-    navigate('/login');
+    navigate("/login");
   };
 
   return (

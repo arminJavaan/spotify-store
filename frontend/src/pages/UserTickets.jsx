@@ -75,12 +75,12 @@ export default function UserTickets() {
             placeholder="جستجو بر اساس موضوع..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 px-4 py-2 bg-dark3 text-black border border-gray-600 rounded-lg focus:outline-none focus:border-primary text-sm"
+            className="flex-1 px-4 py-2 bg-dark1 text-black border border-gray-600 rounded-lg focus:outline-none focus:border-primary text-sm"
           />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-48 px-4 py-2 bg-dark3 text-black border border-gray-600 rounded-lg focus:outline-none focus:border-primary text-sm"
+            className="w-full md:w-48 px-4 py-2 bg-black text-white border border-gray-600 rounded-lg focus:outline-none focus:border-primary text-sm"
           >
             <option value="all">همه وضعیت‌ها</option>
             <option value="open">در انتظار</option>

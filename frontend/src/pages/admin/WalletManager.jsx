@@ -51,10 +51,10 @@ export default function WalletManager() {
         { userId, amount, description },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("موجودی بروزرسانی شد");
+      toast.success("موجودی بروزرسانی شد");
       setRefresh(!refresh);
     } catch (err) {
-      alert("خطا در بروزرسانی موجودی");
+      toast.error("خطا در بروزرسانی موجودی");
     }
   };
 
@@ -114,7 +114,7 @@ export default function WalletManager() {
                   onClick={() => {
                     const amt = parseInt(document.getElementById(`amount-${user._id}`).value);
                     const desc = document.getElementById(`desc-${user._id}`).value;
-                    if (isNaN(amt) || desc.trim() === "") return alert("اطلاعات ناقص است");
+                    if (isNaN(amt) || desc.trim() === "") return toast.success("اطلاعات ناقص است");
                     adjustWallet(user._id, amt, desc);
                   }}
                 >

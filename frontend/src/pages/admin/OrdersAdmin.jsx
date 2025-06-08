@@ -47,7 +47,7 @@ export default function AdminOrders() {
       await fetchOrders()
     } catch (err) {
       console.error(err)
-      alert('خطا در به‌روزرسانی وضعیت سفارش')
+      toast.error('خطا در به‌روزرسانی وضعیت سفارش')
     } finally {
       setUpdatingOrderId(null)
     }

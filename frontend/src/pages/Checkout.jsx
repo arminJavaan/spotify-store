@@ -5,6 +5,7 @@ import { CartContext } from "../contexts/CartContext";
 import API from "../api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from 'react-hot-toast';
 
 export default function Checkout() {
   const { cart, clearCart } = useContext(CartContext);
@@ -119,10 +120,10 @@ export default function Checkout() {
         discountCode: payloadDiscountCode,
       });
 
-      if (method === "wallet") alert("سفارش شما با موفقیت از کیف پول ثبت شد.");
+      if (method === "wallet") toast.success("سفارش شما با موفقیت از کیف پول ثبت شد.");
       else if (method === "whatsapp")
         window.open(res.data.order.whatsappOrderUrl, "_blank");
-      else alert("سفارش شما با موفقیت ثبت شد.");
+      else toast.success("سفارش شما با موفقیت ثبت شد.");
 
       clearCart();
       navigate(`/order/${res.data.order._id}`);
@@ -150,7 +151,7 @@ export default function Checkout() {
       method,
     });
 
-    alert("درخواست شارژ ثبت شد. لطفاً فیش واریزی را در واتساپ یا تلگرام ارسال کنید.");
+    toast.success("درخواست شارژ ثبت شد. لطفاً فیش واریزی را در واتساپ یا تلگرام ارسال کنید.");
     navigate("/dashboard");
   } catch (err) {
     const msg = err.response?.data?.msg || err.message;

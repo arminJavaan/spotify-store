@@ -48,7 +48,7 @@ export default function AdminDiscounts() {
       await fetchDiscounts()
     } catch (err) {
       console.error(err)
-      alert('خطا در به‌روزرسانی وضعیت کد')
+      toast.error('خطا در به‌روزرسانی وضعیت کد')
     } finally {
       setUpdating(null)
     }
@@ -62,7 +62,7 @@ export default function AdminDiscounts() {
       await fetchDiscounts()
     } catch (err) {
       console.error(err)
-      alert('خطا در حذف کد تخفیف')
+      toast.error('خطا در حذف کد تخفیف')
     } finally {
       setUpdating(null)
     }

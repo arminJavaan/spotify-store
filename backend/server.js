@@ -7,12 +7,13 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import walletRoutes from './routes/wallet.js'
 import supportRoutes from './routes/support.js';
+dotenv.config()
 
 // لازم برای مسیر نسبی در ESM
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-dotenv.config()
+
 const app = express()
 
 connectDB()

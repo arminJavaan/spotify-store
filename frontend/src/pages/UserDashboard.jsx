@@ -4,6 +4,8 @@ import React, { useContext, useEffect, useState } from "react";
 import API from "../api";
 import { AuthContext } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiEdit2,
@@ -98,6 +100,27 @@ export default function UserDashboard() {
     try {
       await API.put("/auth/profile", payload);
       window.location.reload();
+      toast.custom((t) => (
+        <div
+          className={`${
+            t.visible ? "animate-enter" : "animate-leave"
+          } bg-[#1db954] text-black px-4 py-3 rounded-xl shadow-lg font-vazir text-sm flex items-center justify-between max-w-md w-full`}
+        >
+          <div>
+            <p className="font-bold">🎉 عملیات موفقیت‌آمیز</p>
+            <p className="text-xs text-black/80 mt-1">
+              تغییرات پروفایل شما با موفقیت ثبت شد.
+            </p>
+          </div>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="ml-4 text-black text-xs font-bold hover:text-white transition"
+          >
+            بستن
+          </button>
+        </div>
+      ));
+      
     } catch (err) {
       setProfileError(err.response?.data?.msg || "خطا در به‌روزرسانی پروفایل");
     }
@@ -313,35 +336,33 @@ export default function UserDashboard() {
               </p>
             )}
           </motion.div>
-
           {/* تیکت‌های پشتیبانی */}
-<motion.div
-  className="bg-gradient-to-br from-dark1 to-dark2 p-6 rounded-3xl shadow-xl border border-gray-700"
-  initial={{ opacity: 0, x: -20 }}
-  animate={{ opacity: 1, x: 0 }}
-  transition={{ duration: 0.5 }}
->
-  <h3 className="text-xl font-extrabold text-gray-light flex items-center gap-2 mb-4">
-    <MessageSquare className="text-primary" /> پشتیبانی
-  </h3>
+          <motion.div
+            className="bg-gradient-to-br from-dark1 to-dark2 p-6 rounded-3xl shadow-xl border border-gray-700"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h3 className="text-xl font-extrabold text-gray-light flex items-center gap-2 mb-4">
+              <MessageSquare className="text-primary" /> پشتیبانی
+            </h3>
 
-  <div className="space-y-4">
-    <button
-      onClick={() => navigate("/create-ticket")}
-      className="w-full bg-primary text-dark1 py-2 rounded-xl font-bold hover:bg-opacity-90 transition"
-    >
-      ارسال تیکت جدید
-    </button>
+            <div className="space-y-4">
+              <button
+                onClick={() => navigate("/create-ticket")}
+                className="w-full bg-primary text-dark1 py-2 rounded-xl font-bold hover:bg-opacity-90 transition"
+              >
+                ارسال تیکت جدید
+              </button>
 
-    <button
-      onClick={() => navigate("/my-tickets")}
-      className="w-full bg-dark3 border border-gray-600 py-2 rounded-xl text-sm text-gray-200 hover:border-primary transition"
-    >
-      مشاهده تیکت‌های من
-    </button>
-  </div>
-</motion.div>
-
+              <button
+                onClick={() => navigate("/my-tickets")}
+                className="w-full bg-dark3 border border-gray-600 py-2 rounded-xl text-sm text-gray-200 hover:border-primary transition"
+              >
+                مشاهده تیکت‌های من
+              </button>
+            </div>
+          </motion.div>
           {/* Discount */}
           <motion.div
             className="bg-gradient-to-br from-dark1 to-dark2 p-6 rounded-3xl shadow-xl border border-gray-700"
@@ -460,28 +481,73 @@ export default function UserDashboard() {
 
         {/* سفارش‌ها */}
         <div className="lg:col-span-2">
-          <motion.section
-            className="bg-gradient-to-br from-dark1 to-dark2 p-6 rounded-3xl shadow-xl border border-gray-700"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h3 className="text-xl font-extrabold text-gray-light mb-6 flex items-center gap-2">
-              <FiClock className="text-primary text-lg" /> سفارش‌های من
-            </h3>
-            {ordersLoading ? (
-              <p className="text-center text-gray-400 animate-pulse">
-                در حال بارگذاری...
-              </p>
-            ) : ordersError ? (
-              <p className="text-red-500 text-center">{ordersError}</p>
-            ) : orders.length === 0 ? (
-              <p className="text-center text-gray-400">
+          <div className="mt-2">
+            <p className="text-center text-primary text-2xl font-vazir font-bold mb-4">
+              تاریخچه سفارش ها
+            </p>
+            {orders.length === 0 ? (
+              <p className="text-center text-gray-400 text-sm mt-10 ">
                 شما هنوز سفارشی ثبت نکرده‌اید.
               </p>
             ) : (
-              <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-dark3">
-                {orders.map((order) => (
+              orders.map((order) =>
+                order.type === "topup" ? (
+                  <motion.div
+                    key={order._id}
+                    className="bg-dark2 p-5 rounded-2xl border border-yellow-500 shadow-md hover:shadow-xl transition-all duration-300"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-yellow-400 font-bold text-sm font-mono">
+                        #TOPUP-{order._id.slice(-6)}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString("fa-IR")}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-300 space-y-2">
+                      <div className="text-sm text-gray-100">
+                        💳 درخواست شارژ کیف پول
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">مبلغ:</span>
+                        <span className="text-primary font-bold">
+                          {order.amount.toLocaleString("fa-IR")} تومان
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-400">
+                        <span>روش پرداخت:</span>
+                        <span>
+                          {order.method === "card-to-card"
+                            ? "کارت به کارت"
+                            : order.method === "shaparak"
+                            ? "شاپرک"
+                            : order.method}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-400">
+                        <span>وضعیت:</span>
+                        <span
+                          className={
+                            order.status === "approved"
+                              ? "text-green-400"
+                              : order.status === "rejected"
+                              ? "text-red-400"
+                              : "text-yellow-400"
+                          }
+                        >
+                          {order.status === "approved"
+                            ? "تایید شده"
+                            : order.status === "rejected"
+                            ? "رد شده"
+                            : "در انتظار تایید"}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
                   <motion.div
                     key={order._id}
                     className="bg-dark2 p-5 rounded-2xl border border-gray-700 shadow-md hover:shadow-xl transition-all duration-300"
@@ -537,7 +603,7 @@ export default function UserDashboard() {
                         )}
                       </div>
                       <div className="mt-1 text-xs text-gray-400">
-                        روش پرداخت:{" "}
+                        روش پرداخت:
                         {order.paymentMethod === "whatsapp"
                           ? "واتساپ"
                           : order.paymentMethod}
@@ -572,10 +638,10 @@ export default function UserDashboard() {
                       </div>
                     </div>
                   </motion.div>
-                ))}
-              </div>
+                )
+              )
             )}
-          </motion.section>
+          </div>
         </div>
       </div>
     </main>

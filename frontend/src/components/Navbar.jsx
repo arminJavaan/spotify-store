@@ -45,6 +45,8 @@ export default function Navbar() {
     );
   }
 
+  const isVerified = user?.isVerified;
+
   return (
     <header className="fixed w-full top-0 z-50 bg-gradient-to-r from-dark2/90 to-dark1/90 backdrop-blur-md shadow-xl border-b border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -73,7 +75,7 @@ export default function Navbar() {
         <nav className="hidden md:flex space-x-4 items-center">
           {!user ? (
             <NavLink to="/login">ورود / ثبت‌نام</NavLink>
-          ) : (
+          ) : isVerified ? (
             <>
               <NavLink to="/dashboard">
                 <FiUser className="ml-2" /> داشبورد
@@ -88,18 +90,20 @@ export default function Navbar() {
                 خروج
               </button>
             </>
+          ) : null}
+          {isVerified && (
+            <Link
+              to="/cart"
+              className="relative flex items-center px-4 py-2 rounded-xl text-gray-light hover:text-primary hover:bg-white/10 transition"
+            >
+              <FiShoppingCart size={20} />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-dark2 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-ping">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
           )}
-          <Link
-            to="/cart"
-            className="relative flex items-center px-4 py-2 rounded-xl text-gray-light hover:text-primary hover:bg-white/10 transition"
-          >
-            <FiShoppingCart size={20} />
-            {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-dark2 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-ping">
-                {totalItems}
-              </span>
-            )}
-          </Link>
         </nav>
 
         {/* Mobile Menu Button */}
@@ -122,6 +126,7 @@ export default function Navbar() {
             className="md:hidden bg-dark1/90 border-t border-gray-800 overflow-hidden backdrop-blur-sm"
           >
             <ul className="flex flex-col px-6 py-4 space-y-4">
+              
               <li>
                 <NavLink to="/" onClick={toggleMenu}>
                   <FiHome className="ml-2" /> خانه
@@ -132,13 +137,14 @@ export default function Navbar() {
                   محصولات
                 </NavLink>
               </li>
+               
               {!user ? (
                 <li>
                   <NavLink to="/login" onClick={toggleMenu}>
                     ورود / ثبت‌نام
                   </NavLink>
                 </li>
-              ) : (
+              ) : isVerified ? (
                 <>
                   <li>
                     <NavLink to="/dashboard" onClick={toggleMenu}>
@@ -164,21 +170,23 @@ export default function Navbar() {
                     </button>
                   </li>
                 </>
+              ) : null}
+              {isVerified && (
+                <li>
+                  <Link
+                    to="/cart"
+                    onClick={toggleMenu}
+                    className="relative flex items-center px-4 py-2 rounded-xl text-gray-light hover:text-primary hover:bg-white/10"
+                  >
+                    <FiShoppingCart size={20} />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-primary text-dark2 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                        {totalItems}
+                      </span>
+                    )}
+                  </Link>
+                </li>
               )}
-              <li>
-                <Link
-                  to="/cart"
-                  onClick={toggleMenu}
-                  className="relative flex items-center px-4 py-2 rounded-xl text-gray-light hover:text-primary hover:bg-white/10"
-                >
-                  <FiShoppingCart size={20} />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary text-dark2 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                      {totalItems}
-                    </span>
-                  )}
-                </Link>
-              </li>
             </ul>
           </motion.nav>
         )}

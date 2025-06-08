@@ -71,7 +71,7 @@ export default function Register() {
         password,
         phone: phone.trim()
       })
-      navigate('/verify-phone?phone=${phone.trim()}')
+      navigate(`/verify-phone?phone=${phone.trim()}`)
     } catch (err) {
       const serverMsg = err.response?.data?.msg || err.response?.data?.errors?.[0]?.msg || err.message
       setError(serverMsg)

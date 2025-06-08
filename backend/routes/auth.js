@@ -12,20 +12,104 @@ import DiscountCode from "../models/DiscountCode.js";
 import Wallet from "../models/Wallet.js";
 import { sendSMSCode, verifySMSCode } from "../utils/sms.js";
 
-// @route   POST /api/auth/send-code
+// @route   POST /api/auth/register
 router.post(
-  "/send-code",
-  [check("phone", "شماره موبایل الزامی است").notEmpty()],
+  "/register",
+  [
+    check("name", "نام الزامی‌ست").notEmpty(),
+    check("email", "لطفاً ایمیل معتبر وارد کنید").isEmail(),
+    check("password", "پسورد حداقل 6 کاراکتر باشد").isLength({ min: 6 }),
+    check("phone", "شماره تلفن الزامی‌ست").notEmpty(),
+  ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty())
       return res.status(400).json({ errors: errors.array() });
 
+    const { name, email, password, phone } = req.body;
+
+    try {
+      let existingEmail = await User.findOne({
+        email: email.toLowerCase().trim(),
+      });
+      let existingPhone = await User.findOne({ phone: phone.trim() });
+
+      if (existingEmail)
+        return res.status(400).json({ msg: "این ایمیل قبلاً ثبت‌نام شده است" });
+      if (existingPhone)
+        return res
+          .status(400)
+          .json({ msg: "این شماره موبایل قبلاً استفاده شده است" });
+
+      let user = new User({
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        password,
+        phone: phone.trim(),
+        isVerified: false,
+      });
+
+      await user.save();
+
+      const wallet = new Wallet({
+        user: user._id,
+        balance: 0,
+        transactions: [],
+      });
+      await wallet.save();
+
+      user.wallet = wallet._id;
+      await user.save();
+
+      const personalCode = Math.random()
+        .toString(36)
+        .substr(2, 8)
+        .toUpperCase();
+      await DiscountCode.create({
+        code: personalCode,
+        owner: user._id,
+        uses: 0,
+        active: true,
+        generatedBySystem: true,
+        type: "personal",
+      });
+
+      const payload = { user: { id: user.id, role: user.role } };
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      return res.json({ token, personalCode });
+    } catch (err) {
+      console.error("Error in POST /auth/register:", err);
+      return res.status(500).json({ msg: "خطا در سرور" });
+    }
+  }
+);
+
+// @route   POST /api/auth/send-code
+router.post(
+  "/send-code",
+  [
+    check("phone", "شماره موبایل الزامی است").notEmpty(),
+    check("phone", "شماره موبایل معتبر نیست").matches(/^09\d{9}$/),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log("❌ Validation Errors:", errors.array()); // برای دیباگ
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const { phone } = req.body;
+    console.log("📞 Phone received for SMS:", phone); // دیباگ
+
+    console.log("BODY RECEIVED:", req.body);
+    console.log("VALIDATION ERRORS:", validationResult(req).array());
 
     try {
       const result = await sendSMSCode(phone);
-      res.status(result.Success ? 200 : 400).json({ msg: result.Message });
+      res.status(result.success ? 200 : 400).json({ msg: result.Message });
     } catch (err) {
       console.error("❌ Error in /send-code:", err);
       res.status(500).json({ msg: "خطا در ارسال پیامک" });
@@ -69,78 +153,6 @@ router.post(
       return res.json({ msg: "احراز هویت موفق", token });
     } catch (err) {
       console.error("Error in POST /verify-code:", err);
-      return res.status(500).json({ msg: "خطا در سرور" });
-    }
-  }
-);
-
-// @route   POST /api/auth/register
-router.post(
-  "/register",
-  [
-    check("name", "نام الزامی‌ست").notEmpty(),
-    check("email", "لطفاً ایمیل معتبر وارد کنید").isEmail(),
-    check("password", "پسورد حداقل 6 کاراکتر باشد").isLength({ min: 6 }),
-    check("phone", "شماره تلفن الزامی‌ست").notEmpty(),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-      return res.status(400).json({ errors: errors.array() });
-
-    const { name, email, password, phone } = req.body;
-
-    try {
-      let existingEmail = await User.findOne({
-        email: email.toLowerCase().trim(),
-      });
-      let existingPhone = await User.findOne({ phone: phone.trim() });
-
-      if (existingEmail)
-        return res.status(400).json({ msg: "این ایمیل قبلاً ثبت‌نام شده است" });
-      if (existingPhone)
-        return res
-          .status(400)
-          .json({ msg: "این شماره موبایل قبلاً استفاده شده است" });
-
-      let user = new User({
-        name: name.trim(),
-        email: email.toLowerCase().trim(),
-        password,
-        phone: phone.trim(),
-        isVerified: true,
-      });
-
-      await user.save();
-
-      const wallet = new Wallet({
-        user: user._id,
-        balance: 0,
-        transactions: [],
-      });
-      await wallet.save();
-
-      user.wallet = wallet._id;
-      await user.save();
-
-      const personalCode = Math.random().toString(36).substr(2, 8).toUpperCase();
-      await DiscountCode.create({
-        code: personalCode,
-        owner: user._id,
-        uses: 0,
-        active: true,
-        generatedBySystem: true,
-        type: "personal",
-      });
-
-      const payload = { user: { id: user.id, role: user.role } };
-      const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      });
-
-      return res.json({ token, personalCode });
-    } catch (err) {
-      console.error("Error in POST /auth/register:", err);
       return res.status(500).json({ msg: "خطا در سرور" });
     }
   }
@@ -234,9 +246,7 @@ router.put(
     } catch (err) {
       console.error("Error in PUT /auth/profile:", err);
       if (err.code === 11000 && err.keyPattern.email) {
-        return res
-          .status(400)
-          .json({ msg: "این ایمیل قبلاً استفاده شده است" });
+        return res.status(400).json({ msg: "این ایمیل قبلاً استفاده شده است" });
       }
       return res.status(500).json({ msg: "خطا در به‌روزرسانی پروفایل" });
     }

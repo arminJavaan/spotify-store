@@ -110,7 +110,7 @@ export default function AdminProducts() {
       )
       const serverMsg = err.response?.data?.msg || err.response?.data?.error || err.message
       setErrorMsg(`خطا در ذخیره‌سازی محصول: ${serverMsg}`)
-      alert(`خطا در ذخیره‌سازی محصول:\n${serverMsg}`)
+      toast.error(`خطا در ذخیره‌سازی محصول:\n${serverMsg}`)
     } finally {
       setLoading(false)
     }
@@ -140,7 +140,7 @@ export default function AdminProducts() {
       console.error('Error deleting product:', err.response?.data || err.message)
       const serverMsg = err.response?.data?.msg || err.message
       setErrorMsg(`خطا در حذف محصول: ${serverMsg}`)
-      alert(`خطا در حذف محصول:\n${serverMsg}`)
+      toast.error(`خطا در حذف محصول:\n${serverMsg}`)
     }
   }
 

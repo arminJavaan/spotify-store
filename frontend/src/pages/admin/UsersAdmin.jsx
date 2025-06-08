@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import API from '../../api'
+import toast from "react-hot-toast";
 import { FiUserCheck, FiUserX, FiTrash2, FiUser, FiMail } from 'react-icons/fi'
 
 export default function AdminUsers() {
@@ -36,25 +37,58 @@ export default function AdminUsers() {
       await fetchUsers()
     } catch (err) {
       console.error(err)
-      alert('خطا در تغییر نقش کاربر')
+      toast.error('خطا در تغییر نقش کاربر')
     } finally {
       setUpdatingUserId(null)
     }
   }
 
-  const deleteUser = async (id) => {
-    if (!window.confirm('آیا از حذف این کاربر مطمئن هستید؟')) return
-    setUpdatingUserId(id)
-    try {
-      await API.delete(`/admin/users/${id}`)
-      await fetchUsers()
-    } catch (err) {
-      console.error(err)
-      alert('خطا در حذف کاربر')
-    } finally {
-      setUpdatingUserId(null)
-    }
+ const confirmDelete = () => {
+  return new Promise((resolve) => {
+    toast.custom((t) => (
+      <div className="bg-dark2 text-gray-200 border border-red-500/40 rounded-xl shadow-xl px-5 py-4 w-full max-w-sm font-vazir">
+        <p className="text-sm mb-3">❗ آیا از حذف این کاربر مطمئن هستید؟</p>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              resolve(false);
+            }}
+            className="px-3 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 transition"
+          >
+            لغو
+          </button>
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              resolve(true);
+            }}
+            className="px-3 py-1 text-xs rounded bg-red-500 hover:bg-red-600 text-white font-bold transition"
+          >
+            تایید حذف
+          </button>
+        </div>
+      </div>
+    ));
+  });
+};
+
+const deleteUser = async (id) => {
+  const confirmed = await confirmDelete();
+  if (!confirmed) return;
+
+  setUpdatingUserId(id);
+  try {
+    await API.delete(`/admin/users/${id}`);
+    await fetchUsers();
+    toast.success("کاربر با موفقیت حذف شد.");
+  } catch (err) {
+    console.error(err);
+    toast.error("خطا در حذف کاربر");
+  } finally {
+    setUpdatingUserId(null);
   }
+};
 
   if (loading) {
     return (

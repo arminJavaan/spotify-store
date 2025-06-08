@@ -47,7 +47,7 @@ export default function SupportTicketsAdmin() {
       setReplyInputs({ ...replyInputs, [ticketId]: "" });
       fetchTickets();
     } catch {
-      alert("خطا در ارسال پاسخ");
+      toast.error("خطا در ارسال پاسخ");
     } finally {
       setReplyingId(null);
     }
@@ -61,7 +61,7 @@ export default function SupportTicketsAdmin() {
       await API.patch(`/support/tickets/${ticketId}/close`);
       fetchTickets();
     } catch {
-      alert("خطا در بستن تیکت");
+      toast.error("خطا در بستن تیکت");
     }
   };
 
