@@ -556,7 +556,7 @@ export default function UserDashboard() {
                   >
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-primary font-bold text-sm font-mono">
-                        {order._id.slice(-6)}
+                       Order ID : {order._id.slice(-6)}
                       </span>
                       <span className="text-xs text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString("fa-IR")}
@@ -593,6 +593,7 @@ export default function UserDashboard() {
                           <span className="font-bold text-primary ml-1">
                             {order.totalAmount.toLocaleString("fa-IR")} تومان
                           </span>
+                        
                           {order.cashbackAmount > 0 && (
                             <span className="text-green-400 text-xs block mt-1">
                               کش‌بک:{" "}

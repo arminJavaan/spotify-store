@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import auth from "../middleware/auth.js";
+import Setting from "../models/Setting.js"; // اضافه کن بالای فایل
 import requireRole from "../middleware/roles.js";
 import User from "../models/User.js";
 import Order from "../models/Order.js";
@@ -51,6 +52,10 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+async function getAutoDiscountProducts() {
+  const setting = await Setting.findOne({ key: "autoDiscountAllowedProducts" });
+  return setting?.value || [];
+}
 router.post("/", auth, async (req, res) => {
   try {
     const { paymentMethod, paymentDetails, discountCode } = req.body;
@@ -64,7 +69,6 @@ router.post("/", auth, async (req, res) => {
       (sum, item) => sum + item.product.price * item.quantity,
       0
     );
-
 
     let appliedDiscount = 0;
 
@@ -141,7 +145,7 @@ router.post("/", auth, async (req, res) => {
       dc.uses += 1;
       await dc.save();
 
-      if (dc.type === "personal" && dc.uses === 5) {
+      if (dc.type === "personal" && dc.uses >= 5 && (dc.uses - 5) % 10 === 0) {
         const rewardCode = Math.random()
           .toString(36)
           .substr(2, 8)
@@ -153,7 +157,35 @@ router.post("/", auth, async (req, res) => {
           active: true,
           generatedBySystem: true,
           type: "reward70",
+          allowedProducts: await getAutoDiscountProducts(),
         });
+      }
+
+      if (dc.allowedProducts && dc.allowedProducts.length > 0) {
+        const allowedSet = new Set(dc.allowedProducts.map((p) => p.toString()));
+        const allAllowed = cartProductIds.every((id) => allowedSet.has(id));
+        if (!allAllowed) {
+          return res.status(400).json({
+            msg: "این کد تخفیف فقط روی محصولات خاصی قابل استفاده است.",
+          });
+        }
+      }
+      if (dc.type === "personal") {
+        const allowed = await Setting.findOne({
+          key: "personalDiscountAllowedProducts",
+        });
+        const allowedProducts = allowed?.value || [];
+
+        const allowedSet = new Set(allowedProducts.map((p) => p.toString()));
+        const allAllowed = user.cart.every((item) =>
+          allowedSet.has(item.product._id.toString())
+        );
+
+        if (!allAllowed) {
+          return res.status(400).json({
+            msg: "کد تخفیف فقط برای محصولات مشخص‌شده قابل استفاده است.",
+          });
+        }
       }
 
       if (dc.type === "personal" && dc.uses === 10) {
@@ -165,6 +197,7 @@ router.post("/", auth, async (req, res) => {
           active: true,
           generatedBySystem: true,
           type: "freeAccount",
+          allowedProducts: await getAutoDiscountProducts(),
         });
       }
     }
@@ -209,9 +242,9 @@ router.post("/", auth, async (req, res) => {
       orderData.whatsappOrderUrl = url;
     }
 
-                // 📌 محاسبه کش‌بک (۵٪ با سقف ۱۰۰هزار تومان)
+    // 📌 اعمال کش‌بک فقط برای پرداخت با کیف پول
     let cashbackAmount = 0;
-    if (totalAmount > 0) {
+    if (paymentMethod === "wallet" && totalAmount > 0) {
       cashbackAmount = Math.floor(totalAmount * 0.05); // ۵٪
       if (cashbackAmount > 100000) cashbackAmount = 100000;
 
@@ -226,8 +259,8 @@ router.post("/", auth, async (req, res) => {
         await wallet.save();
       }
     }
-    orderData.cashbackAmount = cashbackAmount;
 
+    orderData.cashbackAmount = cashbackAmount;
 
     const newOrder = new Order(orderData);
     await newOrder.save();

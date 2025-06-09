@@ -1,52 +1,63 @@
-// frontend/src/components/ProductCard.jsx
+// ProductCard با طراحی دقیق مشابه تصویر ارسالی، با گوشه‌های پایین پاره‌شده، بک‌گراند قیمت کاملاً مشابه و دکمه سبز
 
-import React from 'react'
-import { motion } from 'framer-motion'
+import React from 'react';
+import { motion } from 'framer-motion';
 
 export default function ProductCard({ product, onAdd }) {
   const handleAdd = async () => {
     try {
-      await onAdd(product._id)
-      // در صورت موفقیت، می‌توان نوتیفیکیشن یا انیمیشن کوتاه نمایش داد
+      await onAdd(product._id);
     } catch (err) {
-      alert(err.message)
+      alert(err.message);
     }
-  }
+  };
 
   return (
     <motion.div
-      className="bg-dark1 rounded-2xl shadow-lg overflow-hidden flex flex-col"
-      whileHover={{ y: -5, boxShadow: '0px 15px 30px rgba(29, 185, 84, 0.2)' }}
-      initial={{ opacity: 0, y: 50 }}
+      className="bg-[#2c2c2c] rounded-2xl overflow-hidden shadow-lg border border-gray-700 flex flex-col"
+      whileHover={{ scale: 1.01 }}
+      initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >
-      <div className="h-48 bg-gray-med flex items-center justify-center overflow-hidden">
+      {/* تصویر بنر */}
+      <div className="w-full h-48 overflow-hidden">
         <img
           src={product.bannerUrl}
           alt={product.name}
           className="object-cover w-full h-full"
-          loading="lazy"
         />
       </div>
-      <div className="p-6 flex flex-col flex-grow">
-        <h3 className="text-xl font-semibold text-gray-light mb-2">{product.name}</h3>
-        <p className="text-gray-light text-sm flex-grow leading-relaxed">
+
+      {/* نام و توضیحات */}
+      <div className="px-4 sm:px-6 pt-5 pb-4 flex flex-col gap-3 text-right">
+        <h3 className="text-gray-100 font-bold text-[15px] sm:text-base leading-tight group-hover:text-primary transition-colors duration-300">
+          {product.name}
+        </h3>
+        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line group-hover:text-gray-200 transition-colors duration-300">
           {product.description}
         </p>
-        <div className="mt-4 flex justify-between items-center">
-          <span className="text-primary font-bold">
-            {Number(product.price).toLocaleString('fa-IR')} تومان
-          </span>
-          <button
-            onClick={handleAdd}
-            className="bg-primary hover:bg-opacity-90 text-dark2 px-4 py-2 rounded-lg font-medium transition"
-          >
-            افزودن به سبد
-          </button>
+      </div>
+
+      {/* افکت خط نقطه‌چین کامل */}
+      <div className="relative w-full px-6">
+        <div className="w-full border-t-2 border-dashed border-gray-500"></div>
+      </div>
+
+      {/* ناحیه پایین کارت */}
+      <div className="bg-[#1c1c1c] flex items-center justify-between px-6 py-4 relative rounded-b-2xl">
+        <div className="bg-gradient-to-r from-[#04220e] to-[#1db954] px-6 py-2 pl-40 rounded-md text-sm text-white font-bold shadow-md">
+          {Number(product.price).toLocaleString('fa-IR')} تومان
         </div>
+        <button
+          onClick={handleAdd}
+          className="bg-[#1db954] text-white text-sm font-bold px-6 py-2 rounded-md hover:bg-[#1ed760] transition"
+        >
+          افزودن به سبد
+        </button>
+        
       </div>
     </motion.div>
-  )
+  );
 }

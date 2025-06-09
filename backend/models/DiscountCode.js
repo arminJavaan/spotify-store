@@ -1,3 +1,6 @@
+// ✅ مرحله ۱: ویرایش مدل DiscountCode
+// backend/models/DiscountCode.js
+
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
@@ -46,7 +49,13 @@ const DiscountCodeSchema = new mongoose.Schema(
     expiresAt: {
       type: Date,
       default: null,
-    }
+    },
+    allowedProducts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
   },
   { timestamps: true }
 );

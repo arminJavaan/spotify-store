@@ -3,7 +3,7 @@
 import express from "express";
 const router = express.Router();
 
-import { sendAccountInfoEmail } from "../utils/sendAccountInfoEmail.js"
+import { sendAccountInfoEmail } from "../utils/sendAccountInfoEmail.js";
 import auth from "../middleware/auth.js";
 import requireRole from "../middleware/roles.js";
 import User from "../models/User.js";
@@ -11,7 +11,7 @@ import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 import moment from "moment-jalaali";
 import DiscountCode from "../models/DiscountCode.js";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 import multer from "multer";
 import path from "path";
@@ -66,7 +66,6 @@ const upload = multer({
   },
 });
 
-
 router.get("/analytics", async (req, res) => {
   try {
     const stats = [];
@@ -94,7 +93,6 @@ router.get("/analytics", async (req, res) => {
     return res.status(500).json({ msg: "خطا در تحلیل داده‌ها" });
   }
 });
-
 
 router.get("/products", async (req, res) => {
   try {
@@ -339,7 +337,10 @@ router.post("/orders/:id/send-account", async (req, res) => {
     return res.status(400).json({ msg: "ایمیل و رمز عبور اکانت الزامی است" });
 
   try {
-    const order = await Order.findById(req.params.id).populate("user", "name email");
+    const order = await Order.findById(req.params.id).populate(
+      "user",
+      "name email"
+    );
     if (!order) return res.status(404).json({ msg: "سفارش یافت نشد" });
 
     // ارسال ایمیل به کاربر
@@ -357,7 +358,7 @@ router.post("/orders/:id/send-account", async (req, res) => {
     order.accountInfo = {
       email,
       password,
-      sentAt: new Date()
+      sentAt: new Date(),
     };
     order.status = "completed"; // همزمان وضعیت را کامل کنیم
     await order.save();
@@ -366,6 +367,100 @@ router.post("/orders/:id/send-account", async (req, res) => {
   } catch (err) {
     console.error("Email send error:", err);
     return res.status(500).json({ msg: "خطا در ارسال ایمیل" });
+  }
+});
+
+// ============ تنظیمات کدهای تخفیف اتوماتیک ============
+
+import Setting from "../models/Setting.js";
+
+// گرفتن لیست محصولات مجاز
+router.get("/settings/discount-products", async (req, res) => {
+  try {
+    const setting = await Setting.findOne({
+      key: "autoDiscountAllowedProducts",
+    });
+    return res.json(setting?.value || []);
+  } catch (err) {
+    console.error("خطا در گرفتن تنظیمات تخفیف:", err);
+    return res.status(500).json({ msg: "خطا در دریافت تنظیمات" });
+  }
+});
+
+// بروزرسانی محصولات مجاز
+router.put("/settings/discount-products", async (req, res) => {
+  const { productIds } = req.body;
+  if (!Array.isArray(productIds))
+    return res.status(400).json({ msg: "لیست محصولات معتبر نیست" });
+
+  try {
+    const updated = await Setting.findOneAndUpdate(
+      { key: "autoDiscountAllowedProducts" },
+      { $set: { value: productIds } },
+      { upsert: true, new: true }
+    );
+    return res.json({ msg: "تنظیمات ذخیره شد", data: updated.value });
+  } catch (err) {
+    console.error("خطا در ذخیره تنظیمات:", err);
+    return res.status(500).json({ msg: "خطا در ذخیره تنظیمات" });
+  }
+});
+
+// تنظیمات محصولات مجاز برای کدهای 15٪ شخصی
+router.get("/settings/personal-discount-products", async (req, res) => {
+  try {
+    const setting = await Setting.findOne({ key: "personalDiscountAllowedProducts" });
+    return res.json(setting?.value || []);
+  } catch (err) {
+    console.error("خطا در گرفتن تنظیمات شخصی:", err);
+    return res.status(500).json({ msg: "خطا در دریافت تنظیمات" });
+  }
+});
+
+router.put("/settings/personal-discount-products", async (req, res) => {
+  const { productIds } = req.body;
+  if (!Array.isArray(productIds))
+    return res.status(400).json({ msg: "لیست محصولات معتبر نیست" });
+
+  try {
+    const updated = await Setting.findOneAndUpdate(
+      { key: "personalDiscountAllowedProducts" },
+      { $set: { value: productIds } },
+      { upsert: true, new: true }
+    );
+    return res.json({ msg: "تنظیمات ذخیره شد", data: updated.value });
+  } catch (err) {
+    console.error("خطا در ذخیره تنظیمات شخصی:", err);
+    return res.status(500).json({ msg: "خطا در ذخیره تنظیمات" });
+  }
+});
+
+// تنظیمات محصولات مجاز برای کدهای رایگان
+router.get("/settings/free-discount-products", async (req, res) => {
+  try {
+    const setting = await Setting.findOne({ key: "freeDiscountAllowedProducts" });
+    return res.json(setting?.value || []);
+  } catch (err) {
+    console.error("خطا در گرفتن تنظیمات رایگان:", err);
+    return res.status(500).json({ msg: "خطا در دریافت تنظیمات" });
+  }
+});
+
+router.put("/settings/free-discount-products", async (req, res) => {
+  const { productIds } = req.body;
+  if (!Array.isArray(productIds))
+    return res.status(400).json({ msg: "لیست محصولات معتبر نیست" });
+
+  try {
+    const updated = await Setting.findOneAndUpdate(
+      { key: "freeDiscountAllowedProducts" },
+      { $set: { value: productIds } },
+      { upsert: true, new: true }
+    );
+    return res.json({ msg: "تنظیمات ذخیره شد", data: updated.value });
+  } catch (err) {
+    console.error("خطا در ذخیره تنظیمات رایگان:", err);
+    return res.status(500).json({ msg: "خطا در ذخیره تنظیمات" });
   }
 });
 
