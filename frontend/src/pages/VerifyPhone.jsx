@@ -12,21 +12,25 @@ export default function VerifyPhone() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
-  const hasSentRef = useRef(false); // ✅ به‌جای useState
+  const hasSentRef = useRef(false);
+
+  const inputClass =
+    "w-full px-4 py-2 mb-4 bg-dark2 text-gray-light border border-gray-med rounded focus:outline-none focus:border-primary";
 
   useEffect(() => {
     const phoneFromQuery = params.get("phone");
     if (phoneFromQuery) {
       setPhone(phoneFromQuery);
-      if (!hasSentRef.current && resendTimer === 0) {
+      if (!hasSentRef.current) {
         handleSendCodeOnce(phoneFromQuery);
       }
     }
-  }, [params]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSendCodeOnce = async (phoneParam = phone) => {
     if (hasSentRef.current) return;
-    hasSentRef.current = true; // ✅ مستقیم آپدیت می‌دیم
+    hasSentRef.current = true;
     await handleSendCode(phoneParam);
   };
 
@@ -45,10 +49,10 @@ export default function VerifyPhone() {
     } catch (err) {
       setError(
         err.response?.data?.msg ||
-        err.response?.data?.errors?.[0]?.msg ||
-        "خطا در ارسال کد"
+          err.response?.data?.errors?.[0]?.msg ||
+          "خطا در ارسال کد"
       );
-      hasSentRef.current = false; // اگر خطا بود اجازه بده دوباره تلاش کنه
+      hasSentRef.current = false;
     } finally {
       setLoading(false);
     }
@@ -67,8 +71,8 @@ export default function VerifyPhone() {
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
-        setMessage("احراز هویت با موفقیت انجام شد");
-        navigate("/dashboard");
+        setMessage("احراز هویت با موفقیت انجام شد ✅");
+        setTimeout(() => navigate("/dashboard"), 1500);
       } else {
         setMessage(res.data.msg || "احراز هویت انجام شد");
       }
@@ -116,14 +120,17 @@ export default function VerifyPhone() {
         )}
 
         <p className="text-sm text-gray-light mb-2">
-          کد ارسال‌شده به شماره <span className="text-primary">{phone}</span> را وارد کنید
+          کد ارسال‌شده به شماره{" "}
+          <span className="text-primary font-bold">{phone}</span> را وارد کنید:
         </p>
         <input
-          type="text"
-          placeholder="کد تایید"
+          type="tel"
+          inputMode="numeric"
+          maxLength={6}
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          className="w-full px-4 py-2 mb-4 bg-dark2 text-gray-light border border-gray-med rounded focus:outline-none focus:border-primary"
+          placeholder="کد تایید"
+          className={inputClass}
         />
         <button
           onClick={handleVerify}
@@ -132,6 +139,7 @@ export default function VerifyPhone() {
         >
           {loading ? "در حال بررسی..." : "تأیید کد"}
         </button>
+
         {resendTimer > 0 ? (
           <p className="text-center text-xs mt-4 text-gray-med">
             ارسال مجدد تا {resendTimer} ثانیه دیگر

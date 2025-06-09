@@ -1,7 +1,5 @@
-// frontend/src/components/Navbar.jsx
-
 import React, { useState, useContext, useCallback } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../contexts/CartContext";
 import { AuthContext } from "../contexts/AuthContext";
 import { FiMenu, FiX, FiShoppingCart, FiUser, FiHome } from "react-icons/fi";
@@ -30,9 +28,22 @@ export default function Navbar() {
   const { cart } = useContext(CartContext);
   const { user, loading, logout } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
-  const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
+  const navigate = useNavigate();
 
+  const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
   const toggleMenu = useCallback(() => setMenuOpen((prev) => !prev), []);
+  const isLoggedIn = Boolean(user);
+  const isVerified = user?.isVerified;
+  const isAdmin = user?.role === "admin";
+
+  const handleLogout = () => {
+    logout();
+    setMenuOpen(false);
+    navigate("/");
+  };
+
+  const badgeClass =
+    "absolute -top-2 -right-2 bg-primary text-dark2 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center";
 
   if (loading) {
     return (
@@ -45,18 +56,15 @@ export default function Navbar() {
     );
   }
 
-  const isVerified = user?.isVerified;
-
   return (
     <header className="fixed w-full top-0 z-50 bg-gradient-to-r from-dark2/90 to-dark1/90 backdrop-blur-md shadow-xl border-b border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        {/* Desktop Left Nav */}
+        {/* Desktop Left */}
         <nav className="hidden md:flex space-x-4 items-center">
           <NavLink to="/">
             <FiHome className="ml-2" /> خانه
           </NavLink>
           <NavLink to="/products">محصولات</NavLink>
-          
         </nav>
 
         {/* Logo */}
@@ -66,26 +74,22 @@ export default function Navbar() {
         >
           <div className="flex items-center gap-2 font-bold text-primary">
             <FaSpotify className="text-3xl" />
-            <span className="hidden sm:inline text-lg text-gray-light font-vazir">
-              Sepotify
-            </span>
+            <span className="hidden sm:inline text-lg text-gray-light font-vazir">Sepotify</span>
           </div>
         </Link>
 
-        {/* Desktop Right Nav */}
+        {/* Desktop Right */}
         <nav className="hidden md:flex space-x-4 items-center">
-          {!user ? (
+          {!isLoggedIn ? (
             <NavLink to="/login">ورود / ثبت‌نام</NavLink>
           ) : isVerified ? (
             <>
               <NavLink to="/dashboard">
                 <FiUser className="ml-2" /> داشبورد
               </NavLink>
-              {user.role === "admin" && (
-                <NavLink to="/admin">پنل ادمین</NavLink>
-              )}
+              {isAdmin && <NavLink to="/admin">پنل ادمین</NavLink>}
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="px-4 py-2 rounded-xl text-gray-light hover:text-primary hover:bg-white/10 transition focus:outline-none"
               >
                 خروج
@@ -98,17 +102,12 @@ export default function Navbar() {
               className="relative flex items-center px-4 py-2 rounded-xl text-gray-light hover:text-primary hover:bg-white/10 transition"
             >
               <FiShoppingCart size={20} />
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-dark2 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-ping">
-                  {totalItems}
-                </span>
-              )}
-              
+              {totalItems > 0 && <span className={badgeClass}>{totalItems}</span>}
             </Link>
           )}
         </nav>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Button */}
         <button
           className="md:hidden text-gray-light hover:text-primary focus:outline-none"
           onClick={toggleMenu}
@@ -117,7 +116,7 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Navigation Panel */}
+      {/* Mobile Nav */}
       <AnimatePresence>
         {menuOpen && (
           <motion.nav
@@ -139,7 +138,7 @@ export default function Navbar() {
                 </NavLink>
               </li>
 
-              {!user ? (
+              {!isLoggedIn ? (
                 <li>
                   <NavLink to="/login" onClick={toggleMenu}>
                     ورود / ثبت‌نام
@@ -152,7 +151,7 @@ export default function Navbar() {
                       <FiUser className="ml-2" /> داشبورد
                     </NavLink>
                   </li>
-                  {user.role === "admin" && (
+                  {isAdmin && (
                     <li>
                       <NavLink to="/admin" onClick={toggleMenu}>
                         پنل ادمین
@@ -161,10 +160,7 @@ export default function Navbar() {
                   )}
                   <li>
                     <button
-                      onClick={() => {
-                        logout();
-                        toggleMenu();
-                      }}
+                      onClick={handleLogout}
                       className="w-full text-left px-4 py-2 rounded-xl text-gray-light hover:text-primary hover:bg-white/10"
                     >
                       خروج
@@ -180,11 +176,7 @@ export default function Navbar() {
                     className="relative flex items-center px-4 py-2 rounded-xl text-gray-light hover:text-primary hover:bg-white/10"
                   >
                     <FiShoppingCart size={20} />
-                    {totalItems > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-primary text-dark2 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                        {totalItems}
-                      </span>
-                    )}
+                    {totalItems > 0 && <span className={badgeClass}>{totalItems}</span>}
                   </Link>
                 </li>
               )}

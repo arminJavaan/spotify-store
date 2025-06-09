@@ -1,5 +1,3 @@
-// frontend/src/App.jsx
-
 import React, { useContext } from "react";
 import {
   BrowserRouter as Router,
@@ -14,6 +12,8 @@ import SpotifyLoading from "./components/SpotifyLoading";
 import BackgroundAnimation from "./components/BackgroundAnimation";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
+
 import Home from "./pages/Home";
 import Products from "./pages/Products";
 import Cart from "./pages/Cart";
@@ -29,46 +29,69 @@ import AdminProducts from "./pages/admin/ProductsAdmin";
 import AdminOrders from "./pages/admin/OrdersAdmin";
 import AdminUsers from "./pages/admin/UsersAdmin";
 import AdminDiscounts from "./pages/AdminDiscounts";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
 import AdminDiscountsForm from "./pages/admin/AdminDiscountForm";
-import VerifyEmail from "./pages/VerifyEmail";
-import Faq from "./pages/Faq";
 import WalletManager from "./pages/admin/WalletManager";
 import WalletTopupRequests from "./pages/admin/WalletTopupRequest";
-import NotFound from "./pages/NotFound";
-import VerifyPhone from "./pages/VerifyPhone";
-import OrderDetails from "./pages/OrderDetails";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import CreateTicket from "./pages/CreateTicket"; // یا SubmitTicket یا Support
+import SupportTicketsAdmin from "./pages/admin/SupportTicketsAdmin";
+
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import InstallApp from "./pages/InstallApp";
+import VerifyEmail from "./pages/VerifyEmail";
+import VerifyPhone from "./pages/VerifyPhone";
+import Faq from "./pages/Faq";
+import NotFound from "./pages/NotFound";
+import OrderDetails from "./pages/OrderDetails";
+import CreateTicket from "./pages/CreateTicket";
 import UserTickets from "./pages/UserTickets";
 import TicketDetails from "./pages/TicketDetails";
-import SupportTicketsAdmin from "./pages/admin/SupportTicketsAdmin";
-import InstallApp from "./pages/InstallApp";
 
 function AppInner() {
   const { user, loading } = useContext(AuthContext);
 
-  if (loading) {
-    return <SpotifyLoading />;
-  }
+  if (loading) return <SpotifyLoading />;
 
   return (
     <div className="relative flex flex-col min-h-screen">
       <CustomCursor />
       <BackgroundAnimation />
-
       <Navbar />
 
       <main className="flex-grow relative z-10">
         <Routes>
+
+          {/* صفحات عمومی */}
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/About" element={<About />} />
+          <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/install" element={<InstallApp />} />
+          <Route path="/faq" element={<Faq />} />
+          <Route path="/order/:id" element={<OrderDetails />} />
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/verify-phone" element={<VerifyPhone />} />
 
+          {/* احراز هویت */}
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/dashboard" /> : <Login />}
+          />
+          <Route
+            path="/register"
+            element={user ? <Navigate to="/dashboard" /> : <Register />}
+          />
+
+          {/* پنل کاربر */}
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <UserDashboard />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/checkout"
             element={
@@ -85,46 +108,32 @@ function AppInner() {
               </PrivateRoute>
             }
           />
-          <Route path="/admin/analytics" element={<AdminAnalytics />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/order/:id" element={<OrderDetails />} />
-
-          <Route path="/verify-phone" element={<VerifyPhone />} />
-          {/* اگر کاربر لاگین کرده باشد، دسترسی به /login و /register مسدود می‌شود */}
           <Route
-            path="/login"
-            element={user ? <Navigate to="/dashboard" /> : <Login />}
-          />
-          <Route
-            path="/register"
-            element={user ? <Navigate to="/dashboard" /> : <Register />}
-          />
-
-          <Route
-            path="/dashboard"
+            path="/create-ticket"
             element={
               <PrivateRoute>
-                <UserDashboard />
+                <CreateTicket />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/my-tickets"
+            element={
+              <PrivateRoute>
+                <UserTickets />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/tickets/:id"
+            element={
+              <PrivateRoute>
+                <TicketDetails />
               </PrivateRoute>
             }
           />
 
-            {/* پنل کاربر */}
-            <Route path="/create-ticket" element={<CreateTicket />} />
-            <Route path="/my-tickets" element={<UserTickets />} />
-            <Route path="/tickets/:id" element={<TicketDetails />} />
-
-            {/* پنل ادمین */}
-            <Route
-              path="/admin/support"
-              element={
-                <AdminRoute>
-              <SupportTicketsAdmin/>
-              </AdminRoute>}
-            />
-
-
-          {/* مسیرهای ادمین */}
+          {/* پنل ادمین */}
           <Route
             path="/admin"
             element={
@@ -177,8 +186,7 @@ function AppInner() {
             path="/admin/wallets"
             element={
               <AdminRoute>
-                {" "}
-                <WalletManager />{" "}
+                <WalletManager />
               </AdminRoute>
             }
           />
@@ -186,22 +194,30 @@ function AppInner() {
             path="/admin/wallet-topups"
             element={
               <AdminRoute>
-                {" "}
-                <WalletTopupRequests />{" "}
+                <WalletTopupRequests />
               </AdminRoute>
             }
           />
-          <Route path="/verify-email/:token" element={<VerifyEmail />} />
-          <Route path="/faq" element={<Faq />} />
-          {/* مسیر 404 */}
           <Route
-            path="*"
+            path="/admin/analytics"
             element={
-              <h2 className="text-center text-gray-light py-20">
-                صفحهٔ مورد نظر یافت نشد
-              </h2>
+              <AdminRoute>
+                <AdminAnalytics />
+              </AdminRoute>
             }
           />
+          <Route
+            path="/admin/support"
+            element={
+              <AdminRoute>
+                <SupportTicketsAdmin />
+              </AdminRoute>
+            }
+          />
+
+          {/* صفحه 404 */}
+          <Route path="*" element={<NotFound />} />
+
         </Routes>
       </main>
 
@@ -213,6 +229,7 @@ function AppInner() {
 export default function App() {
   return (
     <Router>
+      <ScrollToTop />
       <AuthProvider>
         <CartProvider>
           <AppInner />
