@@ -1,24 +1,30 @@
-// frontend/src/components/Footer.jsx
-
-import React from 'react'
-import { FaTwitter, FaInstagram, FaLinkedinIn, FaTelegram } from 'react-icons/fa'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import {
+  FaTwitter,
+  FaInstagram,
+  FaLinkedinIn,
+  FaTelegram,
+  FaHeart,
+} from 'react-icons/fa';
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear()
+  const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="backdrop-blur-xl text-gray-light py-10 mt-12">
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 ">
-        {/* لوگو و توضیح کوتاه */}
-        <div className="space-y-3">
-          <h2 className="text-2xl font-bold text-primary">سپاتیفای</h2>
-          <p className="text-sm text-gray-400">
-            تجربه خرید آنلاین موسیقی و محصولات دیجیتال با نمایش ساده و کاربردی.
+    <footer className="bg-gradient-to-t from-dark3 to-dark2 text-gray-light pt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 pb-12">
+        {/* برند و شبکه‌های اجتماعی */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-extrabold text-primary">سپاتیفای</h2>
+          <p className="text-sm text-gray-400 leading-relaxed">
+            تجربه‌ای ساده، سریع و امن از خرید اکانت پرمیوم اسپاتیفای .
           </p>
-          <div className="flex space-x-3 mt-2 gap-12">
+          <div className="flex gap-4 mt-2">
             <a
               href="https://t.me/SepotifyAdmin"
               target="_blank"
+              rel="noopener noreferrer"
               className="bg-primary p-2 rounded-md hover:bg-opacity-90 transition"
             >
               <FaTelegram className="text-sm" />
@@ -26,13 +32,15 @@ export default function Footer() {
             <a
               href="https://twitter.com/armin_np_"
               target="_blank"
-              className="bg-primary p-2 rounded-md hover:bg-opacity-90 transition "
+              rel="noopener noreferrer"
+              className="bg-primary p-2 rounded-md hover:bg-opacity-90 transition"
             >
               <FaTwitter className="text-sm" />
             </a>
             <a
-              href="https://www.instagram.com/armin_javaan/"
+              href="https://www.instagram.com/sepotifyir/"
               target="_blank"
+              rel="noopener noreferrer"
               className="bg-primary p-2 rounded-md hover:bg-opacity-90 transition"
             >
               <FaInstagram className="text-sm" />
@@ -40,6 +48,7 @@ export default function Footer() {
             <a
               href="https://www.linkedin.com/in/armin-javan-b25a18334/"
               target="_blank"
+              rel="noopener noreferrer"
               className="bg-primary p-2 rounded-md hover:bg-opacity-90 transition"
             >
               <FaLinkedinIn className="text-sm" />
@@ -48,48 +57,28 @@ export default function Footer() {
         </div>
 
         {/* لینک‌های سریع */}
-        <div className="space-y-3">
-          <h3 className="text-xl font-semibold text-gray-light">لینک‌های سریع</h3>
-          <ul className="space-y-2 text-gray-400 text-sm">
-            <li>
-              <a href="/" className="hover:text-primary transition">
-                صفحه اصلی
-              </a>
-            </li>
-            <li>
-              <a href="/products" className="hover:text-primary transition">
-                محصولات
-              </a>
-            </li>
-            <li>
-              <a href="/about" className="hover:text-primary transition">
-                درباره ما
-              </a>
-            </li>
-            <li>
-              <a href="/contact" className="hover:text-primary transition">
-                تماس با ما
-              </a>
-            </li>
-            <li>
-              <a href="/faq" className="hover:text-primary transition">
-                سوالات متداول
-              </a>
-            </li>
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold text-white">لینک‌های سریع</h3>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li><Link to="/" className="hover:text-primary transition">صفحه اصلی</Link></li>
+            <li><Link to="/products" className="hover:text-primary transition">محصولات</Link></li>
+            <li><Link to="/about" className="hover:text-primary transition">درباره ما</Link></li>
+            <li><Link to="/contact" className="hover:text-primary transition">تماس با ما</Link></li>
+            <li><Link to="/faq" className="hover:text-primary transition">سوالات متداول</Link></li>
           </ul>
         </div>
 
-        {/* عضویت در خبرنامه */}
-        <div className="space-y-3">
-          <h3 className="text-xl font-semibold text-gray-light">خبرنامه</h3>
-          <p className="text-sm text-gray-400">
-            ایمیل خود را وارد کنید تا اخبار و تخفیف‌ها را دریافت کنید:
+        {/* خبرنامه */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold text-white">عضویت در خبرنامه</h3>
+          <p className="text-sm text-gray-400 leading-relaxed">
+            برای دریافت اخبار، تخفیف‌ها و محصولات جدید، ایمیل خود را وارد کنید.
           </p>
-          <form className="flex space-x-2">
+          <form className="flex items-center gap-2">
             <input
               type="email"
               placeholder="ایمیل شما"
-              className="flex-1 px-3 py-2 bg-dark2 text-gray-light border border-gray-med rounded-md focus:outline-none focus:border-primary text-sm ml-2"
+              className="flex-1 px-3 py-2 bg-dark2 text-gray-light border border-gray-med rounded-md focus:outline-none focus:border-primary text-sm"
             />
             <button
               type="submit"
@@ -101,15 +90,16 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className='mt-2 pt-4 border-t border-gray-med text-center text-xs text-gray-500'>
-        <p >
-         توسعه دهنده :<a href="https://www.arminjavan.site" className='text-primary'>   Armin Javan</a>
+      {/* کپی‌رایت و توسعه‌دهنده */}
+      <div className="border-t border-gray-700 py-6 text-center text-xs text-gray-500 space-y-2">
+        <p>
+          ساخته‌شده با <FaHeart className="inline text-red-500 mx-1" /> توسط{' '}
+          <a href="https://www.arminjavan.site" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold">
+            Armin Javan
+          </a>
         </p>
+        <p>&copy; {currentYear} Sepotify.ir - تمامی حقوق محفوظ است.</p>
       </div>
-            <div className="mt-8 border-t border-gray-med pt-4 text-center text-xs text-gray-500">
-        &copy; {currentYear} سپاتیفای. تمامی حقوق محفوظ است.
-      </div>
-
     </footer>
-  )
+  );
 }

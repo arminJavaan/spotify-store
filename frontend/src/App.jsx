@@ -46,6 +46,8 @@ import OrderDetails from "./pages/OrderDetails";
 import CreateTicket from "./pages/CreateTicket";
 import UserTickets from "./pages/UserTickets";
 import TicketDetails from "./pages/TicketDetails";
+import PlanComparison from "./pages/PlanComperison";
+
 
 function AppInner() {
   const { user, loading } = useContext(AuthContext);
@@ -72,6 +74,7 @@ function AppInner() {
           <Route path="/order/:id" element={<OrderDetails />} />
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
           <Route path="/verify-phone" element={<VerifyPhone />} />
+          <Route path="/guid" element={<PlanComparison/> }/>
 
           {/* احراز هویت */}
           <Route
