@@ -549,14 +549,14 @@ export default function UserDashboard() {
                 ) : (
                   <motion.div
                     key={order._id}
-                    className="bg-dark2 p-5 rounded-2xl border border-gray-700 shadow-md hover:shadow-xl transition-all duration-300"
+                    className="bg-dark1 p-5 rounded-2xl border border-gray-700 shadow-md hover:shadow-xl transition-all duration-300"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                   >
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-primary font-bold text-sm font-mono">
-                        #{order._id.slice(-6)}
+                        {order._id.slice(-6)}
                       </span>
                       <span className="text-xs text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString("fa-IR")}
