@@ -26,34 +26,34 @@ export default function AdminOrders() {
   const [accountEmail, setAccountEmail] = useState("");
   const [accountPassword, setAccountPassword] = useState("");
 
-const sendAccountEmail = async () => {
-  if (!accountEmail || !accountPassword) {
-    alert("لطفاً ایمیل و رمز اکانت را وارد کنید");
-    return;
-  }
+  const sendAccountEmail = async () => {
+    if (!accountEmail || !accountPassword) {
+      alert("لطفاً ایمیل و رمز اکانت را وارد کنید");
+      return;
+    }
 
-  try {
-    // مرحله 1: ارسال ایمیل
-    await API.post(`/admin/orders/${emailModal.order._id}/send-account`, {
-      email: accountEmail,
-      password: accountPassword,
-    });
+    try {
+      // مرحله 1: ارسال ایمیل
+      await API.post(`/admin/orders/${emailModal.order._id}/send-account`, {
+        email: accountEmail,
+        password: accountPassword,
+      });
 
-    // مرحله 2: تغییر وضعیت به "completed"
-    await API.put(`/admin/orders/${emailModal.order._id}/status`, {
-      status: "completed",
-    });
+      // مرحله 2: تغییر وضعیت به "completed"
+      await API.put(`/admin/orders/${emailModal.order._id}/status`, {
+        status: "completed",
+      });
 
-    toast.success("اطلاعات اکانت ارسال و سفارش تکمیل شد ✅");
-    setEmailModal({ open: false, order: null });
-    setAccountEmail("");
-    setAccountPassword("");
-    fetchOrders(); // آپدیت لیست
-  } catch (err) {
-    console.error(err);
-    toast.error("خطا در ارسال ایمیل یا تغییر وضعیت سفارش");
-  }
-};
+      toast.success("اطلاعات اکانت ارسال و سفارش تکمیل شد ✅");
+      setEmailModal({ open: false, order: null });
+      setAccountEmail("");
+      setAccountPassword("");
+      fetchOrders(); // آپدیت لیست
+    } catch (err) {
+      console.error(err);
+      toast.error("خطا در ارسال ایمیل یا تغییر وضعیت سفارش");
+    }
+  };
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -152,6 +152,12 @@ const sendAccountEmail = async () => {
                       <FiDollarSign />{" "}
                       {order.totalAmount.toLocaleString("fa-IR")} تومان
                     </span>
+                    {order.cashbackAmount > 0 && (
+                      <span className="flex items-center gap-1 text-green-400 text-sm ml-4">
+                        💚 کش‌بک: {order.cashbackAmount.toLocaleString("fa-IR")}{" "}
+                        تومان
+                      </span>
+                    )}
                   </div>
 
                   {order.items.map((item, i) => (

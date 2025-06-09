@@ -6,6 +6,7 @@ import {
   FiSearch,
   FiRefreshCw,
 } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 export default function WalletManager() {
   const [users, setUsers] = useState([]);

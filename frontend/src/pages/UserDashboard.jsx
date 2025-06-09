@@ -120,7 +120,6 @@ export default function UserDashboard() {
           </button>
         </div>
       ));
-      
     } catch (err) {
       setProfileError(err.response?.data?.msg || "خطا در به‌روزرسانی پروفایل");
     }
@@ -594,6 +593,13 @@ export default function UserDashboard() {
                           <span className="font-bold text-primary ml-1">
                             {order.totalAmount.toLocaleString("fa-IR")} تومان
                           </span>
+                          {order.cashbackAmount > 0 && (
+                            <span className="text-green-400 text-xs block mt-1">
+                              کش‌بک:{" "}
+                              {order.cashbackAmount.toLocaleString("fa-IR")}{" "}
+                              تومان
+                            </span>
+                          )}
                         </span>
                         {order.discountAmount > 0 && (
                           <span className="text-green-400 text-sm">

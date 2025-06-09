@@ -340,7 +340,7 @@ export default function Checkout() {
               {!isTopup && (
                 <>
                   <option value="crypto">پرداخت ارز دیجیتال</option>
-                  <option value="wallet">پرداخت با کیف پول</option>
+                  <option value="wallet">پرداخت با کیف پول (5% کش بک)</option>
                   <option value="whatsapp">سفارش از طریق واتساپ</option>
                 </>
               )}

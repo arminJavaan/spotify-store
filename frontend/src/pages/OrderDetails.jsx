@@ -162,6 +162,12 @@ export default function OrderDetails() {
                 ⚠️ لطفاً این اطلاعات را ذخیره کنید. برای امنیت، از اشتراک‌گذاری
                 آن با دیگران خودداری کنید.
               </p>
+              {order.cashbackAmount > 0 && (
+                <p>
+                  <strong>کش‌بک:</strong>{" "}
+                  {order.cashbackAmount.toLocaleString("fa-IR")} تومان
+                </p>
+              )}
             </div>
           )}
       </motion.div>

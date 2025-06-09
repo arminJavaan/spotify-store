@@ -65,6 +65,7 @@ router.post("/", auth, async (req, res) => {
       0
     );
 
+
     let appliedDiscount = 0;
 
     if (discountCode) {
@@ -208,6 +209,26 @@ router.post("/", auth, async (req, res) => {
       orderData.whatsappOrderUrl = url;
     }
 
+                // 📌 محاسبه کش‌بک (۵٪ با سقف ۱۰۰هزار تومان)
+    let cashbackAmount = 0;
+    if (totalAmount > 0) {
+      cashbackAmount = Math.floor(totalAmount * 0.05); // ۵٪
+      if (cashbackAmount > 100000) cashbackAmount = 100000;
+
+      const wallet = await Wallet.findOne({ user: req.user.id });
+      if (wallet) {
+        wallet.balance += cashbackAmount;
+        wallet.transactions.push({
+          type: "increase",
+          amount: cashbackAmount,
+          description: "کش‌بک سفارش",
+        });
+        await wallet.save();
+      }
+    }
+    orderData.cashbackAmount = cashbackAmount;
+
+
     const newOrder = new Order(orderData);
     await newOrder.save();
 
@@ -230,6 +251,8 @@ ${populatedOrder.items.map((item) => `• ${item.product.name} × ${item.quantit
 💰 <b>مبلغ نهایی:</b> ${populatedOrder.totalAmount.toLocaleString("fa-IR")} تومان
 🔖 <b>کد تخفیف:</b> ${populatedOrder.discountCode || "—"}
 💸 <b>میزان تخفیف:</b> ${populatedOrder.discountAmount?.toLocaleString("fa-IR") || 0} تومان
+💚 <b>کش‌بک:</b> ${populatedOrder.cashbackAmount.toLocaleString("fa-IR")} تومان
+
 
 🧾 <b>شماره سفارش:</b> ${populatedOrder._id}
 🕒 <b>تاریخ ثبت:</b> ${new Date().toLocaleString("fa-IR")}
