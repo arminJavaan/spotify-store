@@ -116,7 +116,7 @@ export default function ProductSliderSection() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -40 }}
               transition={{ duration: 0.6 }}
-              className="text-right"
+              className="text-right hidden md:block"
             >
               <h3 className="text-xl font-bold text-white mb-4">{desc.title}</h3>
               <p className="text-gray-400 whitespace-pre-line leading-relaxed text-sm md:text-base">
