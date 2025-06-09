@@ -583,7 +583,7 @@ export default function UserDashboard() {
                               href={`/order/${order._id}`}
                               className="text-primary underline hover:text-green-400 transition"
                             >
-                              مشاهده فاکتور
+                              مشاهده فاکتور و اطلاعات اکانت
                             </a>
                           </p>
                         </div>

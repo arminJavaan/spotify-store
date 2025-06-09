@@ -3,6 +3,7 @@
 import express from "express";
 const router = express.Router();
 
+import { sendAccountInfoEmail } from "../utils/sendAccountInfoEmail.js"
 import auth from "../middleware/auth.js";
 import requireRole from "../middleware/roles.js";
 import User from "../models/User.js";
@@ -330,5 +331,43 @@ router.post("/discounts", async (req, res) => {
     return res.status(500).json({ msg: "خطا در ساخت کد تخفیف" });
   }
 });
+
+router.post("/orders/:id/send-account", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password)
+    return res.status(400).json({ msg: "ایمیل و رمز عبور اکانت الزامی است" });
+
+  try {
+    const order = await Order.findById(req.params.id).populate("user", "name email");
+    if (!order) return res.status(404).json({ msg: "سفارش یافت نشد" });
+
+    // ارسال ایمیل به کاربر
+    await sendAccountInfoEmail(
+      order.user.email,
+      order.user.name,
+      order._id,
+      new Date(order.createdAt).toLocaleDateString("fa-IR"),
+      order.totalAmount,
+      email,
+      password
+    );
+
+    // ذخیره اطلاعات اکانت در خود سفارش
+    order.accountInfo = {
+      email,
+      password,
+      sentAt: new Date()
+    };
+    order.status = "completed"; // همزمان وضعیت را کامل کنیم
+    await order.save();
+
+    return res.json({ msg: "ایمیل ارسال و اطلاعات در سفارش ذخیره شد ✅" });
+  } catch (err) {
+    console.error("Email send error:", err);
+    return res.status(500).json({ msg: "خطا در ارسال ایمیل" });
+  }
+});
+
 
 export default router;
