@@ -1,7 +1,7 @@
-// ProductSliderSection با طراحی مینیمال، راست/چپ چین شده و دارای توضیحات متنی کنار کارت
+// ProductSliderSection با طراحی مینیمال، راست/چپ چین شده و دارای توضیحات متنی کنار کارت با انیمیشن پویا و جذاب
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import API from '../api';
 
@@ -96,7 +96,7 @@ export default function ProductSliderSection() {
   };
 
   return (
-    <section className="py-20 px-6 bg-[#101010]">
+    <section className="py-20 px-6 ">
       <div className="container mx-auto max-w-6xl">
         <motion.h2
           className="text-2xl md:text-3xl font-extrabold text-primary mb-10 text-center"
@@ -108,26 +108,36 @@ export default function ProductSliderSection() {
           پلن‌های پیشنهادی امروز 🎧
         </motion.h2>
 
-        <motion.div
-          key={product._id}
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="grid md:grid-cols-2 items-center gap-10"
-        >
-          {/* توضیحات سمت چپ */}
-          <div className="text-right">
-            <h3 className="text-xl font-bold text-white mb-4">{desc.title}</h3>
-            <p className="text-gray-400 whitespace-pre-line leading-relaxed text-sm md:text-base">
-              {desc.text}
-            </p>
-          </div>
+        <div className="grid md:grid-cols-2 items-center gap-10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={product._id}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.6 }}
+              className="text-right"
+            >
+              <h3 className="text-xl font-bold text-white mb-4">{desc.title}</h3>
+              <p className="text-gray-400 whitespace-pre-line leading-relaxed text-sm md:text-base">
+                {desc.text}
+              </p>
+            </motion.div>
+          </AnimatePresence>
 
-          {/* کارت سمت راست */}
-          <div className="max-w-md mx-auto">
-            <ProductCard product={product} onAdd={handleAddToCart} />
-          </div>
-        </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={product._id + '-card'}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.6 }}
+              className="max-w-md mx-auto"
+            >
+              <ProductCard product={product} onAdd={handleAddToCart} />
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </section>
   );
