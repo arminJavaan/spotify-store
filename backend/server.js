@@ -7,6 +7,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import walletRoutes from './routes/wallet.js'
 import supportRoutes from './routes/support.js';
+import cryptoPaymentRoutes from "./routes/cryptoPayment.js";
 dotenv.config()
 
 // لازم برای مسیر نسبی در ESM
@@ -31,6 +32,7 @@ import adminRoutes from './routes/admin.js'
 import discountRoutes from './routes/discounts.js'
 // import cryptoRoutes from './routes/crypto.js'
 
+
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/cart', cartRoutes)
@@ -40,6 +42,7 @@ app.use('/api/discounts', discountRoutes)
 // app.use('/api/crypto', cryptoRoutes)
 app.use('/api/wallet', walletRoutes)
 app.use('/api/support', supportRoutes);
+app.use("/api/crypto-payment", cryptoPaymentRoutes);
 
 app.get('/', (req, res) => {
   res.send('Spotify Store API is running')

@@ -5,7 +5,7 @@ import { CartContext } from "../contexts/CartContext";
 import API from "../api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
 export default function Checkout() {
   const { cart, clearCart } = useContext(CartContext);
@@ -120,7 +120,8 @@ export default function Checkout() {
         discountCode: payloadDiscountCode,
       });
 
-      if (method === "wallet") toast.success("سفارش شما با موفقیت از کیف پول ثبت شد.");
+      if (method === "wallet")
+        toast.success("سفارش شما با موفقیت از کیف پول ثبت شد.");
       else if (method === "whatsapp")
         window.open(res.data.order.whatsappOrderUrl, "_blank");
       else toast.success("سفارش شما با موفقیت ثبت شد.");
@@ -136,31 +137,86 @@ export default function Checkout() {
   };
 
   const submitTopup = async () => {
-  setError(null);
-  setLoading(true);
+    setError(null);
+    setLoading(true);
 
-  if (!amount || isNaN(amount) || +amount <= 0) {
-    setError("لطفاً مبلغ معتبر وارد کنید.");
-    setLoading(false);
-    return;
-  }
+    if (!amount || isNaN(amount) || +amount <= 0) {
+      setError("لطفاً مبلغ معتبر وارد کنید.");
+      setLoading(false);
+      return;
+    }
 
-  try {
-    await API.post("/wallet/topup", {
-      amount: +amount,
-      method,
-    });
+    try {
+      const topupRes = await API.post("/wallet/topup", {
+        amount: +amount,
+        method,
+      });
 
-    toast.success("درخواست شارژ ثبت شد. لطفاً فیش واریزی را در واتساپ یا تلگرام ارسال کنید.");
-    navigate("/dashboard");
-  } catch (err) {
-    const msg = err.response?.data?.msg || err.message;
-    setError("خطا در ثبت درخواست شارژ: " + msg);
-  } finally {
-    setLoading(false);
-  }
-};
+      const requestId = topupRes.data?.request?._id;
 
+      if (method === "crypto") {
+        const paymentRes = await API.post("/crypto-payment/create", {
+          orderId: requestId,
+          type: "topup",
+        });
+
+        if (paymentRes.data?.paymentUrl) {
+          toast.success("در حال انتقال به درگاه ارز دیجیتال...");
+          window.open(paymentRes.data.paymentUrl, "_blank");
+          navigate("/dashboard");
+          return;
+        } else {
+          throw new Error("لینک پرداخت ارز دیجیتال ایجاد نشد.");
+        }
+      }
+
+      toast.success(
+        "درخواست شارژ ثبت شد. لطفاً فیش واریزی را در واتساپ یا تلگرام ارسال کنید."
+      );
+      navigate("/dashboard");
+    } catch (err) {
+      const msg = err.response?.data?.msg || err.message;
+      setError("خطا در ثبت درخواست شارژ: " + msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCryptoPay = async () => {
+    setError(null);
+    setLoading(true);
+
+    try {
+      // مرحله اول: ثبت سفارش
+      const orderRes = await API.post("/orders", {
+        paymentMethod: "crypto",
+        discountCode: discountCode.trim() || null,
+        paymentDetails: { placeholder: "پرداخت کریپتو" },
+      });
+
+      const orderId = orderRes.data?.order?._id;
+      if (!orderId) throw new Error("سفارش ثبت نشد");
+
+      // مرحله دوم: گرفتن لینک پرداخت
+      const cryptoRes = await API.post("/crypto-payment/create", {
+        orderId,
+      });
+
+      if (cryptoRes.data?.paymentUrl) {
+        toast.success("در حال انتقال به درگاه ارز دیجیتال...");
+        clearCart();
+        window.open(cryptoRes.data.paymentUrl, "_blank");
+        navigate(`/order/${orderId}`);
+      } else {
+        throw new Error("لینک پرداخت نامعتبر است");
+      }
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message;
+      setError("خطا در پرداخت کریپتو: " + msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="text-gray-light py-20 px-6 min-h-screen mt-12 font-vazir">
@@ -288,6 +344,7 @@ export default function Checkout() {
                   <option value="whatsapp">سفارش از طریق واتساپ</option>
                 </>
               )}
+              {isTopup && <option value="crypto">پرداخت ارز دیجیتال</option>}
             </select>
           </div>
 
@@ -360,6 +417,50 @@ export default function Checkout() {
               </motion.div>
             )}
           </AnimatePresence>
+          {/* راهنمای پرداخت کریپتو */}
+          <AnimatePresence>
+            {method === "crypto" && (
+              <motion.div
+                className="bg-yellow-100 text-yellow-900 p-5 rounded-xl border border-yellow-400 space-y-4 text-sm"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4 }}
+              >
+                <h4 className="font-bold text-base">
+                  ⚠️ راهنمای پرداخت ارز دیجیتال:
+                </h4>
+                <ul className="space-y-2 list-disc pr-5">
+                  <li>
+                    لطفاً پس از پرداخت، <strong>شماره سفارش (Order ID)</strong>{" "}
+                    خود را در تلگرام برای پشتیبانی ارسال کنید.
+                  </li>
+                  <li>بدون ارسال شماره سفارش، بررسی تراکنش شما ممکن نیست.</li>
+                  <li>سفارش شما حداقل باید مبلغ 900,000 تومان باشد</li>
+                  <li>نمونه Order ID به شکل زیر است:</li>
+                </ul>
+                <div className="rounded overflow-hidden border border-gray-300 bg-white">
+                  <img
+                    src="/images/sample-order-crypto.jpg"
+                    alt="نمونه سفارش"
+                    className="w-full object-contain"
+                  />
+                </div>
+                <p className="text-xs text-gray-600">
+                  📌 در صورت نیاز، با پشتیبانی در{" "}
+                  <a
+                    href="https://t.me/sepotifyadmin"
+                    className="underline text-blue-600"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    تلگرام
+                  </a>{" "}
+                  تماس بگیرید.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* ارور کلی */}
           {error && <p className="text-red-500 text-center text-sm">{error}</p>}
@@ -378,10 +479,15 @@ export default function Checkout() {
                 className="w-full px-4 py-2 bg-dark2 text-gray-light border border-gray-600 rounded"
               />
               <button
-                onClick={submitTopup}
+                onClick={method === "crypto" ? submitTopup : submitTopup}
+                disabled={loading}
                 className="w-full bg-primary text-dark2 font-semibold py-3 rounded-lg hover:bg-opacity-90 transition"
               >
-                ادامه و پرداخت
+                {loading
+                  ? "در حال پردازش..."
+                  : method === "crypto"
+                  ? "پرداخت با ارز دیجیتال"
+                  : "ادامه و پرداخت"}
               </button>
             </div>
           ) : (
@@ -392,11 +498,15 @@ export default function Checkout() {
                 </p>
               )}
               <button
-                onClick={submitOrder}
+                onClick={method === "crypto" ? handleCryptoPay : submitOrder}
                 disabled={loading}
                 className="w-full bg-primary text-dark2 font-semibold py-3 rounded-lg hover:bg-opacity-90 transition"
               >
-                {loading ? "در حال پردازش..." : "ثبت سفارش نهایی"}
+                {loading
+                  ? "در حال پردازش..."
+                  : method === "crypto"
+                  ? "پرداخت با ارز دیجیتال"
+                  : "ثبت سفارش نهایی"}
               </button>
             </div>
           )}

@@ -1,10 +1,12 @@
-// backend/models/WalletTopupRequest.js
-
 import mongoose from "mongoose";
 
 const WalletTopupRequestSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  method: { type: String, enum: ["card-to-card", "shaparak"], required: true },
+  method: {
+    type: String,
+    enum: ["card-to-card", "shaparak", "crypto"], // ← اضافه شد
+    required: true,
+  },
   amount: { type: Number, required: true },
   status: {
     type: String,
