@@ -56,6 +56,7 @@ export default function Navbar() {
             <FiHome className="ml-2" /> خانه
           </NavLink>
           <NavLink to="/products">محصولات</NavLink>
+          
         </nav>
 
         {/* Logo */}
@@ -102,6 +103,7 @@ export default function Navbar() {
                   {totalItems}
                 </span>
               )}
+              
             </Link>
           )}
         </nav>
@@ -126,7 +128,6 @@ export default function Navbar() {
             className="md:hidden bg-dark1/90 border-t border-gray-800 overflow-hidden backdrop-blur-sm"
           >
             <ul className="flex flex-col px-6 py-4 space-y-4">
-              
               <li>
                 <NavLink to="/" onClick={toggleMenu}>
                   <FiHome className="ml-2" /> خانه
@@ -137,7 +138,7 @@ export default function Navbar() {
                   محصولات
                 </NavLink>
               </li>
-               
+
               {!user ? (
                 <li>
                   <NavLink to="/login" onClick={toggleMenu}>

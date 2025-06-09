@@ -44,6 +44,7 @@ import CreateTicket from "./pages/CreateTicket"; // یا SubmitTicket یا Suppo
 import UserTickets from "./pages/UserTickets";
 import TicketDetails from "./pages/TicketDetails";
 import SupportTicketsAdmin from "./pages/admin/SupportTicketsAdmin";
+import InstallApp from "./pages/InstallApp";
 
 function AppInner() {
   const { user, loading } = useContext(AuthContext);
@@ -66,6 +67,8 @@ function AppInner() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/About" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/install" element={<InstallApp />} />
+
           <Route
             path="/checkout"
             element={

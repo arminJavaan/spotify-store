@@ -8,6 +8,49 @@ export default function Home() {
     <main className="text-gray-light font-vazir">
       {/* Hero Section */}
 <HeroSlider/>
+
+  {/* INSTALL PROMO SECTION */}
+      <section id="install-section" className="relative bg-gradient-to-br from-[#1db95422] via-[#12121266] to-[#1db95411] py-20 px-6 overflow-hidden min-h-[80vh] scroll-mt-24">
+        <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <motion.div
+            className="space-y-6"
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white">
+              اپلیکیشن اختصاصی ما رو نصب کن!
+            </h2>
+            <p className="text-gray-300 text-sm leading-relaxed">
+              با نصب اپلیکیشن تحت وب ما (PWA)، تجربه سریع‌تر، ساده‌تر و امن‌تری از خرید اکانت پرمیوم اسپاتیفای داشته باش.
+              نسخه موبایل، دسکتاپ و اپ اصلی Spotify هم اونجا هست.
+            </p>
+            <Link
+              to="/install"
+              className="inline-block bg-primary text-dark1 font-bold py-3 px-6 rounded-xl hover:bg-opacity-90 transition"
+            >
+              📲 ورود به صفحه نصب اپلیکیشن
+            </Link>
+          </motion.div>
+
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+          >
+            <img
+              src="/pwa-512x512.png"
+              alt="App Preview"
+              className="w-64 h-64 mx-auto drop-shadow-2xl rounded-2xl"
+            />
+          </motion.div>
+        </div>
+      </section>
+
+
       {/* Features */}
       <section
         id="features"

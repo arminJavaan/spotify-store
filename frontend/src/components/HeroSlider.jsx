@@ -1,6 +1,4 @@
-// frontend/src/components/HeroSlider.jsx
-
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
@@ -21,19 +19,23 @@ const slides = [
 ];
 
 export default function HeroSlider() {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = React.useState(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const timer = setInterval(() => {
       setIndex((i) => (i + 1) % slides.length);
     }, 8000);
     return () => clearInterval(timer);
   }, []);
 
-  const goTo = (dir) => {
-    setIndex((prev) =>
-      dir === "next" ? (prev + 1) % slides.length : (prev - 1 + slides.length) % slides.length
-    );
+  const scrollToSection = (id) => {
+    const element = document.querySelector(id);
+    if (element) {
+      window.scrollTo({
+        top: element.offsetTop - 80,
+        behavior: "smooth",
+      });
+    }
   };
 
   return (
@@ -78,31 +80,21 @@ export default function HeroSlider() {
               >
                 مشاهده محصولات
               </Link>
-              <a
-                href="#features"
+              <button
+                onClick={() => scrollToSection("#features")}
                 className="border-2 border-primary hover:bg-primary hover:text-dark2 text-primary text-sm sm:text-base font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-lg transition hover:scale-105 w-full xs:w-auto text-center"
               >
                 ویژگی‌ها
-              </a>
+              </button>
+              <button
+                onClick={() => scrollToSection("#install-section")}
+                className="border-2 border-primary hover:bg-primary hover:text-dark2 text-primary text-sm sm:text-base font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-lg transition hover:scale-105 w-full xs:w-auto text-center"
+              >
+                📲 نصب اپلیکیشن
+              </button>
             </div>
           </motion.div>
         </AnimatePresence>
-
-        {/* فلش‌های ناوبری */}
-        {/* <div className="absolute bottom-6 xs:bottom-10 left-4 right-4 flex justify-between items-center z-20">
-          <button
-            onClick={() => goTo("prev")}
-            className="text-primary hover:text-white bg-white/10 hover:bg-white/20 p-2 sm:p-3 rounded-full transition"
-          >
-            <FaChevronRight size={16} />
-          </button>
-          <button
-            onClick={() => goTo("next")}
-            className="text-primary hover:text-white bg-white/10 hover:bg-white/20 p-2 sm:p-3 rounded-full transition"
-          >
-            <FaChevronLeft size={16} />
-          </button>
-        </div> */}
       </div>
     </section>
   );
