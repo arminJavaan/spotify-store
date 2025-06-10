@@ -289,7 +289,7 @@ ${populatedOrder.items.map((item) => `• ${item.product.name} × ${item.quantit
 
 🧾 <b>شماره سفارش:</b> ${populatedOrder._id}
 🕒 <b>تاریخ ثبت:</b> ${new Date().toLocaleString("fa-IR")}
-    `);
+    `,"received");
 
     user.cart = [];
     await user.save();

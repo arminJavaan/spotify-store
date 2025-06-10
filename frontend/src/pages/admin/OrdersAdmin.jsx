@@ -4,6 +4,8 @@
 import React, { useEffect, useState } from "react";
 
 import API from "../../api";
+import moment from "moment-jalaali";
+
 import {
   FiCheckCircle,
   FiClock,
@@ -25,7 +27,9 @@ export default function AdminOrders() {
   const [emailModal, setEmailModal] = useState({ open: false, order: null });
   const [accountEmail, setAccountEmail] = useState("");
   const [accountPassword, setAccountPassword] = useState("");
+  const [searchDate, setSearchDate] = useState("");
 
+  moment.loadPersian({ dialect: "persian-modern", usePersianDigits: false });
   const sendAccountEmail = async () => {
     if (!accountEmail || !accountPassword) {
       alert("لطفاً ایمیل و رمز اکانت را وارد کنید");
@@ -87,9 +91,14 @@ export default function AdminOrders() {
     }
   };
 
-  const filteredOrders = orders.filter((order) =>
-    order._id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOrders = orders.filter((order) => {
+    const matchId = order._id.toLowerCase().includes(searchTerm.toLowerCase());
+const matchDate = searchDate
+  ? moment(order.createdAt).format("YYYY-MM-DD") === searchDate
+  : true;
+
+    return matchId && matchDate;
+  });
 
   return (
     <main className="px-6 py-10 text-gray-light mt-16">
@@ -97,16 +106,28 @@ export default function AdminOrders() {
         مدیریت سفارش‌ها
       </h2>
 
-      <div className="max-w-md mx-auto mb-6">
-        <div className="relative">
+      <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto mb-6">
+        <div className="relative flex-1">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="جستجو بر اساس Order ID..."
+            placeholder="جستجوی شناسه سفارش"
             className="w-full px-4 py-2 pr-10 bg-dark2 border border-gray-700 rounded-full text-sm placeholder-gray-400"
           />
           <FiSearch className="absolute top-2.5 right-3 text-gray-400" />
+        </div>
+
+        <div className="relative flex-1">
+          <input
+            type="date"
+            value={searchDate}
+            onChange={(e) => setSearchDate(e.target.value)}
+            className="w-full px-4 py-2 bg-dark2 border border-gray-700 rounded-full text-sm text-gray-200"
+          />
+          <span className="absolute left-3 top-2 text-xs text-gray-400">
+            فیلتر بر اساس تاریخ
+          </span>
         </div>
       </div>
 
@@ -136,7 +157,7 @@ export default function AdminOrders() {
                     #{order._id.slice(-6)}
                   </h3>
                   <span className="text-xs text-gray-500">
-                    {new Date(order.createdAt).toLocaleDateString("fa-IR")}
+                    {moment(order.createdAt).format("jYYYY/jMM/jDD")}
                   </span>
                 </div>
 

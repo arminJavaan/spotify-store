@@ -18,6 +18,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import sendTelegramMessage from "../utils/telegram.js";
 
 // حل مشکل __dirname در ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -330,6 +331,7 @@ router.post("/discounts", async (req, res) => {
   }
 });
 
+
 router.post("/orders/:id/send-account", async (req, res) => {
   const { email, password } = req.body;
 
@@ -337,38 +339,60 @@ router.post("/orders/:id/send-account", async (req, res) => {
     return res.status(400).json({ msg: "ایمیل و رمز عبور اکانت الزامی است" });
 
   try {
-    const order = await Order.findById(req.params.id).populate(
-      "user",
-      "name email"
-    );
+    const order = await Order.findById(req.params.id)
+      .populate("user", "name email phone")
+      .populate("items.product");
     if (!order) return res.status(404).json({ msg: "سفارش یافت نشد" });
 
-    // ارسال ایمیل به کاربر
+    const productName = order.items[0]?.product?.name || "بدون عنوان";
+    const formattedDate = new Date(order.createdAt).toLocaleDateString("fa-IR");
+
+    // 1. ارسال ایمیل به کاربر
     await sendAccountInfoEmail(
       order.user.email,
       order.user.name,
       order._id,
-      new Date(order.createdAt).toLocaleDateString("fa-IR"),
+      formattedDate,
       order.totalAmount,
       email,
       password
     );
 
-    // ذخیره اطلاعات اکانت در خود سفارش
+    // 2. ذخیره اطلاعات اکانت در سفارش
     order.accountInfo = {
       email,
       password,
       sentAt: new Date(),
     };
-    order.status = "completed"; // همزمان وضعیت را کامل کنیم
+    order.status = "completed";
     await order.save();
+
+    // 3. ارسال پیام تلگرام به کانال سفارش‌های تکمیل‌شده
+    const message = `
+📦 <b>سفارش جدید تکمیل شد</b>
+
+👤 <b>کاربر:</b> ${order.user.name}
+📧 <b>ایمیل:</b> ${order.user.email}
+📱 <b>موبایل:</b> ${order.user.phone}
+
+🧾 <b>شماره سفارش:</b> ${order._id}
+📆 <b>تاریخ:</b> ${formattedDate}
+🎧 <b>پلن:</b> ${productName}
+💰 <b>مبلغ:</b> ${order.totalAmount.toLocaleString()} تومان
+
+🔐 <b>اطلاعات اکانت:</b>
+📨 ایمیل: <code>${email}</code>
+🔑 پسورد: <code>${password}</code>
+    `;
+    await sendTelegramMessage(message, "completed");
 
     return res.json({ msg: "ایمیل ارسال و اطلاعات در سفارش ذخیره شد ✅" });
   } catch (err) {
-    console.error("Email send error:", err);
-    return res.status(500).json({ msg: "خطا در ارسال ایمیل" });
+    console.error("Email/Telegram send error:", err);
+    return res.status(500).json({ msg: "خطا در ارسال اطلاعات" });
   }
 });
+
 
 // ============ تنظیمات کدهای تخفیف اتوماتیک ============
 
