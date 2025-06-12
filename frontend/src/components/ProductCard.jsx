@@ -1,14 +1,39 @@
-// ProductCard با طراحی دقیق مشابه تصویر ارسالی، با گوشه‌های پایین پاره‌شده، بک‌گراند قیمت کاملاً مشابه و دکمه سبز
-
 import React from 'react';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
 export default function ProductCard({ product, onAdd }) {
+  const navigate = useNavigate();
+
   const handleAdd = async () => {
     try {
       await onAdd(product._id);
+      Swal.fire({
+        title: '✅ محصول با موفقیت اضافه شد!',
+        text: 'می‌خواهید ادامه خرید دهید یا به سبد خرید بروید؟',
+        icon: 'success',
+        showCancelButton: true,
+        confirmButtonText: 'رفتن به سبد خرید',
+        cancelButtonText: 'ادامه خرید',
+        reverseButtons: true,
+        customClass: {
+          popup: 'font-vazir bg-[#121212] text-white',
+          confirmButton: 'bg-green-600 px-4 py-2 rounded text-white',
+          cancelButton: 'bg-gray-700 px-4 py-2 rounded text-white ml-2',
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate('/cart');
+        }
+      });
     } catch (err) {
-      alert(err.message);
+      Swal.fire({
+        title: 'خطا',
+        text: err.message,
+        icon: 'error',
+        confirmButtonText: 'باشه',
+      });
     }
   };
 
@@ -56,7 +81,6 @@ export default function ProductCard({ product, onAdd }) {
         >
           افزودن به سبد
         </button>
-        
       </div>
     </motion.div>
   );

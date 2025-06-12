@@ -24,6 +24,7 @@
     "react-router-dom": "^6.14.1",
     "react-slick": "^0.30.3",
     "recharts": "^2.15.3",
+    "sweetalert2": "^11.22.0",
     "timeago.js": "^4.0.2"
   },
   "devDependencies": {
