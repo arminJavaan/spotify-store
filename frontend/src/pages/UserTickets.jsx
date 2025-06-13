@@ -75,12 +75,12 @@ export default function UserTickets() {
             placeholder="جستجو بر اساس موضوع..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 px-4 py-2 bg-dark1 text-black border border-gray-600 rounded-lg focus:outline-none focus:border-primary text-sm"
+            className="flex-1 px-4 py-2 bg-dark1 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-primary text-sm"
           />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-48 px-4 py-2 bg-black text-white border border-gray-600 rounded-lg focus:outline-none focus:border-primary text-sm"
+            className="w-full md:w-48 px-4 py-2 bg-dark1 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-primary text-sm"
           >
             <option value="all">همه وضعیت‌ها</option>
             <option value="open">در انتظار</option>
@@ -106,12 +106,12 @@ export default function UserTickets() {
               <motion.div
                 key={ticket._id}
                 onClick={() => navigate(`/tickets/${ticket._id}`)}
-                className="bg-dark3 border border-gray-600 p-5 rounded-2xl shadow hover:shadow-xl cursor-pointer transition-all duration-300"
+                className="bg-dark3 border border-gray-600 p-6 rounded-2xl shadow hover:shadow-xl cursor-pointer transition-all duration-300"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="flex justify-between items-center mb-2">
+                <div className="flex justify-between items-center mb-3">
                   <h3 className="text-lg font-semibold text-primary truncate">
                     {ticket.subject}
                   </h3>
@@ -122,7 +122,7 @@ export default function UserTickets() {
                 </div>
 
                 <p className="text-sm text-gray-300 whitespace-pre-line mb-3 line-clamp-3">
-                  {ticket.message}
+                  {ticket.replies[0]?.message || ""}
                 </p>
 
                 <div className="flex justify-between items-center text-xs">
@@ -140,15 +140,10 @@ export default function UserTickets() {
                     <div />
                   )}
 
-                  <span
-                    className={`flex items-center gap-1 ${getStatusColor(
-                      ticket.status
-                    )}`}
-                  >
+                  <span className={`flex items-center gap-1 ${getStatusColor(ticket.status)}`}>
                     {ticket.status === "answered" && <CheckCircle size={14} />}
                     {ticket.status === "closed" && <XCircle size={14} />}
-                    وضعیت:{" "}
-                    {ticket.status === "open"
+                    وضعیت: {ticket.status === "open"
                       ? "در انتظار"
                       : ticket.status === "answered"
                       ? "پاسخ داده شده"

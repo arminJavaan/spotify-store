@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import API from "../api";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MessageCircle, Paperclip, Send, Clock, Loader, ShieldCheck } from "lucide-react";
+import { MessageCircle, Paperclip, Send, Clock, Loader, ShieldCheck, User2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useContext } from "react";
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function TicketDetails() {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
   const [ticket, setTicket] = useState(null);
   const [reply, setReply] = useState("");
   const [attachment, setAttachment] = useState(null);
@@ -61,10 +64,15 @@ export default function TicketDetails() {
   }
 
   if (error) {
-    return (
-      <div className="text-center text-red-500 mt-20 font-vazir">{error}</div>
-    );
+    return <div className="text-center text-red-500 mt-20 font-vazir">{error}</div>;
   }
+
+  const allFiles = [
+    ...(ticket.attachment ? [{ url: ticket.attachment, from: "user" }] : []),
+    ...(ticket.replies || [])
+      .filter((r) => r.attachmentUrl)
+      .map((r) => ({ url: r.attachmentUrl, from: r.from })),
+  ];
 
   return (
     <main className="min-h-screen px-4 py-20 font-vazir mt-10 text-gray-light">
@@ -79,78 +87,76 @@ export default function TicketDetails() {
           <h2 className="text-xl font-bold text-primary flex items-center gap-2">
             <MessageCircle /> {ticket.subject}
           </h2>
-          <p className="text-sm text-gray-400 flex items-center gap-1">
-            <Clock size={14} />
-            {new Date(ticket.createdAt).toLocaleString("fa-IR")}
-          </p>
-          <p className="text-sm text-gray-300 whitespace-pre-line">
-            {ticket.message}
-          </p>
-          {ticket.attachment && (
-            <a
-              href={ticket.attachment}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-blue-400 underline flex items-center gap-1"
-            >
-              <Paperclip size={14} /> مشاهده فایل ضمیمه
-            </a>
-          )}
+          <div className="text-sm text-gray-400 flex flex-col md:flex-row md:items-center md:gap-6">
+            <p className="flex items-center gap-1">
+              <Clock size={14} /> {new Date(ticket.createdAt).toLocaleString("fa-IR")}
+            </p>
+            <p className="flex items-center gap-1">
+              <User2 size={14} /> {ticket.user?.name} ({ticket.user?.email})
+            </p>
+          </div>
         </div>
 
-        {/* پاسخ‌ها */}
-        <div className="border-t border-gray-700 pt-6 space-y-6 max-h-[50vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-dark3">
-          <h3 className="text-sm text-gray-400 font-bold">پاسخ‌ها</h3>
-          {ticket.replies?.length > 0 ? (
-            ticket.replies.map((r, idx) => (
-              <div
-                key={idx}
-                className={`rounded-xl p-4 border text-sm shadow ${
-                  r.from === "admin"
-                    ? "bg-green-800/10 border-green-500 text-green-100"
-                    : "bg-dark3 border-gray-600 text-gray-300"
-                }`}
-              >
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="flex items-center gap-1">
-                    {r.from === "admin" ? (
-                      <>
-                        <ShieldCheck size={14} /> پشتیبانی
-                      </>
-                    ) : (
-                      "شما"
-                    )}
-                  </span>
-                  <span>{new Date(r.createdAt).toLocaleString("fa-IR")}</span>
-                </div>
-                <p className="whitespace-pre-line mb-2">{r.message}</p>
-                {r.attachmentUrl && (
-                  <a
-                    href={r.attachmentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs underline flex items-center gap-1 text-blue-400"
-                  >
-                    <Paperclip size={14} /> فایل ضمیمه
+        {/* فایل‌های به اشتراک‌گذاشته‌شده */}
+        {allFiles.length > 0 && (
+          <div className="border-t border-gray-700 pt-6">
+            <h3 className="text-sm text-primary font-bold mb-2">📎 فایل‌های به اشتراک‌گذاشته‌شده در این تیکت:</h3>
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              {allFiles.map((file, i) => (
+                <li key={i} className="text-blue-400 hover:text-blue-300 transition">
+                  <a href={file.url} target="_blank" rel="noopener noreferrer">
+                    {file.url.split("/").pop()} ({file.from === "admin" ? "پشتیبانی" : "کاربر"})
                   </a>
-                )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* مکالمات تیکت */}
+        <div className="border-t border-gray-700 pt-6 space-y-6 max-h-[50vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-dark3">
+          {ticket.replies?.map((r, idx) => (
+            <div
+              key={idx}
+              className={`rounded-xl p-4 border text-sm shadow ${
+                r.from === "admin"
+                  ? "bg-green-800/10 border-green-500 text-green-100"
+                  : "bg-dark3 border-gray-600 text-gray-300"
+              }`}
+            >
+              <div className="flex justify-between text-xs mb-2">
+                <span className="flex items-center gap-1">
+                  {r.from === "admin" ? (
+                    <>
+                      <ShieldCheck size={14} /> پشتیبانی
+                    </>
+                  ) : (
+                    "کاربر"
+                  )}
+                </span>
+                <span>{new Date(r.createdAt).toLocaleString("fa-IR")}</span>
               </div>
-            ))
-          ) : (
-            <p className="text-gray-500 text-sm">پاسخی ثبت نشده است.</p>
-          )}
+              <p className="whitespace-pre-line mb-2">{r.message}</p>
+              {r.attachmentUrl && (
+                <a
+                  href={r.attachmentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs underline flex items-center gap-1 text-blue-400"
+                >
+                  <Paperclip size={14} /> فایل ضمیمه
+                </a>
+              )}
+            </div>
+          ))}
         </div>
 
-        {/* فرم پاسخ‌دهی */}
+        {/* فرم پاسخ */}
         {ticket.status === "closed" ? (
-          <p className="text-red-400 text-sm">
-            این تیکت توسط پشتیبانی بسته شده است.
-          </p>
+          <p className="text-red-400 text-sm">این تیکت بسته شده است.</p>
         ) : (
           <div className="border-t border-gray-700 pt-6 space-y-4">
-            <h3 className="text-sm text-gray-400 font-bold mb-1">
-              ارسال پاسخ جدید
-            </h3>
+            <h3 className="text-sm text-gray-400 font-bold mb-1">ارسال پاسخ جدید</h3>
             <textarea
               rows={4}
               maxLength={1000}
@@ -179,8 +185,7 @@ export default function TicketDetails() {
                 </>
               ) : (
                 <>
-                  <Send size={16} />
-                  ارسال پاسخ
+                  <Send size={16} /> ارسال پاسخ
                 </>
               )}
             </button>

@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const ReplySchema = new Schema({
   message: { type: String, required: true },
   from: { type: String, enum: ["user", "admin"], required: true },
+  admin: { type: Schema.Types.ObjectId, ref: "User", default: null },
   attachmentUrl: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
 });
@@ -20,29 +21,18 @@ const SupportTicketSchema = new Schema(
       required: true,
       trim: true,
     },
-    message: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     status: {
       type: String,
-      enum: ["open", "closed"],
+      enum: ["open", "answered", "closed"],
       default: "open",
     },
     attachment: {
-      type: String, // URL or path to image file
+      type: String,
       default: null,
     },
     repliedAt: {
       type: Date,
     },
-    status: {
-      type: String,
-      enum: ["open", "closed"],
-      default: "open",
-    },
-
     replies: [ReplySchema],
   },
   { timestamps: true }

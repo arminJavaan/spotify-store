@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
 export default function ProductCard({ product, onAdd }) {
   const navigate = useNavigate();
+  const [showFull, setShowFull] = useState(false);
 
   const handleAdd = async () => {
     try {
@@ -39,7 +40,7 @@ export default function ProductCard({ product, onAdd }) {
 
   return (
     <motion.div
-      className="bg-[#2c2c2c] rounded-2xl overflow-hidden shadow-lg border border-gray-700 flex flex-col"
+      className="bg-[#2c2c2c] rounded-2xl overflow-hidden shadow-lg border border-gray-700 flex flex-col h-full"
       whileHover={{ scale: 1.01 }}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -56,13 +57,21 @@ export default function ProductCard({ product, onAdd }) {
       </div>
 
       {/* نام و توضیحات */}
-      <div className="px-4 sm:px-6 pt-5 pb-4 flex flex-col gap-3 text-right">
+      <div className="px-4 sm:px-6 pt-5 pb-4 flex flex-col gap-3 text-right flex-1">
         <h3 className="text-gray-100 font-bold text-[15px] sm:text-base leading-tight group-hover:text-primary transition-colors duration-300">
           {product.name}
         </h3>
-        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line group-hover:text-gray-200 transition-colors duration-300">
+        <p className={`text-sm text-gray-300 leading-relaxed whitespace-pre-line group-hover:text-gray-200 transition-colors duration-300 ${showFull ? '' : 'line-clamp-6'}`}>
           {product.description}
         </p>
+        {product.description.length > 200 && (
+          <button
+            onClick={() => setShowFull(!showFull)}
+            className="text-xs text-blue-400 hover:underline self-start"
+          >
+            {showFull ? 'بستن توضیحات' : 'ادامه توضیحات...'}
+          </button>
+        )}
       </div>
 
       {/* افکت خط نقطه‌چین کامل */}
